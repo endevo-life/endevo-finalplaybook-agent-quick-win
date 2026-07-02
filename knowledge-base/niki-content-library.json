@@ -1,0 +1,754 @@
+{
+  "_meta": {
+    "title": "Niki Weiss content library — Q&A, action items, scenario-based education",
+    "purpose": "Grounding data for the low-token AI agent: deterministic routing/rules only, no engineering/DDB/worksheet-validation content included by design (scoped to Niki's clinical/educational logic per 2026-07-01 direction).",
+    "source": "Extracted from niki_routing_rules_v1.html (6 Otter session transcripts: Peter Chmiel Sprint 1+2, Jayne Lammers, Ellen Feinberg, Sue, Billie), cross-checked against Elisa Seeherman meet-and-greet transcript for tone/glossary.",
+    "status": "DRAFT — content and priority ordering not yet confirmed by Niki. Use as working content-library seed; do not present as clinically final. Domain tags (added 2026-07-02) on actionItems and the definitionsGlossary array (added 2026-07-02) are engineering-authored classifications/definitions derived from this content for UI organization — not independently reviewed by Niki. Treat as a working scaffold, not clinically final; each glossary entry carries its own 'validated': false flag for tracking. Digital assessment questions D1-D3 (added 2026-07-02) are drafted in Niki's voice from client-provided source questions, converted to fit this app's format -- captured as MemberContext flags (noLegacyContact, noSocialMediaPlan, noPasswordManager) but NOT YET wired into lead-profile routing or action items, since no digital-gap action items have been authored yet. Unvalidated by Niki. profile_digital_gap (added 2026-07-02) is drafted, unvalidated content -- practical digital-access how-tos matching Niki's established voice/format, written to answer the digital-assessment gap (D1-D3). Always parallel/additive like profile_business_owner, never a lead profile. Each actionItem carries a `flag` field -- rules_engine.build_plan() includes an item only if that specific MemberContext flag is true, not the whole profile at once.",
+    "extractedOn": "2026-07-01"
+  },
+  "coreFraming": {
+    "philosophy": "Break through the taboo of talking about death — but the empowerment is 'live fully, die ready.' Death is not a topic, it's an administrative and emotional reality that needs a plan.",
+    "keyLines": [
+      "The worst time to plan a funeral is when someone's dead.",
+      "Live fully, die ready.",
+      "Debt is not dead anymore — there's a digital piece too.",
+      "It's not the sandwich generation anymore, it's the Panini generation — so squished in.",
+      "Acknowledge it: death is taboo, people avoid it, but not planning will cost time, money, and emotional stress when an event occurs.",
+      "How do we make it a roadmap rather than a treasure hunt?"
+    ],
+    "threeScenarios": [
+      {
+        "id": "scenario_1",
+        "name": "You die tomorrow",
+        "order": 1,
+        "focus": "Your people taking action — they need documents, access, and a roadmap.",
+        "coreDocuments": [
+          "Will (executor named)",
+          "Power of attorney — financial",
+          "Power of attorney — healthcare / medical advance directive"
+        ],
+        "quote": "If you die tomorrow, there are three documents you absolutely need: a will, power of attorney, medical advance directive."
+      },
+      {
+        "id": "scenario_2",
+        "name": "You get a diagnosis",
+        "order": 2,
+        "focus": "You're still alive but not able to make your own decisions — someone empowered to act on your known wishes.",
+        "elements": [
+          "Healthcare proxy knows your wishes in detail",
+          "Advance care planning done",
+          "Insurance (long-term care, life) reviewed",
+          "Trusted person empowered while you're incapacitated"
+        ],
+        "quote": "Durable power of attorney for financial, durable power of attorney for healthcare — you're still alive, but you're not of sound mind, not making good decisions."
+      },
+      {
+        "id": "scenario_3",
+        "name": "Long-term care",
+        "order": 3,
+        "focus": "Sustained care needs, usually last unless there's an active health urgency.",
+        "elements": [
+          "Long-term care insurance coverage",
+          "Fiduciary (professional or personal) named",
+          "Care wishes documented in detail",
+          "Facility access plan",
+          "Medicaid planning if assets are limited"
+        ],
+        "quote": "If she needs to go into a facility, she doesn't have enough assets for that, so I'm going to work the Medicaid angle as she starts spinning down."
+      }
+    ]
+  },
+  "contextQuestions": [
+    {
+      "id": "C1",
+      "topic": "Family composition",
+      "question": "Tell me about your family situation. Do you have a partner? Children — how old? Are your parents living? Do you have siblings?",
+      "purpose": "This single question determines the entire routing priority — which situation profile(s) apply."
+    },
+    {
+      "id": "C2",
+      "topic": "Parent status",
+      "askIf": "hasAgingParent",
+      "question": "Is your parent living independently? Do they have the three core documents — will, power of attorney, and medical directive?",
+      "purpose": "If parent has no documents, parent planning gets prioritized above the member's own."
+    },
+    {
+      "id": "C3",
+      "topic": "Document inventory",
+      "question": "What do you currently have in place? Will? Power of attorney? Medical directive? Have those been updated recently?",
+      "purpose": "Determines whether to start from scratch (clean slate) or pressure-test an existing plan."
+    },
+    {
+      "id": "C4",
+      "topic": "Life change scan",
+      "question": "Have you had any major life changes in the last 5 years — divorce, marriage, new child, death of a named person, major asset change?",
+      "purpose": "If a post-divorce/major-change flag is set, beneficiary audit becomes first priority regardless of everything else."
+    },
+    {
+      "id": "C5",
+      "topic": "Caregiver and business status",
+      "question": "Are you currently the primary caregiver for someone else? Do you own or co-own a business?",
+      "purpose": "Each adds a separate parallel checklist to the member's plan."
+    },
+    {
+      "id": "C6",
+      "topic": "Action style",
+      "question": "What's the best way for you to track this? Notebook, spreadsheet, Google Doc, app? How do we keep you accountable?",
+      "purpose": "Determines how action items should be delivered/tracked back to the member."
+    },
+    {
+      "id": "D1",
+      "topic": "Digital assessment",
+      "question": "If you died tomorrow and your phone went with you, is there a Legacy Contact set up on your account so someone could actually get in?",
+      "purpose": "Flags whether the member has any digital-access plan at all for their phone/accounts.",
+      "options": [
+        {
+          "label": "Yes, it's set up",
+          "flags": {
+            "noLegacyContact": false
+          }
+        },
+        {
+          "label": "Maybe — not sure",
+          "flags": {
+            "noLegacyContact": true
+          }
+        },
+        {
+          "label": "No",
+          "flags": {
+            "noLegacyContact": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "D2",
+      "topic": "Digital assessment",
+      "question": "Have you named someone to handle your social media if you couldn't do it yourself — and do they actually know what to do?",
+      "purpose": "Flags whether social media has a named person AND real instructions, not just a name.",
+      "options": [
+        {
+          "label": "Yes — named, and they have instructions",
+          "flags": {
+            "noSocialMediaPlan": false
+          }
+        },
+        {
+          "label": "Named, but no instructions yet",
+          "flags": {
+            "noSocialMediaPlan": true
+          }
+        },
+        {
+          "label": "No",
+          "flags": {
+            "noSocialMediaPlan": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "D3",
+      "topic": "Digital assessment",
+      "question": "Are your passwords and logins somewhere a trusted person could actually find and use — a password manager, anything real?",
+      "purpose": "Flags whether login/credential access exists anywhere outside the member's own head.",
+      "options": [
+        {
+          "label": "Yes",
+          "flags": {
+            "noPasswordManager": false
+          }
+        },
+        {
+          "label": "No",
+          "flags": {
+            "noPasswordManager": true
+          }
+        }
+      ]
+    }
+  ],
+  "peopleBeforeDocuments": {
+    "principle": "Niki never starts with 'you need a will.' She starts with 'who are the people in your life?' — abstract legal concepts become concrete by attaching real names first, then mapping people to document roles.",
+    "quote": "Those people you identify as emergency contacts — the question is, are they going to be in your will? Are they going to be the executor, power of attorney, medical advance directive?",
+    "mapping": [
+      {
+        "whoNikiAsksAbout": "Emergency contacts",
+        "becomesRole": "Seeds the executor conversation",
+        "question": "Who would you call if something happened to you tonight? Does that person know they're your first call?"
+      },
+      {
+        "whoNikiAsksAbout": "The 'first call' person",
+        "becomesRole": "Often becomes executor",
+        "question": "If you died, who takes the first action? That person is probably your executor."
+      },
+      {
+        "whoNikiAsksAbout": "Most trusted with money",
+        "becomesRole": "POA financial",
+        "question": "Who do you trust most with your financial decisions if you can't make them?"
+      },
+      {
+        "whoNikiAsksAbout": "Most trusted with health decisions",
+        "becomesRole": "POA healthcare / proxy",
+        "question": "Who knows your healthcare wishes? Who would you trust to make those decisions?"
+      },
+      {
+        "whoNikiAsksAbout": "Kids' guardian (if applicable)",
+        "becomesRole": "Named in will",
+        "question": "If something happened to both you and your spouse, who takes the kids? Does that person know?"
+      },
+      {
+        "whoNikiAsksAbout": "Business co-owner or successor",
+        "becomesRole": "Business continuity doc",
+        "question": "If you were gone tomorrow, who runs the business? Do they have what they need?"
+      },
+      {
+        "whoNikiAsksAbout": "Parent's first responder",
+        "becomesRole": "Emergency contact for parent",
+        "question": "Does the neighbor/caregiver have your phone number? Could they reach you if something happened?"
+      }
+    ]
+  },
+  "situationProfiles": [
+    {
+      "id": "profile_aging_parent",
+      "name": "Aging parent with limited documentation",
+      "urgency": "highest",
+      "triggerConditions": [
+        "hasAgingParent",
+        "parentHasNoDocs",
+        "parentLivesAlone"
+      ],
+      "questions": [
+        "Does your parent have a will, power of attorney (financial + healthcare), and medical advance directive?",
+        "Do YOU have copies of those documents?",
+        "Do you know if they have a DNR? Where is it physically kept?",
+        "Does whoever would respond in an emergency (neighbor, building super, aide) have YOUR contact information?",
+        "Do you have a key to their home? Do you know the security code?",
+        "Is there a safe deposit box? Are you authorized on it?",
+        "Are you and your sibling(s) both named as co-executors or co-POA holders?",
+        "When was the will last updated? Does it reflect current wishes?"
+      ],
+      "priorityOrder": [
+        "Parent documents BEFORE member's own — get will, POA financial, POA healthcare, medical directive from parent's lawyer",
+        "Confirm DNR status and physical location",
+        "Emergency access — neighbor's number, house key, security code",
+        "Safe deposit box — are you authorized?",
+        "Member's own three documents (deferred until parent situation is addressed)"
+      ],
+      "actionItems": [
+        {
+          "text": "Ask your parent for copies of their will, power of attorney, and medical advance directive.",
+          "script": "Mom, I'm doing my estate planning. I realized I don't have a copy of yours. If something happened to you tomorrow, I would be responsible. Can you give me a copy of your will, power of attorney, and medical advance directive?",
+          "domain": "legal"
+        },
+        {
+          "text": "Ask: Do you have a DNR? Where is it kept? Check likely spots — near front door, refrigerator, hospital copy.",
+          "domain": "health"
+        },
+        {
+          "text": "Get the neighbor's / building manager's contact info. Give them YOUR number.",
+          "domain": "legal"
+        },
+        {
+          "text": "Find the house key. Know the security code. Make sure a sibling also has access.",
+          "domain": "legal"
+        },
+        {
+          "text": "Call the bank: is my name on her safe deposit box? If not, how do we add it?",
+          "domain": "financial"
+        },
+        {
+          "text": "Ask your parent when their will was last updated and whether it still reflects who they want.",
+          "domain": "legal"
+        }
+      ],
+      "quote": "I just don't want you to get the call and not be able to act."
+    },
+    {
+      "id": "profile_young_children",
+      "name": "Young children, no guardian named",
+      "urgency": "critical (emotional unlock)",
+      "triggerConditions": [
+        "hasYoungChildren",
+        "noWill",
+        "hasPartner"
+      ],
+      "questions": [
+        "If something happened to both you and your spouse/partner tonight, who takes the kids?",
+        "Does that person know they would be named? Have they agreed?",
+        "Have you and your spouse agreed on the same person?",
+        "Does that person have the capacity — financially, physically, emotionally?",
+        "Is there life insurance adequate to fund raising your children to adulthood?",
+        "Does your spouse's family know what your wishes are for the children?"
+      ],
+      "specialNote": "Do NOT name minor children directly as beneficiaries on accounts — assets need a trust or UTMA custodial account to avoid court control until the child reaches adulthood.",
+      "priorityOrder": [
+        "Guardian conversation between spouses — agree on one person (and a backup)",
+        "Confirm with the named guardian that they know and agree",
+        "Will with guardian named + executor named",
+        "Life insurance review — is coverage enough to raise them?",
+        "Trust or custodial account consideration (assets shouldn't pass directly to minors)",
+        "Emergency contact card for schools, activities, pediatrician"
+      ],
+      "actionItems": [
+        {
+          "text": "Have the conversation with your partner: who is the guardian? Agree before next session.",
+          "domain": "legal"
+        },
+        {
+          "text": "Contact that person and ask directly.",
+          "script": "We'd like to name you as guardian for our children. Are you willing and prepared?",
+          "domain": "legal"
+        },
+        {
+          "text": "See an estate attorney: will + guardian named + executor named (same or different person).",
+          "domain": "legal"
+        },
+        {
+          "text": "Review life insurance: is the amount adequate to cover child-rearing through age 22?",
+          "domain": "financial"
+        },
+        {
+          "text": "Confirm extended family knows the plan.",
+          "script": "If something happened to us both, who takes the kids? Does your wife's sister know? Have you had that conversation?",
+          "domain": "legal"
+        }
+      ],
+      "quote": "If something happened to us both, who takes the kids? Does your wife's sister know? Have you had that conversation?"
+    },
+    {
+      "id": "profile_solo_ager",
+      "name": "Solo ager (no partner, no children)",
+      "urgency": "digital legacy especially critical",
+      "triggerConditions": [
+        "isSoloAger",
+        "hasAssets"
+      ],
+      "questions": [
+        "Who would you call if something happened to you tonight?",
+        "Does that person know they're your first call?",
+        "Do you have a healthcare proxy who knows your wishes in detail?",
+        "Are all your accounts set up with transfer on death (TOD) or payable on death (POD)?",
+        "Have you thought about who gets your assets — people or organizations?",
+        "Do you have IP, a business, or a website that needs a shutdown plan?",
+        "Are you the informal caregiver for a parent with limited assets? Have you thought about Medicaid planning?"
+      ],
+      "priorityOrder": [
+        "Transfer on death (TOD) on all brokerage accounts + payable on death (POD) on all bank accounts — prevents probate without a natural heir",
+        "Healthcare proxy who truly knows your wishes (not just named on paper)",
+        "Professional fiduciary consideration for financial decisions if no trusted person",
+        "Digital legacy — business shutdown plan, IP documentation, account access",
+        "Charitable/organizational beneficiary conversations",
+        "Childless trust consideration if assets are significant"
+      ],
+      "actionItems": [
+        {
+          "text": "Call each financial institution.",
+          "script": "I'm calling to say I'm doing estate planning. I just want to make sure: do I have transfer on death set up on this account? If not, how do we set that up?",
+          "domain": "financial"
+        },
+        {
+          "text": "Sit with your healthcare proxy and walk through your actual wishes, not just 'I trust you to decide.'",
+          "domain": "health"
+        },
+        {
+          "text": "Document your digital legacy: the accounts, the business, the clients. Who shuts it down? What are the instructions?",
+          "domain": "digital"
+        },
+        {
+          "text": "Use an online notary for remaining documents.",
+          "resource": "bestnotary.com (operates in 40 states, video signing)",
+          "domain": "legal"
+        },
+        {
+          "text": "Freeze your credit at all three bureaus.",
+          "resource": "Equifax, TransUnion, Experian",
+          "quote": "If you don't need your credit available right now — not buying a car, not buying a house — your credit should be frozen. It's the best protection against the data breaches happening right now.",
+          "domain": "financial"
+        }
+      ],
+      "quote": "There's actually a niche market — childless trusts. They only deal with people who have no children, but they have assets. They assign fiduciaries, designate organizations, decide on distribution terms."
+    },
+    {
+      "id": "profile_business_owner",
+      "name": "Business owner / entrepreneur",
+      "urgency": "two separate checklists (personal + business)",
+      "triggerConditions": [
+        "isBusinessOwner",
+        "hasIP"
+      ],
+      "questions": [
+        "If something happened to you tomorrow, who runs the business?",
+        "Does that person have the credentials, logins, and access they need?",
+        "Do you have key person insurance?",
+        "Do you have old 401k accounts from previous employers that haven't been rolled over?",
+        "Are your IP, patents, or content assets documented and owned clearly?",
+        "Are your corporate/founding documents (incorporation, operating agreement) accessible?"
+      ],
+      "criticalRule": "Business plan and personal plan are two separate checklists. Your personal life would be fine. Your business life — that's a different question.",
+      "priorityOrder": [
+        "Name the business successor / 'business executor' — who takes over",
+        "Key person insurance review",
+        "401k rollover from any previous employers (extremely common gap among founders who left corporate jobs)",
+        "Business contact document: vendors, clients, accounts — separate from personal",
+        "IP ownership documentation",
+        "Corporate documents in a crucial doc box (separate section from personal documents)"
+      ],
+      "actionItems": [
+        {
+          "text": "Identify the business successor and brief them.",
+          "domain": "legal"
+        },
+        {
+          "text": "Research or review key person insurance.",
+          "domain": "financial"
+        },
+        {
+          "text": "Locate all old 401k accounts from previous employers and initiate rollover.",
+          "domain": "financial"
+        },
+        {
+          "text": "Create a business contacts document (clients, key vendors, accounts, login instructions) — separate from personal documents.",
+          "domain": "digital"
+        },
+        {
+          "text": "Add corporate documents to your crucial doc box as a separate section.",
+          "domain": "legal"
+        }
+      ],
+      "quote": "A lot of founders left their corporate jobs and have 401ks that need to be rolled over. They left their ex-spouse on as a beneficiary — oh yeah."
+    },
+    {
+      "id": "profile_post_divorce_life_change",
+      "name": "Post-divorce or major life change in last 5 years",
+      "urgency": "beneficiary audit is first action before all else",
+      "triggerConditions": [
+        "postDivorce",
+        "newChild",
+        "recentMarriage",
+        "deathOfNamedPerson"
+      ],
+      "questions": [
+        "Have you checked ALL beneficiary designations since that change? (Each account separately — they do not update automatically)",
+        "401k, IRA, life insurance, brokerage — on each one: who is listed?",
+        "Is an ex-spouse still listed anywhere? (More common than people expect)",
+        "Has your will been updated since the life change?",
+        "Have the people named in your POA and healthcare proxy changed?"
+      ],
+      "priorityOrder": [
+        "Audit ALL beneficiary designations: 401k, IRA, brokerage (TOD), life insurance, pension",
+        "Update will to reflect current wishes and current named persons",
+        "Update POA and healthcare proxy if named persons have changed",
+        "Review assets acquired since the change: do they have the right designations?"
+      ],
+      "actionItems": [
+        {
+          "text": "List every account with a beneficiary designation. Pull the form or call the institution. Verify who is listed. Update immediately if wrong.",
+          "domain": "financial"
+        },
+        {
+          "text": "Check specifically whether an ex-spouse is still listed anywhere — retirement account beneficiary designations override what the will says.",
+          "domain": "financial"
+        },
+        {
+          "text": "Schedule time with an estate attorney to update the will.",
+          "domain": "legal"
+        },
+        {
+          "text": "Check whether the people named in your POA are still the right people.",
+          "domain": "legal"
+        }
+      ],
+      "quotes": [
+        "They left their ex-spouse on as a beneficiary of their 401k after 20 years. Oh yeah. I didn't even think about that.",
+        "She had a wealth manager but she had no will. She died intestate. The adult children are scrambling — they can't access her accounts. It has to go through probate."
+      ]
+    },
+    {
+      "id": "profile_clean_slate",
+      "name": "Nothing done, clean slate",
+      "urgency": "normalize, don't overwhelm",
+      "triggerConditions": [
+        "hasNothingDone"
+      ],
+      "approach": "No judgment, no urgency panic. You don't have a plan because life gets busy — it's not prioritized, that's why it takes time. Start with ONE concrete physical action. Give the full scope so they can see the project, then sequence it themselves.",
+      "questions": [
+        "Who would be the first person called if something happened to you tonight?",
+        "Do you know where your birth certificate is?",
+        "If your partner died tomorrow, could you find all the financial accounts?",
+        "Is there a fireproof box somewhere with your important documents?"
+      ],
+      "priorityOrder": [
+        "Emergency contact card — who are the people? (seeds all document decisions)",
+        "Asset inventory — what do you have? Update beneficiary column on each account.",
+        "Crucial doc box — find a fireproof box, identify what goes in it",
+        "Three core documents — will, POA financial, POA healthcare / medical directive",
+        "Digital vault setup (deferred until physical is established)"
+      ],
+      "actionItems": [
+        {
+          "text": "Print and fill out emergency contact cards.",
+          "domain": "legal"
+        },
+        {
+          "text": "Find and update your asset inventory spreadsheet. Add a beneficiary column, TOD/POD status, and a point of contact.",
+          "domain": "financial"
+        },
+        {
+          "text": "Make ONE call to ONE financial institution this week.",
+          "script": "Am I set up with TOD/POD on this account?",
+          "domain": "financial"
+        },
+        {
+          "text": "Find your birth certificate (the gateway physical-document exercise).",
+          "domain": "legal"
+        },
+        {
+          "text": "Have one conversation with your spouse about who would be the guardian for the kids.",
+          "domain": "legal"
+        }
+      ],
+      "quote": "How do we make it a roadmap rather than a treasure hunt?"
+    },
+    {
+      "id": "profile_pressure_test",
+      "name": "Has some documents, needs pressure testing",
+      "urgency": "existing work ≠ working plan",
+      "triggerConditions": [
+        "hasSomeDone",
+        "hasWill"
+      ],
+      "approach": "You've done work, but have you pressure-tested it? Review what exists, identify what's outdated, find what's incomplete.",
+      "questions": [
+        "When was this document last updated?",
+        "Do you have a digital copy? Can you get one from your lawyer?",
+        "Does your executor / POA person know they're named? Do they understand what that means?",
+        "Are the named people still the right people? Has anything changed?",
+        "Is the HIPAA release embedded in your healthcare proxy, or separate?",
+        "Do you have a DNR as a standalone document (not just referenced in the living will)?",
+        "Have you reviewed beneficiary designations recently?"
+      ],
+      "priorityOrder": [
+        "Get digital copies of all documents from the lawyer",
+        "Re-read the documents — don't assume you know what they say",
+        "Call executor / POA to confirm they know they're named and what to do",
+        "Identify the specific gap (standalone DNR, trust, updated beneficiaries, HIPAA)",
+        "Address the gap with the same lawyer or a new one"
+      ],
+      "actionItems": [
+        {
+          "text": "Call your lawyer.",
+          "script": "Can you email me the digital versions of my will, POA, and medical directive?",
+          "domain": "legal"
+        },
+        {
+          "text": "Read each document. Note anything that surprises you or that you want to change.",
+          "domain": "legal"
+        },
+        {
+          "text": "Call your executor / POA person.",
+          "script": "I want to make sure you know you're named and understand the responsibilities.",
+          "domain": "legal"
+        },
+        {
+          "text": "Check the beneficiary on each account — especially after any life change.",
+          "domain": "financial"
+        },
+        {
+          "text": "Identify the gap document and schedule time to address it.",
+          "domain": "legal"
+        }
+      ],
+      "quote": "Matthew Perry had a trust, but he left one bank account out of the trust — it had $1.1M. Because he left it out, the trust had to go through probate. The old girlfriend was the beneficiary, not the new one. He never updated."
+    },
+    {
+      "id": "profile_digital_gap",
+      "name": "Digital access gaps",
+      "urgency": "parallel -- always additive, like profile_business_owner",
+      "triggerConditions": [
+        "noLegacyContact",
+        "noSocialMediaPlan",
+        "noPasswordManager"
+      ],
+      "questions": [
+        "If you died tomorrow and your phone went with you, is there a Legacy Contact set up on your account so someone could actually get in?",
+        "Have you named someone to handle your social media if you couldn't do it yourself -- and do they actually know what to do?",
+        "Are your passwords and logins somewhere a trusted person could actually find and use?"
+      ],
+      "priorityOrder": [
+        "Legacy Contact on phone/device accounts -- the gateway to everything else digital",
+        "Named social media executor with real instructions, not just a name",
+        "Password manager or written access list a trusted person can actually use"
+      ],
+      "actionItems": [
+        {
+          "text": "Set up a Legacy Contact on your phone account, so someone you trust could actually get in if something happened to you.",
+          "domain": "digital",
+          "flag": "noLegacyContact"
+        },
+        {
+          "text": "Name someone to handle your social media if you couldn't -- and write down exactly what you want done (memorialize, delete, or keep active).",
+          "script": "If something happened to me, here's what I'd want you to do with my accounts -- can I walk you through it?",
+          "domain": "digital",
+          "flag": "noSocialMediaPlan"
+        },
+        {
+          "text": "Put your passwords in a password manager, and make sure the person who'd need access knows how to get in.",
+          "domain": "digital",
+          "flag": "noPasswordManager"
+        }
+      ]
+    }
+  ],
+  "crossCuttingRules": {
+    "quantityCap": {
+      "rule": "Maximum 5 action items per sprint/session. More kills momentum.",
+      "quote": "I can give you a checklist and you'd be like, but we don't get it done for multiple reasons.",
+      "checkPrevious": "Always ask first: 'What did you complete from last time?' before adding new items."
+    },
+    "calendarAnchoring": {
+      "rule": "Every action item is tied to the member's real calendar, not an arbitrary deadline.",
+      "examples": [
+        "Before you go to Florida (4-day urgency window)",
+        "Before August (5-month runway)",
+        "This month — no rock climbing, no founder institute (leverage an open calendar)"
+      ]
+    },
+    "noJudgmentFraming": {
+      "rule": "When items aren't completed, don't shame — normalize.",
+      "quote": "Life gets busy. It's not prioritized. That's why it takes time. There's no judgment."
+    },
+    "sequencingRule": {
+      "rule": "People → Documents → Access, in that order, every time.",
+      "steps": [
+        "Identify the PEOPLE (who is the executor, POA, guardian, healthcare proxy)",
+        "Create the DOCUMENTS that formalize those roles",
+        "Ensure ACCESS (crucial doc box, digital vault, account access instructions)"
+      ]
+    },
+    "conversationScripts": {
+      "note": "Niki gives exact language for difficult conversations. Reuse these verbatim where the profile matches — don't paraphrase, the phrasing is deliberately low-friction/non-confrontational.",
+      "scripts": [
+        {
+          "context": "Approaching an aging parent for documents",
+          "script": "Mom, I'm doing my estate planning. I realized I don't have a copy of yours. If something happened to you tomorrow, I would be responsible. Can you give me a copy of your will, power of attorney, and medical advance directive?"
+        },
+        {
+          "context": "Calling a financial institution about TOD/POD",
+          "script": "I'm calling to say I'm doing estate planning. I just want to make sure: do I have transfer on death set up on this account? If not, how do we set that up?"
+        },
+        {
+          "context": "Credit freeze rationale",
+          "script": "If you don't need your credit available right now — not buying a car, not buying a house — your credit should be frozen. It's the best protection against the data breaches happening right now."
+        }
+      ]
+    }
+  },
+  "voiceAndGlossary": {
+    "source": "Elisa Seeherman meet-and-greet transcript — tone/vocabulary reference only, not an action-item source (this was a business-development conversation, not a coaching session).",
+    "terms": [
+      {
+        "term": "Digital thanatologist",
+        "note": "Niki's professional title/framing."
+      },
+      {
+        "term": "Final Playbook",
+        "note": "The deliverable/gift a member builds — something to hand to loved ones."
+      },
+      {
+        "term": "Panini Generation",
+        "note": "Replaces 'sandwich generation' — squished between caring for kids and aging parents."
+      },
+      {
+        "term": "Digital Legacy Planning — Made Easy",
+        "note": "Name of Niki's presentation/talk (20-90 minutes)."
+      },
+      {
+        "term": "The three death scenarios",
+        "note": "Die tomorrow unexpectedly / terminal diagnosis / long-term care plan."
+      }
+    ],
+    "illustrativeStory": "Elisa's father recorded a video interview with his mother-in-law and posted it to YouTube; YouTube's settings don't allow official downloads, and the original digital file's location is unknown. If the YouTube account or platform goes away, the family loses the video permanently — a concrete example of why digital-asset planning (not just legal/financial) matters."
+  },
+  "definitionsGlossary": [
+    {
+      "term": "Will",
+      "domain": "legal",
+      "shortDefinition": "A legal document that names your executor and states who receives your assets after you die.",
+      "sourceRef": "coreFraming.threeScenarios[0].coreDocuments",
+      "validated": false
+    },
+    {
+      "term": "Power of attorney (financial)",
+      "domain": "legal",
+      "shortDefinition": "A legal document that lets a trusted person make financial decisions on your behalf while you're alive but unable to make them yourself.",
+      "sourceRef": "coreFraming.threeScenarios[0].coreDocuments; peopleBeforeDocuments.mapping",
+      "validated": false
+    },
+    {
+      "term": "Power of attorney (healthcare) / medical advance directive",
+      "domain": "health",
+      "shortDefinition": "A legal document naming who can make medical decisions for you if you can't, and stating your care wishes in detail.",
+      "sourceRef": "coreFraming.threeScenarios[0-1]",
+      "validated": false
+    },
+    {
+      "term": "DNR (Do Not Resuscitate)",
+      "domain": "health",
+      "shortDefinition": "A medical order stating you do not want CPR performed if your heart stops or you stop breathing.",
+      "sourceRef": "situationProfiles.profile_aging_parent.questions / actionItems",
+      "validated": false
+    },
+    {
+      "term": "Executor",
+      "domain": "legal",
+      "shortDefinition": "The person legally responsible for carrying out your will after you die — settling accounts, distributing assets, closing the estate.",
+      "sourceRef": "peopleBeforeDocuments.mapping",
+      "validated": false
+    },
+    {
+      "term": "Transfer-on-death (TOD)",
+      "domain": "financial",
+      "shortDefinition": "A designation on a brokerage or investment account that names who receives it directly when you die, skipping probate.",
+      "sourceRef": "situationProfiles.profile_solo_ager.priorityOrder / actionItems",
+      "validated": false
+    },
+    {
+      "term": "Payable-on-death (POD)",
+      "domain": "financial",
+      "shortDefinition": "Like transfer-on-death, but for bank accounts — names who receives the account balance directly when you die.",
+      "sourceRef": "situationProfiles.profile_solo_ager.priorityOrder",
+      "validated": false
+    },
+    {
+      "term": "Beneficiary designation",
+      "domain": "financial",
+      "shortDefinition": "The person or people named on an account (401k, life insurance, IRA) to receive it after you die. These override what your will says, and don't update automatically.",
+      "sourceRef": "situationProfiles.profile_post_divorce_life_change",
+      "validated": false
+    },
+    {
+      "term": "Probate",
+      "domain": "legal",
+      "shortDefinition": "The court process of settling an estate when accounts or property don't have a named beneficiary or designation — slower and more public than a direct transfer.",
+      "sourceRef": "situationProfiles.profile_pressure_test.quote; profile_solo_ager.priorityOrder",
+      "validated": false
+    },
+    {
+      "term": "Digital legacy / digital assets",
+      "domain": "digital",
+      "shortDefinition": "Your online accounts, files, and business logins — who has access, and what happens to them, if you're gone.",
+      "sourceRef": "voiceAndGlossary.illustrativeStory; situationProfiles.profile_solo_ager",
+      "validated": false
+    },
+    {
+      "term": "Guardian",
+      "domain": "legal",
+      "shortDefinition": "The person legally named to raise your minor children if you (and your partner) are no longer able to.",
+      "sourceRef": "situationProfiles.profile_young_children",
+      "validated": false
+    }
+  ]
+}

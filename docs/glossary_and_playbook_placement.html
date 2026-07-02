@@ -1,0 +1,210 @@
+
+<h2 class="sr-only">Where educational glossary content lives inline in questions, and where the Final Playbook appears in the product flow</h2>
+
+<style>
+.wrap{display:grid;grid-template-columns:1fr 1fr;gap:20px;padding:1rem 0}
+.panel{background:var(--surface-1);border:0.5px solid var(--border);border-radius:12px;overflow:hidden}
+.ph{padding:10px 14px;border-bottom:0.5px solid var(--border);display:flex;align-items:center;gap:8px}
+.ph-dot{width:8px;height:8px;border-radius:50%;background:var(--border-strong)}
+.ph-title{font-size:11px;color:var(--text-muted);font-weight:500;letter-spacing:.05em;text-transform:uppercase}
+.pb{padding:16px 14px}
+
+/* question screen */
+.eyebrow{font-size:10px;color:var(--text-muted);font-weight:700;letter-spacing:.07em;text-transform:uppercase;margin:0 0 6px}
+.q-text{font-size:15px;color:var(--text-primary);font-weight:500;line-height:1.5;margin:0 0 4px}
+.term{border-bottom:1.5px dashed var(--border-accent);color:var(--text-accent);cursor:pointer;display:inline}
+.hint{font-size:11px;color:var(--text-muted);margin:0 0 16px}
+.opt{display:block;width:100%;padding:10px 12px;background:transparent;border:0.5px solid var(--border);border-radius:8px;font-size:13px;color:var(--text-primary);text-align:left;cursor:pointer;margin-bottom:8px;font-family:inherit}
+.opt:last-child{margin-bottom:0}
+
+/* popover */
+.pop{background:var(--surface-2);border:0.5px solid var(--border-strong);border-radius:10px;padding:14px;margin:10px 0 14px;position:relative}
+.pop::before{content:"";position:absolute;top:-6px;left:20px;width:10px;height:10px;background:var(--surface-2);border-top:0.5px solid var(--border-strong);border-left:0.5px solid var(--border-strong);transform:rotate(45deg)}
+.pop-label{font-size:10px;color:var(--text-accent);font-weight:700;letter-spacing:.07em;text-transform:uppercase;margin:0 0 6px}
+.pop-def{font-size:13px;color:var(--text-secondary);line-height:1.6;margin:0 0 10px}
+.pop-actions{display:flex;gap:8px;flex-wrap:wrap}
+.pop-btn{font-size:11px;padding:4px 10px;border-radius:6px;border:0.5px solid var(--border-strong);background:transparent;color:var(--text-secondary);cursor:pointer;font-family:inherit}
+.pop-btn.accent{background:var(--bg-accent);border-color:var(--border-accent);color:var(--text-accent)}
+
+/* playbook */
+.pb-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.pb-name{font-size:13px;font-weight:500;color:var(--text-primary)}
+.pb-count{font-size:11px;color:var(--text-muted)}
+.pb-bar-wrap{height:3px;background:var(--border);border-radius:2px;overflow:hidden;margin-bottom:16px}
+.pb-bar{height:100%;border-radius:2px;background:var(--fill-success)}
+.section{border-left:2.5px solid var(--border-accent);padding-left:12px;margin-bottom:16px}
+.sec-label{font-size:10px;color:var(--text-accent);font-weight:700;letter-spacing:.07em;text-transform:uppercase;margin:0 0 6px}
+.field-row{display:flex;justify-content:space-between;margin-bottom:5px}
+.field-k{font-size:11px;color:var(--text-muted)}
+.field-v{font-size:12px;color:var(--text-primary);text-align:right;max-width:60%;word-break:break-word}
+.locked-section{border-left:2.5px solid var(--border);padding-left:12px;margin-bottom:16px;opacity:.45}
+.locked-label{font-size:10px;color:var(--text-muted);font-weight:700;letter-spacing:.07em;text-transform:uppercase;margin:0 0 4px}
+.locked-msg{font-size:12px;color:var(--text-muted)}
+.dl-btn{display:block;width:100%;padding:9px;border:0.5px solid var(--border-strong);border-radius:8px;background:transparent;font-size:13px;color:var(--text-secondary);cursor:pointer;text-align:center;font-family:inherit;margin-top:4px}
+
+/* placement labels */
+.placement{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:3px 10px;border-radius:4px;display:inline-block;margin-bottom:8px}
+.placement.green{background:var(--bg-success);color:var(--text-success)}
+.placement.blue{background:var(--bg-accent);color:var(--text-accent)}
+.placement.warn{background:var(--bg-warning);color:var(--text-warning)}
+
+/* where label rows */
+.where-row{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:0.5px solid var(--border)}
+.where-row:last-child{border-bottom:none}
+.where-num{width:20px;height:20px;border-radius:50%;background:var(--surface-0);border:0.5px solid var(--border-strong);font-size:10px;font-weight:700;color:var(--text-muted);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.where-t{font-size:12px;color:var(--text-primary);font-weight:500;margin:0 0 2px}
+.where-d{font-size:11px;color:var(--text-muted);margin:0;line-height:1.5}
+
+@media(max-width:560px){.wrap{grid-template-columns:1fr}}
+</style>
+
+<div class="wrap">
+
+  <!-- LEFT: GLOSSARY INLINE -->
+  <div>
+    <p class="placement blue">Where glossary lives — inline in the question</p>
+    <div class="panel">
+      <div class="ph"><div class="ph-dot"></div><div class="ph-dot"></div><div class="ph-dot"></div><span class="ph-title">Question screen · Legal</span></div>
+      <div class="pb">
+        <p class="eyebrow">Legal · milestone 1 of 4</p>
+        <p class="q-text">Have you named someone who holds <span class="term" title="tap to define">durable power of attorney</span> for your financial decisions?</p>
+        <p class="hint">Tap any underlined term for a plain-English explanation</p>
+
+        <!-- POPOVER — always visible here to show the pattern -->
+        <div class="pop">
+          <p class="pop-label">Durable power of attorney — financial</p>
+          <p class="pop-def">A legal document that lets a trusted person make financial decisions on your behalf if you can't — while you're still alive but incapacitated. "Durable" means it stays valid even if you lose mental capacity. This is different from your will, which only takes effect after death.</p>
+          <div class="pop-actions">
+            <button class="pop-btn accent">Watch 3-min video →</button>
+            <button class="pop-btn">Ask advisor ↗</button>
+            <button class="pop-btn">Close</button>
+          </div>
+        </div>
+
+        <button class="opt">Yes — signed and on file</button>
+        <button class="opt">I've picked someone but haven't done the paperwork</button>
+        <button class="opt">Not yet</button>
+      </div>
+    </div>
+
+    <div style="margin-top:16px">
+      <p class="placement warn">Sensitive terms — how to handle them</p>
+      <div class="panel">
+        <div class="pb">
+          <div class="where-row">
+            <div class="where-num">1</div>
+            <div>
+              <p class="where-t">Power of attorney (financial)</p>
+              <p class="where-d">Inline tooltip in L4 question. Niki explains this takes 2 sessions to land — people confuse it with healthcare POA.</p>
+            </div>
+          </div>
+          <div class="where-row">
+            <div class="where-num">2</div>
+            <div>
+              <p class="where-t">Healthcare proxy / POA</p>
+              <p class="where-d">Different document, different milestone. Tooltip explicitly says "this is not the same as financial POA."</p>
+            </div>
+          </div>
+          <div class="where-row">
+            <div class="where-num">3</div>
+            <div>
+              <p class="where-t">Do Not Resuscitate (DNR)</p>
+              <p class="where-d">Tooltip includes the nurse's explanation from Sue's session: CPR on an 80yo with osteoporosis = broken ribs. Clinical reality, not abstract.</p>
+            </div>
+          </div>
+          <div class="where-row">
+            <div class="where-num">4</div>
+            <div>
+              <p class="where-t">Medical Aid in Dying (MAID)</p>
+              <p class="where-d">State-specific. Tooltip shows: "Available in [your state]: yes/no" based on member location. Not included in general Q40 — surfaces only in Physical domain, milestone 2, with Niki content.</p>
+            </div>
+          </div>
+          <div class="where-row">
+            <div class="where-num">5</div>
+            <div>
+              <p class="where-t">Intestate / probate / executor</p>
+              <p class="where-d">All inline tooltips. No separate glossary page needed — the term is defined at the moment the member encounters it.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: FINAL PLAYBOOK -->
+  <div>
+    <p class="placement green">Where Final Playbook lives — always building</p>
+    <div class="panel">
+      <div class="ph"><div class="ph-dot"></div><div class="ph-dot"></div><div class="ph-dot"></div><span class="ph-title">My Final Playbook · Sarah Mitchell</span></div>
+      <div class="pb">
+        <div class="pb-header">
+          <span class="pb-name">Sarah Mitchell</span>
+          <span class="pb-count">1 of 13 milestones</span>
+        </div>
+        <div class="pb-bar-wrap"><div class="pb-bar" style="width:8%"></div></div>
+
+        <!-- Done section -->
+        <div class="section">
+          <p class="sec-label">Legal</p>
+          <div class="field-row"><span class="field-k">First choice executor</span><span class="field-v">David Mitchell</span></div>
+          <div class="field-row"><span class="field-k">Backup</span><span class="field-v">Karen Okafor</span></div>
+          <div class="field-row"><span class="field-k">Why this person</span><span class="field-v">Organised, local, good with paperwork</span></div>
+        </div>
+
+        <!-- Locked sections -->
+        <div class="locked-section">
+          <p class="locked-label">Money</p>
+          <p class="locked-msg">Complete Money · milestone 1 to unlock</p>
+        </div>
+        <div class="locked-section">
+          <p class="locked-label">Health & care</p>
+          <p class="locked-msg">Complete Health · milestone 1 to unlock</p>
+        </div>
+        <div class="locked-section">
+          <p class="locked-label">Digital</p>
+          <p class="locked-msg">Complete Digital · milestone 1 to unlock</p>
+        </div>
+
+        <button class="dl-btn">Download PDF ↓</button>
+        <p style="font-size:11px;color:var(--text-muted);text-align:center;margin:8px 0 0">Updated after every milestone you complete</p>
+      </div>
+    </div>
+
+    <div style="margin-top:16px">
+      <p class="placement green">Where playbook surfaces in the flow</p>
+      <div class="panel">
+        <div class="pb">
+          <div class="where-row">
+            <div class="where-num">1</div>
+            <div>
+              <p class="where-t">After every milestone Done screen</p>
+              <p class="where-d">"Your playbook just updated" CTA. The member sees their entry immediately after saving the worksheet.</p>
+            </div>
+          </div>
+          <div class="where-row">
+            <div class="where-num">2</div>
+            <div>
+              <p class="where-t">Persistent nav link — "My Playbook"</p>
+              <p class="where-d">Always accessible. Does not require completing all domains first.</p>
+            </div>
+          </div>
+          <div class="where-row">
+            <div class="where-num">3</div>
+            <div>
+              <p class="where-t">Download available from day one</p>
+              <p class="where-d">Even with 1 milestone complete, the PDF downloads with that section filled in. "You have something real" from the first session.</p>
+            </div>
+          </div>
+          <div class="where-row">
+            <div class="where-num">4</div>
+            <div>
+              <p class="where-t">Not at the end — throughout</p>
+              <p class="where-d">The Final Playbook is the goal framing from screen 1. "You're building your Final Playbook" — not a reward you unlock after completing everything.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

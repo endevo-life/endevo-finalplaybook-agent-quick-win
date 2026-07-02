@@ -1,0 +1,8 @@
+anthropic
+pydantic
+fastapi
+uvicorn
+pytest
+httpx
+python-dotenv
+boto3
