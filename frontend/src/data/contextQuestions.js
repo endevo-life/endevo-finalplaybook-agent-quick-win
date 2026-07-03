@@ -1,7 +1,7 @@
 // Structured form data derived from knowledge-base/niki-content-library.json
-// contextQuestions (C1-C5). C6 ("how do you want to track this?") is
-// intentionally omitted -- it has no corresponding MemberContext flag and
-// would be a dead-end input in this version.
+// contextQuestions (C1-C5, H1-H3, D1-D3). C6 ("how do you want to track
+// this?") is intentionally omitted -- it has no corresponding MemberContext
+// flag and would be a dead-end input in this version.
 //
 // Each option's `flags` object is merged into the running MemberContext
 // flags as the member answers. `type` controls how QuestionStep renders it:
@@ -69,6 +69,38 @@ export const STEPS = [
     options: [
       { label: "I'm currently the primary caregiver for someone else", flags: { isCaregiver: true } },
       { label: "I own or co-own a business", flags: { isBusinessOwner: true } },
+    ],
+  },
+  {
+    id: "H1",
+    topic: "Physical (health and care) assessment",
+    promptText: "Do you have a healthcare proxy or medical power of attorney — someone who can make medical decisions for you if you can't?",
+    type: "single",
+    options: [
+      { label: "Yes, it's set up", flags: { noHealthcareProxy: false } },
+      { label: "Named, but we haven't made it official", flags: { noHealthcareProxy: true } },
+      { label: "No", flags: { noHealthcareProxy: true } },
+    ],
+  },
+  {
+    id: "H2",
+    topic: "Physical (health and care) assessment",
+    promptText: "Do you have an advance directive or living will that spells out your care wishes, like a DNR?",
+    type: "single",
+    options: [
+      { label: "Yes", flags: { noAdvanceDirective: false } },
+      { label: "No", flags: { noAdvanceDirective: true } },
+    ],
+  },
+  {
+    id: "H3",
+    topic: "Physical (health and care) assessment",
+    promptText: "If you were in a serious accident tomorrow, does your healthcare proxy actually know your wishes in detail — not just that they're named?",
+    type: "single",
+    options: [
+      { label: "Yes, we've talked in detail", flags: { healthcareProxyUnaware: false } },
+      { label: "They're named but we haven't really discussed it", flags: { healthcareProxyUnaware: true } },
+      { label: "No", flags: { healthcareProxyUnaware: true } },
     ],
   },
   {

@@ -50,6 +50,11 @@ class MemberContext:
     noLegacyContact: bool = False
     noSocialMediaPlan: bool = False
     noPasswordManager: bool = False
+    # Physical (health and care) assessment (H1-H3) -- same pattern as the
+    # digital flags above, pulling from profile_health_gap.
+    noHealthcareProxy: bool = False
+    noAdvanceDirective: bool = False
+    healthcareProxyUnaware: bool = False
 
 
 def _match_lead_profile(ctx: MemberContext) -> Optional[str]:
@@ -72,18 +77,28 @@ def _match_lead_profile(ctx: MemberContext) -> Optional[str]:
 
 
 DIGITAL_GAP_FLAGS = ("noLegacyContact", "noSocialMediaPlan", "noPasswordManager")
+HEALTH_GAP_FLAGS = ("noHealthcareProxy", "noAdvanceDirective", "healthcareProxyUnaware")
+
+# Parallel profiles whose actionItems are individually gated by a per-item
+# `flag` field (only the flags that are actually true get included), unlike
+# profile_business_owner where the whole profile's items are taken as-is.
+GAP_PROFILES = {
+    "profile_digital_gap": ("digitalActionItems", DIGITAL_GAP_FLAGS),
+    "profile_health_gap": ("healthActionItems", HEALTH_GAP_FLAGS),
+}
 
 
 def match_profiles(ctx: MemberContext) -> dict:
-    """Business owner and digital gaps always run in parallel -- Niki treats
-    these as separate checklists, never competing for priority with the lead
-    profile."""
+    """Business owner and gap profiles (digital, health) always run in
+    parallel -- Niki treats these as separate checklists, never competing for
+    priority with the lead profile."""
     lead = _match_lead_profile(ctx)
     parallel = []
     if ctx.isBusinessOwner and lead != "profile_business_owner":
         parallel.append("profile_business_owner")
-    if any(getattr(ctx, flag) for flag in DIGITAL_GAP_FLAGS):
-        parallel.append("profile_digital_gap")
+    for profile_id, (_, flags) in GAP_PROFILES.items():
+        if any(getattr(ctx, flag) for flag in flags):
+            parallel.append(profile_id)
     return {"lead": lead, "parallel": parallel}
 
 
@@ -96,6 +111,7 @@ def build_plan(ctx: MemberContext) -> dict:
         "actionItems": [],
         "businessActionItems": [],
         "digitalActionItems": [],
+        "healthActionItems": [],
         "quotes": [],
     }
 
@@ -114,11 +130,12 @@ def build_plan(ctx: MemberContext) -> dict:
 
     for pid in matched["parallel"]:
         profile = PROFILES_BY_ID[pid]
-        if pid == "profile_digital_gap":
+        if pid in GAP_PROFILES:
             # Each actionItem is gated on its own flag -- only include the
             # ones actually relevant to this member, not the whole profile.
+            output_key, _ = GAP_PROFILES[pid]
             items = [item for item in profile["actionItems"] if getattr(ctx, item.get("flag", ""), False)]
-            plan["digitalActionItems"] = items[:MAX_ACTION_ITEMS_PER_PLAN]
+            plan[output_key] = items[:MAX_ACTION_ITEMS_PER_PLAN]
         else:
             plan["businessActionItems"] = profile["actionItems"][:MAX_ACTION_ITEMS_PER_PLAN]
 

@@ -10,7 +10,7 @@ var (see `docs/guardrails.md` § 6 for why `anthropic` is default and Bedrock
 is opt-in):
 
 - `personalize()` in `agent/personalize.py`, invoked only when `tier ==
-  "paid"` — the one-shot "next 3 days" narrative (the trial tier never calls
+  "paid"` — the one-shot "next 30-90 days" narrative (the trial tier never calls
   an LLM at all).
 - `chat()` in `agent/chat_agent.py` — grounded follow-up chat, mirrors
   `personalize.py`'s hard rules exactly (same "only use the provided plan,
@@ -53,7 +53,7 @@ Do not invent new advice, documents, laws, or numbers.
 no-judgment tone (see the reference lines below).
 - If the provided material doesn't cover something, say this is outside what we can \
 cover here and suggest a licensed professional -- do not guess or fill the gap yourself.
-- Keep the plan scoped to the next 7 days -- concrete and calendar-anchored where possible.
+- Keep the plan scoped to the next 30-90 days -- concrete and calendar-anchored where possible.
 - Never present this as legal, financial, or medical advice.
 
 Niki's reference tone lines (for calibration only -- don't insert verbatim unless it fits):
@@ -85,6 +85,7 @@ Niki's reference tone lines (for calibration only -- don't insert verbatim unles
   "leadProfile": { "id": "...", "name": "...", "urgency": "..." },
   "actionItems": [ { "text": "...", "script": "..." }, ... ],
   "businessActionItems": [ ... ],
+  "digitalActionItems": [ ... ],
   "supportingQuotes": [ "..." ]
 }
 ```

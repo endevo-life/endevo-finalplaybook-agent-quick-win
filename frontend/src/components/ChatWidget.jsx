@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faComments, faPaperPlane, faXmark, faLock } from "@fortawesome/free-solid-svg-icons";
 import { postChat } from "../api/client";
 import UpgradeButton from "./UpgradeButton";
+import { UNLOCK_FREEMIUM } from "../config/branding";
 
 const FREE_QUERY_LIMIT = 3;
 const STORAGE_KEY = "fp_chat_query_count";
@@ -13,7 +14,7 @@ export default function ChatWidget({ plan, memberFirstName, tier }) {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const isPaid = tier === "paid";
+  const isPaid = UNLOCK_FREEMIUM || tier === "paid";
   const [queryCount, setQueryCount] = useState(() =>
     isPaid ? 0 : Number(localStorage.getItem(STORAGE_KEY) || 0)
   );

@@ -18,6 +18,11 @@ export default function DomainSectionTeaser({ domainKey, items, onUpgradeClick }
     );
   }
 
+  // Show the first item in full as a real preview/demo of this domain's
+  // guidance -- blur the rest. Gives every domain at least one genuinely
+  // useful, readable item on the free tier, not just a locked count.
+  const [shown, ...rest] = items;
+
   return (
     <div className="fp-domain-section" style={{ borderLeftColor: info.color }}>
       <div className="fp-domain-header">
@@ -27,15 +32,27 @@ export default function DomainSectionTeaser({ domainKey, items, onUpgradeClick }
         </span>
         <span className="fp-domain-count-badge">{items.length}</span>
       </div>
-      {items.map((item, i) => (
+
+      <div className="fp-item-row">
+        <span className="fp-item-check" />
+        <div>
+          <p className="fp-item-text">{shown.text}</p>
+          {shown.script && <p className="fp-item-script">"{shown.script}"</p>}
+        </div>
+      </div>
+
+      {rest.map((item, i) => (
         <div key={i} className="fp-item-row fp-item-row-blurred">
           <span className="fp-item-check" />
           <p className="fp-item-text fp-blur-text">{item.text}</p>
         </div>
       ))}
-      <button type="button" className="fp-teaser-cta" onClick={onUpgradeClick}>
-        Unlock {items.length} more step{items.length > 1 ? "s" : ""} in {info.label} →
-      </button>
+
+      {rest.length > 0 && (
+        <button type="button" className="fp-teaser-cta" onClick={onUpgradeClick}>
+          Unlock {rest.length} more step{rest.length > 1 ? "s" : ""} in {info.label} →
+        </button>
+      )}
     </div>
   );
 }

@@ -3,7 +3,7 @@
     "title": "Niki Weiss content library — Q&A, action items, scenario-based education",
     "purpose": "Grounding data for the low-token AI agent: deterministic routing/rules only, no engineering/DDB/worksheet-validation content included by design (scoped to Niki's clinical/educational logic per 2026-07-01 direction).",
     "source": "Extracted from niki_routing_rules_v1.html (6 Otter session transcripts: Peter Chmiel Sprint 1+2, Jayne Lammers, Ellen Feinberg, Sue, Billie), cross-checked against Elisa Seeherman meet-and-greet transcript for tone/glossary.",
-    "status": "DRAFT — content and priority ordering not yet confirmed by Niki. Use as working content-library seed; do not present as clinically final. Domain tags (added 2026-07-02) on actionItems and the definitionsGlossary array (added 2026-07-02) are engineering-authored classifications/definitions derived from this content for UI organization — not independently reviewed by Niki. Treat as a working scaffold, not clinically final; each glossary entry carries its own 'validated': false flag for tracking. Digital assessment questions D1-D3 (added 2026-07-02) are drafted in Niki's voice from client-provided source questions, converted to fit this app's format -- captured as MemberContext flags (noLegacyContact, noSocialMediaPlan, noPasswordManager) but NOT YET wired into lead-profile routing or action items, since no digital-gap action items have been authored yet. Unvalidated by Niki. profile_digital_gap (added 2026-07-02) is drafted, unvalidated content -- practical digital-access how-tos matching Niki's established voice/format, written to answer the digital-assessment gap (D1-D3). Always parallel/additive like profile_business_owner, never a lead profile. Each actionItem carries a `flag` field -- rules_engine.build_plan() includes an item only if that specific MemberContext flag is true, not the whole profile at once.",
+    "status": "DRAFT — content and priority ordering not yet confirmed by Niki. Use as working content-library seed; do not present as clinically final. Domain tags (added 2026-07-02) on actionItems and the definitionsGlossary array (added 2026-07-02) are engineering-authored classifications/definitions derived from this content for UI organization — not independently reviewed by Niki. Treat as a working scaffold, not clinically final; each glossary entry carries its own 'validated': false flag for tracking. Digital assessment questions D1-D3 (added 2026-07-02) are drafted in Niki's voice from client-provided source questions, converted to fit this app's format -- captured as MemberContext flags (noLegacyContact, noSocialMediaPlan, noPasswordManager) but NOT YET wired into lead-profile routing or action items, since no digital-gap action items have been authored yet. Unvalidated by Niki. profile_digital_gap (added 2026-07-02) is drafted, unvalidated content -- practical digital-access how-tos matching Niki's established voice/format, written to answer the digital-assessment gap (D1-D3). Always parallel/additive like profile_business_owner, never a lead profile. Each actionItem carries a `flag` field -- rules_engine.build_plan() includes an item only if that specific MemberContext flag is true, not the whole profile at once. profile_health_gap and contextQuestions H1-H3 (added 2026-07-03) follow the exact same pattern as profile_digital_gap/D1-D3 -- drafted, unvalidated, not yet reviewed by Niki. generalResources (added 2026-07-03) is ORIGINAL general-knowledge content written to broaden what the chat agent can helpfully answer beyond the matched plan (e.g. 'how do I write a will') -- it is NOT sourced from any specific external website, and like everything else in this file, unvalidated by Niki -- treat as a starting draft, not legal/financial guidance to rely on as final.",
     "extractedOn": "2026-07-01"
   },
   "coreFraming": {
@@ -95,6 +95,78 @@
       "topic": "Action style",
       "question": "What's the best way for you to track this? Notebook, spreadsheet, Google Doc, app? How do we keep you accountable?",
       "purpose": "Determines how action items should be delivered/tracked back to the member."
+    },
+    {
+      "id": "H1",
+      "topic": "Physical (health and care) assessment",
+      "question": "Do you have a healthcare proxy or medical power of attorney -- someone who can make medical decisions for you if you can't?",
+      "purpose": "Flags whether the member has any healthcare decision-maker named at all.",
+      "options": [
+        {
+          "label": "Yes, it's set up",
+          "flags": {
+            "noHealthcareProxy": false
+          }
+        },
+        {
+          "label": "Named, but we haven't made it official",
+          "flags": {
+            "noHealthcareProxy": true
+          }
+        },
+        {
+          "label": "No",
+          "flags": {
+            "noHealthcareProxy": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "H2",
+      "topic": "Physical (health and care) assessment",
+      "question": "Do you have an advance directive or living will that spells out your care wishes, like a DNR?",
+      "purpose": "Flags whether care wishes are documented in writing, not just known informally.",
+      "options": [
+        {
+          "label": "Yes",
+          "flags": {
+            "noAdvanceDirective": false
+          }
+        },
+        {
+          "label": "No",
+          "flags": {
+            "noAdvanceDirective": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "H3",
+      "topic": "Physical (health and care) assessment",
+      "question": "If you were in a serious accident tomorrow, does your healthcare proxy actually know your wishes in detail -- not just that they're named?",
+      "purpose": "Flags the gap between 'someone is named' and 'that person actually knows what you want' -- Niki's own distinction, see peopleBeforeDocuments.",
+      "options": [
+        {
+          "label": "Yes, we've talked in detail",
+          "flags": {
+            "healthcareProxyUnaware": false
+          }
+        },
+        {
+          "label": "They're named but we haven't really discussed it",
+          "flags": {
+            "healthcareProxyUnaware": true
+          }
+        },
+        {
+          "label": "No",
+          "flags": {
+            "healthcareProxyUnaware": true
+          }
+        }
+      ]
     },
     {
       "id": "D1",
@@ -600,6 +672,44 @@
           "flag": "noPasswordManager"
         }
       ]
+    },
+    {
+      "id": "profile_health_gap",
+      "name": "Physical (health and care) gaps",
+      "urgency": "parallel -- always additive, like profile_business_owner and profile_digital_gap",
+      "triggerConditions": [
+        "noHealthcareProxy",
+        "noAdvanceDirective",
+        "healthcareProxyUnaware"
+      ],
+      "questions": [
+        "Do you have a healthcare proxy or medical power of attorney -- someone who can make medical decisions for you if you can't?",
+        "Do you have an advance directive or living will that spells out your care wishes, like a DNR?",
+        "If you were in a serious accident tomorrow, does your healthcare proxy actually know your wishes in detail?"
+      ],
+      "priorityOrder": [
+        "Name a healthcare proxy -- the gateway to everything else in this domain",
+        "Put care wishes in writing with an advance directive",
+        "Actually walk your proxy through your wishes in detail, not just confirm they're named"
+      ],
+      "actionItems": [
+        {
+          "text": "Name a healthcare proxy -- someone who can make medical decisions for you if you're unable to.",
+          "domain": "health",
+          "flag": "noHealthcareProxy"
+        },
+        {
+          "text": "Put your care wishes in writing with an advance directive, so your proxy isn't guessing.",
+          "domain": "health",
+          "flag": "noAdvanceDirective"
+        },
+        {
+          "text": "Sit down with your healthcare proxy and actually walk them through your wishes -- not just that they're the one making the call.",
+          "script": "If I couldn't speak for myself, here's what I'd want -- can I walk you through it?",
+          "domain": "health",
+          "flag": "healthcareProxyUnaware"
+        }
+      ]
     }
   ],
   "crossCuttingRules": {
@@ -749,6 +859,33 @@
       "shortDefinition": "The person legally named to raise your minor children if you (and your partner) are no longer able to.",
       "sourceRef": "situationProfiles.profile_young_children",
       "validated": false
+    }
+  ],
+  "generalResources": [
+    {
+      "topic": "Writing a will",
+      "summary": "A will is a legal document that names your executor and states who receives your assets after you die. Most people work with an estate attorney to draft one, though simple wills can sometimes be done through state-approved templates. Key steps: decide on your executor, list your major assets and who should receive them, name a guardian for minor children if applicable, then sign it according to your state's witnessing requirements (usually two witnesses, sometimes notarized).",
+      "domain": "legal"
+    },
+    {
+      "topic": "Finding an estate attorney",
+      "summary": "Look for an attorney who specializes in estate planning or probate law specifically, not a general practice lawyer. Good starting points: ask friends/family for referrals, check your state or local bar association's lawyer referral service, or search your state bar's attorney directory. Many estate attorneys offer a free or low-cost initial consultation -- use it to ask about their flat-fee vs. hourly pricing before committing.",
+      "domain": "legal"
+    },
+    {
+      "topic": "Understanding probate",
+      "summary": "Probate is the court process of validating a will and settling an estate when assets don't have a named beneficiary or automatic transfer designation. It can take months, involves court fees, and becomes part of the public record. Assets with a named beneficiary (like TOD/POD-designated accounts, or life insurance) typically skip probate entirely and transfer directly -- which is why keeping those designations current matters.",
+      "domain": "financial"
+    },
+    {
+      "topic": "What an executor actually does",
+      "summary": "An executor is legally responsible for carrying out a will: filing it with the probate court, notifying beneficiaries and creditors, paying the estate's debts and taxes, and distributing remaining assets. It's a real time commitment (often months), which is why it's worth discussing the role with someone before naming them, not just picking a name.",
+      "domain": "legal"
+    },
+    {
+      "topic": "Basic funeral planning steps",
+      "summary": "At a high level: decide burial vs. cremation, choose or confirm a funeral home, decide on a service type (religious, secular, memorial-only, etc.), and set a budget -- funeral costs vary widely by region and choices made. Pre-planning (even informally, in writing) removes a huge amount of decision-making pressure from family during an already hard time.",
+      "domain": "legal"
     }
   ]
 }

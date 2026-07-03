@@ -16,6 +16,7 @@ import os
 from pydantic import BaseModel
 
 from personalize import MODEL_TRIAL, build_grounding_context
+from rules_engine import CONTENT_LIBRARY
 
 try:
     from dotenv import load_dotenv
@@ -28,11 +29,18 @@ Final Playbook app. We are educators and we are not legal, financial, or medical
 advisors. Niki Weiss is a digital thanatologist -- an educator, not a legal, \
 financial, or medical advisor.
 
+You have TWO sources of grounding data, provided separately below:
+1. The member's matched plan -- their specific situation, action items, and scripts. \
+Always prefer this when it's relevant.
+2. General resources -- short, general-knowledge explainers on common topics (writing a \
+will, finding an attorney, probate, etc.) for when the member asks something the matched \
+plan doesn't cover. These are educational starting points, not final legal guidance.
+
 Hard rules:
-- Only use the action items, scripts, and quotes in the member's matched plan below. \
-Do not invent new advice, documents, laws, or numbers.
-- If the member asks something the plan below doesn't cover, say plainly that it's \
-outside what's covered here and suggest a licensed professional -- do not guess.
+- Only use what's in the matched plan and general resources below. Do not invent new \
+advice, documents, laws, or numbers beyond what's provided in either source.
+- If the member asks something neither source covers, say plainly that it's outside \
+what's covered here and suggest a licensed professional -- do not guess.
 - Keep replies short (2-5 sentences unless listing plan items requires more) and in \
 Niki's direct, warm, no-judgment tone.
 - Never present this as legal, financial, or medical advice.
@@ -44,6 +52,8 @@ Niki's reference tone lines (for calibration only -- don't insert verbatim unles
 - "The worst time to plan a funeral is when someone's dead."
 - "Life gets busy. It's not prioritized. That's why it takes time. There's no judgment."
 """
+
+_GENERAL_RESOURCES_TEXT = json.dumps(CONTENT_LIBRARY.get("generalResources", []), indent=2)
 
 
 class ChatMessage(BaseModel):
@@ -57,7 +67,11 @@ class ChatReply(BaseModel):
 
 def _system_with_grounding(plan: dict, member_first_name: str) -> str:
     grounding = build_grounding_context(plan, member_first_name)
-    return f"{CHAT_SYSTEM_PROMPT}\n\nThe member's matched plan (use ONLY this):\n\n{grounding}"
+    return (
+        f"{CHAT_SYSTEM_PROMPT}\n\nThe member's matched plan:\n\n{grounding}"
+        f"\n\nGeneral resources (secondary, use only if the plan above doesn't cover "
+        f"the question):\n\n{_GENERAL_RESOURCES_TEXT}"
+    )
 
 
 def _chat_anthropic(plan: dict, member_first_name: str, history: list[ChatMessage]) -> ChatReply:
@@ -73,7 +87,11 @@ def _chat_anthropic(plan: dict, member_first_name: str, history: list[ChatMessag
             "cache_control": {"type": "ephemeral"},
         }, {
             "type": "text",
-            "text": f"The member's matched plan (use ONLY this):\n\n{build_grounding_context(plan, member_first_name)}",
+            "text": f"General resources (secondary, use only if the plan below doesn't cover the question):\n\n{_GENERAL_RESOURCES_TEXT}",
+            "cache_control": {"type": "ephemeral"},
+        }, {
+            "type": "text",
+            "text": f"The member's matched plan:\n\n{build_grounding_context(plan, member_first_name)}",
         }],
         messages=[{"role": m.role, "content": m.content} for m in history],
         output_format=ChatReply,

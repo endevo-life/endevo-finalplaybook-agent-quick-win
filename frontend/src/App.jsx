@@ -1,16 +1,16 @@
 import { useEffect, useState } from "react";
 import TopNav from "./components/TopNav";
 import Disclaimer from "./components/Disclaimer";
+import Footer from "./components/Footer";
 import Welcome from "./components/Welcome";
-import Identify from "./components/Identify";
 import ScenarioPicker from "./components/ScenarioPicker";
 import Session from "./components/Session";
 import ResultsPanel from "./components/ResultsPanel";
 import { getGlossary } from "./api/client";
 
 export default function App() {
-  const [route, setRoute] = useState("welcome"); // welcome | identify | scenarios | session | results
-  const [user, setUser] = useState({ name: "", tier: "trial" });
+  const [route, setRoute] = useState("welcome"); // welcome | scenarios | session | results
+  const [user, setUser] = useState({ name: "", email: "", tier: "trial" });
   const [flags, setFlags] = useState({});
   const [result, setResult] = useState(null);
   const [glossary, setGlossary] = useState([]);
@@ -20,7 +20,7 @@ export default function App() {
   }, []);
 
   function restart() {
-    setUser({ name: "", tier: "trial" });
+    setUser({ name: "", email: "", tier: "trial" });
     setFlags({});
     setResult(null);
     setRoute("welcome");
@@ -31,10 +31,8 @@ export default function App() {
       <TopNav route={route} user={user} onHome={restart} />
       <Disclaimer />
 
-      {route === "welcome" && <Welcome onStart={() => setRoute("identify")} />}
-
-      {route === "identify" && (
-        <Identify user={user} setUser={setUser} onNext={() => setRoute("scenarios")} onBack={() => setRoute("welcome")} />
+      {route === "welcome" && (
+        <Welcome user={user} setUser={setUser} onNext={() => setRoute("scenarios")} />
       )}
 
       {route === "scenarios" && (
@@ -43,7 +41,7 @@ export default function App() {
           flags={flags}
           setFlags={setFlags}
           onNext={() => setRoute("session")}
-          onBack={() => setRoute("identify")}
+          onBack={() => setRoute("welcome")}
         />
       )}
 
@@ -61,6 +59,8 @@ export default function App() {
       {route === "results" && result && (
         <ResultsPanel user={user} result={result} onRestart={restart} />
       )}
+
+      <Footer />
     </div>
   );
 }

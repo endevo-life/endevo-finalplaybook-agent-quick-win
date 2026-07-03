@@ -2,6 +2,7 @@ import { useState } from "react";
 import { STEPS } from "../data/contextQuestions";
 import QuestionStep from "./QuestionStep";
 import { postPlan } from "../api/client";
+import { UNLOCK_FREEMIUM } from "../config/branding";
 
 export default function Session({ user, flags, setFlags, glossary, onBack, onComplete }) {
   const visibleSteps = STEPS.filter((s) => !s.askIf || flags[s.askIf]);
@@ -45,7 +46,8 @@ export default function Session({ user, flags, setFlags, glossary, onBack, onCom
     setLoading(true);
     setError("");
     try {
-      const result = await postPlan({ flags, memberFirstName: user.name, tier: user.tier });
+      const tier = UNLOCK_FREEMIUM ? "paid" : user.tier;
+      const result = await postPlan({ flags, memberFirstName: user.name, tier });
       onComplete(result);
     } catch (e) {
       setError(e.message || "Something went wrong — try again.");

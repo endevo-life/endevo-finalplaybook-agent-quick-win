@@ -1,6 +1,6 @@
 """Paid-tier personalization: takes the deterministic plan from
 rules_engine.build_plan() -- already matched and capped -- and turns it into a
-personalized "next 7 days" narrative in Niki's voice.
+personalized "next 30-90 days" narrative in Niki's voice.
 
 Only the matched profile's action items/quotes are sent, never the full content
 library, to keep the prompt small and the grounding tight (the model can only
@@ -43,7 +43,7 @@ Do not invent new advice, documents, laws, or numbers.
 no-judgment tone (see the reference lines below).
 - If the provided material doesn't cover something, say this is outside what we can \
 cover here and suggest a licensed professional -- do not guess or fill the gap yourself.
-- Keep the plan scoped to the next 7 days -- concrete and calendar-anchored where possible.
+- Keep the plan scoped to the next 30-90 days -- concrete and calendar-anchored where possible.
 - Never present this as legal, financial, or medical advice.
 
 Niki's reference tone lines (for calibration only -- don't insert verbatim unless it fits):
@@ -75,6 +75,7 @@ def build_grounding_context(plan: dict, member_first_name: str) -> str:
         "actionItems": plan.get("actionItems"),
         "businessActionItems": plan.get("businessActionItems"),
         "digitalActionItems": plan.get("digitalActionItems"),
+        "healthActionItems": plan.get("healthActionItems"),
         "supportingQuotes": plan.get("quotes"),
     }, indent=2)
 
@@ -95,7 +96,7 @@ def _personalize_anthropic(plan: dict, member_first_name: str) -> PersonalizedPl
         }],
         messages=[{
             "role": "user",
-            "content": f"Build this member's next-7-days plan from ONLY this data:\n\n{user_content}",
+            "content": f"Build this member's next 30-90 day plan from ONLY this data:\n\n{user_content}",
         }],
         output_format=PersonalizedPlan,
     )
@@ -123,7 +124,7 @@ def _personalize_bedrock(plan: dict, member_first_name: str) -> PersonalizedPlan
         system=[{"text": SYSTEM_PROMPT + "\n\n" + schema_instruction}],
         messages=[{
             "role": "user",
-            "content": [{"text": f"Build this member's next-7-days plan from ONLY this data:\n\n{user_content}"}],
+            "content": [{"text": f"Build this member's next 30-90 day plan from ONLY this data:\n\n{user_content}"}],
         }],
     )
     raw_text = response["output"]["message"]["content"][0]["text"]

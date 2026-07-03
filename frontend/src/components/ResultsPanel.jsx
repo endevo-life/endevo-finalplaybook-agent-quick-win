@@ -1,11 +1,10 @@
 import { useMemo, useState } from "react";
 import { DOMAIN_ORDER } from "../styles/tokens";
-import { UPGRADE_URL } from "../config/branding";
+import { UPGRADE_URL, UNLOCK_FREEMIUM } from "../config/branding";
 import DomainSection from "./DomainSection";
 import DomainSectionTeaser from "./DomainSectionTeaser";
 import NextActionSpotlight from "./NextActionSpotlight";
-import BusinessTeaser from "./BusinessTeaser";
-import DigitalTeaser from "./DigitalTeaser";
+import ChecklistTeaser from "./ChecklistTeaser";
 import PersonalizedTeaser from "./PersonalizedTeaser";
 import UpgradeButton from "./UpgradeButton";
 import ChatWidget from "./ChatWidget";
@@ -51,8 +50,16 @@ function downloadPlan(user, result) {
       return p.join("\n");
     }));
   }
+  if (plan.healthActionItems?.length > 0) {
+    lines.push("", "PHYSICAL (HEALTH AND CARE) PLANNING", "-----------------------------------");
+    lines.push(...plan.healthActionItems.map((a, i) => {
+      const p = [`${i + 1}. ${a.text}`];
+      if (a.script) p.push(`   Say: "${a.script}"`);
+      return p.join("\n");
+    }));
+  }
   if (personalized) {
-    lines.push("", "YOUR NEXT 30 DAYS", "-----------------", personalized.headline, "");
+    lines.push("", "YOUR NEXT 30-90 DAYS", "--------------------", personalized.headline, "");
     personalized.steps.forEach((s, i) => {
       lines.push(`${i + 1}. ${s.step}`);
       lines.push(`   ${s.why_it_matters}`);
@@ -74,16 +81,17 @@ function downloadPlan(user, result) {
 export default function ResultsPanel({ user, result, onRestart }) {
   const [doneSet, setDoneSet] = useState(new Set());
   const { plan, personalized } = result;
-  const isPaid = user.tier === "paid";
+  const isPaid = UNLOCK_FREEMIUM || user.tier === "paid";
 
   // plan.actionItems is already priority-ordered and capped by
   // rules_engine.build_plan() -- the first item IS the member's top priority,
   // no extra sorting needed here.
-  const [nextItem, ...restItems] = plan.actionItems || [];
+  const [nextItem] = plan.actionItems || [];
 
   const { groups } = useMemo(() => groupByDomain(plan.actionItems || []), [plan.actionItems]);
   // Teaser lists exclude the already-spotlighted nextItem so it isn't shown
-  // twice (once full, once blurred).
+  // twice (once full, once blurred) -- each domain teaser then reveals its
+  // own first remaining item as a real preview.
   const teaserGroups = useMemo(() => {
     if (!nextItem) return groups;
     const filtered = {};
@@ -98,6 +106,7 @@ export default function ResultsPanel({ user, result, onRestart }) {
     ...(plan.actionItems || []),
     ...(plan.businessActionItems || []),
     ...(plan.digitalActionItems || []),
+    ...(plan.healthActionItems || []),
   ];
 
   function toggleItem(text) {
@@ -157,7 +166,7 @@ export default function ResultsPanel({ user, result, onRestart }) {
           ))}
         </>
       )}
-      {!isPaid && <BusinessTeaser count={plan.businessActionItems?.length || 0} />}
+      {!isPaid && <ChecklistTeaser label="Business planning (separate checklist)" items={plan.businessActionItems} />}
 
       {isPaid && plan.digitalActionItems?.length > 0 && (
         <>
@@ -174,7 +183,24 @@ export default function ResultsPanel({ user, result, onRestart }) {
           </div>
         </>
       )}
-      {!isPaid && <DigitalTeaser count={plan.digitalActionItems?.length || 0} />}
+      {!isPaid && <ChecklistTeaser label="Digital planning (separate checklist)" items={plan.digitalActionItems} />}
+
+      {isPaid && plan.healthActionItems?.length > 0 && (
+        <>
+          <p className="fp-question-topic" style={{ marginTop: 28 }}>Physical (health and care) planning (separate checklist)</p>
+          <div className="fp-domain-section" style={{ borderLeftColor: "var(--brand)" }}>
+            {plan.healthActionItems.map((item) => (
+              <ActionItemRow
+                key={item.text}
+                item={item}
+                done={doneSet.has(item.text)}
+                onToggle={() => toggleItem(item.text)}
+              />
+            ))}
+          </div>
+        </>
+      )}
+      {!isPaid && <ChecklistTeaser label="Physical (health and care) planning (separate checklist)" items={plan.healthActionItems} />}
 
       {plan.quotes?.map((q, i) => (
         <p key={i} className="fp-quote-block">"{q}"</p>
@@ -182,7 +208,7 @@ export default function ResultsPanel({ user, result, onRestart }) {
 
       {isPaid && personalized && (
         <div className="fp-personalized">
-          <p className="fp-question-topic">Your next 3 days, in Niki's voice</p>
+          <p className="fp-question-topic">Your next 30-90 days, in Niki's voice</p>
           <h3 style={{ margin: "0 0 12px" }}>{personalized.headline}</h3>
           {personalized.steps.map((s, i) => (
             <div key={i} style={{ marginBottom: 12 }}>
