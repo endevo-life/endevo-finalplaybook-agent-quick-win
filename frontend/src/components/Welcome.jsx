@@ -1,16 +1,15 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBullseye, faBookOpen, faFileLines } from "@fortawesome/free-solid-svg-icons";
-import { LOGO_URL } from "../config/branding";
+import { PRODUCT_NAME } from "../config/branding";
+import Logo from "./Logo";
 
 export default function Welcome({ onStart }) {
   return (
     <div className="fp-page-narrow" style={{ textAlign: "center" }}>
-      {LOGO_URL ? (
-        <img src={LOGO_URL} alt="Final Playbook" style={{ width: 60, height: 60, borderRadius: 16, margin: "0 auto 28px", objectFit: "contain" }} />
-      ) : (
-        <div className="fp-logo" style={{ width: 60, height: 60, borderRadius: 16, fontSize: 24, margin: "0 auto 28px" }}>E</div>
-      )}
-      <h1 className="fp-h1">My Final Playbook</h1>
+      <div style={{ margin: "0 auto 28px", width: 60 }}>
+        <Logo size={60} radius={16} fontSize={24} />
+      </div>
+      <h1 className="fp-h1">{PRODUCT_NAME}</h1>
       <p className="fp-body" style={{ maxWidth: 440, marginLeft: "auto", marginRight: "auto" }}>
         A calm, guided walkthrough to help you get your affairs in order — so the people you love
         are never left guessing. No jargon. Just a plan.

@@ -7,11 +7,11 @@ Three layers, in order of how a request flows:
 1. **`rules_engine.py`** — pure Python, no I/O, no LLM. Takes a `MemberContext`
    (booleans) and returns the matched situation profile(s) plus a capped,
    priority-ordered list of action items pulled straight from
-   `niki-content-library.json`. This is the free path — it's what the trial
+   `content-library.json`. This is the free path — it's what the trial
    tier returns as-is.
 2. **`personalize.py`** — the only place tokens are spent. Takes the output of
    step 1 and makes one Claude call to rephrase it into a personalized "next 7
-   days" narrative in Niki's voice. It is never given the full content
+   days" narrative in the product's neutral guide voice. It is never given the full content
    library, only the 2-5 already-matched items — this keeps the prompt small
    and makes ungrounded output much harder to produce.
 3. **`orchestrator.py`** — glues 1 and 2 together based on `tier`.
@@ -22,10 +22,10 @@ this into a Lambda handler (see `CLAUDE.md` → "Where this goes next").
 
 ## Adding a new situation profile
 
-1. Add the profile to `knowledge-base/niki-content-library.json` under
+1. Add the profile to `knowledge-base/content-library.json` under
    `situationProfiles` — trigger conditions, questions, priority order, action
-   items (with scripts where Niki has exact language), and any quotes.
-   Mark it clearly if it hasn't been validated by Niki yet.
+   items (with scripts where exact language exists), and any quotes.
+   Mark it clearly if it hasn't been validated yet.
 2. Add the routing rule to `_match_lead_profile()` in `rules_engine.py`. Keep
    the priority order — the function returns on the *first* match, so profile
    order in the `if` chain is itself a priority decision. Cross-check against

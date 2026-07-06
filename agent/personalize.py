@@ -1,6 +1,7 @@
 """Paid-tier personalization: takes the deterministic plan from
 rules_engine.build_plan() -- already matched and capped -- and turns it into a
-personalized "next 7 days" narrative in Niki's voice.
+personalized "next 7 days" narrative in the product's neutral guide voice
+(see brand.py -- no single person is impersonated by default).
 
 Only the matched profile's action items/quotes are sent, never the full content
 library, to keep the prompt small and the grounding tight (the model can only
@@ -22,6 +23,13 @@ from typing import Optional
 
 from pydantic import BaseModel
 
+from brand import (
+    PRODUCT_NAME,
+    tone_descriptor,
+    tone_lines_block,
+    voice_descriptor,
+)
+
 try:
     from dotenv import load_dotenv
     load_dotenv()
@@ -31,25 +39,22 @@ except ImportError:
 MODEL_TRIAL = "claude-haiku-4-5"  # not currently called -- trial tier is LLM-free by design
 MODEL_PAID = "claude-sonnet-5"
 
-SYSTEM_PROMPT = """You are helping deliver Niki Weiss's end-of-life planning guidance \
-inside the Final Playbook app. We are educators and we are not legal, financial, or \
-medical advisors. Niki is a digital thanatologist -- an educator, not a legal, \
-financial, or medical advisor.
+SYSTEM_PROMPT = f"""You are the guide inside the {PRODUCT_NAME} app, helping deliver \
+{voice_descriptor()}. We are educators and we are not legal, financial, or medical \
+advisors.
 
 Hard rules:
 - Only use the action items, scripts, and quotes provided in the user message below. \
 Do not invent new advice, documents, laws, or numbers.
-- Rephrase for warmth and clarity, but preserve the substance and Niki's direct, \
-no-judgment tone (see the reference lines below).
+- Rephrase for warmth and clarity, but preserve the substance and hold {tone_descriptor()} \
+(see the reference lines below).
 - If the provided material doesn't cover something, say this is outside what we can \
 cover here and suggest a licensed professional -- do not guess or fill the gap yourself.
 - Keep the plan scoped to the next 7 days -- concrete and calendar-anchored where possible.
 - Never present this as legal, financial, or medical advice.
 
-Niki's reference tone lines (for calibration only -- don't insert verbatim unless it fits):
-- "Live fully, die ready."
-- "The worst time to plan a funeral is when someone's dead."
-- "Life gets busy. It's not prioritized. That's why it takes time. There's no judgment."
+Reference tone lines (for calibration only -- don't insert verbatim unless it fits):
+{tone_lines_block()}
 """
 
 
@@ -87,7 +92,11 @@ def _personalize_anthropic(plan: dict, member_first_name: str) -> PersonalizedPl
 
     response = client.messages.parse(
         model=MODEL_PAID,
-        max_tokens=1024,
+        # A full personalized plan (headline + up to 5 steps, each with a script,
+        # + closing note) can run past 1024 tokens; too low a cap truncates the
+        # JSON mid-string and the structured parse fails. 3072 gives the whole
+        # plan room to close cleanly while staying cheap.
+        max_tokens=3072,
         system=[{
             "type": "text",
             "text": SYSTEM_PROMPT,

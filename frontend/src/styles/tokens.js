@@ -23,7 +23,7 @@ export const T = {
 
 // Domain labels/colors for grouping the deterministic action items returned
 // by /api/plan. Presentation metadata only -- the domain classification
-// itself lives in knowledge-base/niki-content-library.json (draft, see
+// itself lives in knowledge-base/content-library.json (draft, see
 // _meta.status), this file just assigns a color/icon per domain key. `icon`
 // holds a Font Awesome icon descriptor object (not JSX) -- consuming
 // components render it via <FontAwesomeIcon icon={...} />.

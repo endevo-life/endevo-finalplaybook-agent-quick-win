@@ -1,7 +1,19 @@
 import { useState } from "react";
+import { PERSONALIZED_VOICE_LABEL } from "../config/branding";
 
-export default function Identify({ user, setUser, onNext, onBack }) {
+export default function Identify({ user, setUser, isPaid, onSignIn, onNext, onBack }) {
   const [err, setErr] = useState("");
+
+  // "Personalized" is only selectable by a user with a live paid entitlement.
+  // A non-entitled user clicking it is nudged to sign in / upgrade instead of
+  // silently sending tier="paid" (which the server rejects with 402).
+  function pickPaid() {
+    if (isPaid) {
+      setUser({ ...user, tier: "paid" });
+    } else if (onSignIn) {
+      onSignIn();
+    }
+  }
 
   function go() {
     if (!user.name.trim()) {
@@ -46,10 +58,11 @@ export default function Identify({ user, setUser, onNext, onBack }) {
               type="radio"
               name="tier"
               checked={user.tier === "paid"}
-              onChange={() => setUser({ ...user, tier: "paid" })}
+              onChange={pickPaid}
             />
             <span>
-              <strong>Personalized</strong> — adds a short narrative in Niki's voice
+              <strong>Personalized</strong> — adds {PERSONALIZED_VOICE_LABEL}
+              {!isPaid && <span className="fp-dim"> · sign in to unlock</span>}
             </span>
           </label>
         </div>

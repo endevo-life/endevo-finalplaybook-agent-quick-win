@@ -1,9 +1,9 @@
 {
   "_meta": {
-    "title": "Niki Weiss content library — Q&A, action items, scenario-based education",
-    "purpose": "Grounding data for the low-token AI agent: deterministic routing/rules only, no engineering/DDB/worksheet-validation content included by design (scoped to Niki's clinical/educational logic per 2026-07-01 direction).",
+    "title": "Final Playbook content library - Q&A, action items, scenario-based education",
+    "purpose": "Grounding data for the low-token AI agent: deterministic routing/rules only, no engineering/DDB/worksheet-validation content included by design (scoped to the clinical/educational routing logic per 2026-07-01 direction).",
     "source": "Extracted from niki_routing_rules_v1.html (6 Otter session transcripts: Peter Chmiel Sprint 1+2, Jayne Lammers, Ellen Feinberg, Sue, Billie), cross-checked against Elisa Seeherman meet-and-greet transcript for tone/glossary.",
-    "status": "DRAFT — content and priority ordering not yet confirmed by Niki. Use as working content-library seed; do not present as clinically final. Domain tags (added 2026-07-02) on actionItems and the definitionsGlossary array (added 2026-07-02) are engineering-authored classifications/definitions derived from this content for UI organization — not independently reviewed by Niki. Treat as a working scaffold, not clinically final; each glossary entry carries its own 'validated': false flag for tracking. Digital assessment questions D1-D3 (added 2026-07-02) are drafted in Niki's voice from client-provided source questions, converted to fit this app's format -- captured as MemberContext flags (noLegacyContact, noSocialMediaPlan, noPasswordManager) but NOT YET wired into lead-profile routing or action items, since no digital-gap action items have been authored yet. Unvalidated by Niki. profile_digital_gap (added 2026-07-02) is drafted, unvalidated content -- practical digital-access how-tos matching Niki's established voice/format, written to answer the digital-assessment gap (D1-D3). Always parallel/additive like profile_business_owner, never a lead profile. Each actionItem carries a `flag` field -- rules_engine.build_plan() includes an item only if that specific MemberContext flag is true, not the whole profile at once.",
+    "status": "DRAFT — content and priority ordering pending expert sign-off. Use as working content-library seed; do not present as clinically final. Domain tags (added 2026-07-02) on actionItems and the definitionsGlossary array (added 2026-07-02) are engineering-authored classifications/definitions derived from this content for UI organization — not independently reviewed. Treat as a working scaffold, not clinically final; each glossary entry carries its own 'validated': false flag for tracking. Digital assessment questions D1-D3 (added 2026-07-02) are drafted from client-provided source questions, converted to fit this app's format -- captured as MemberContext flags (noLegacyContact, noSocialMediaPlan, noPasswordManager) but NOT YET wired into lead-profile routing or action items, since no digital-gap action items have been authored yet. Unvalidated. profile_digital_gap (added 2026-07-02) is drafted, unvalidated content -- practical digital-access how-tos matching the established voice/format, written to answer the digital-assessment gap (D1-D3). Always parallel/additive like profile_business_owner, never a lead profile. Each actionItem carries a `flag` field -- rules_engine.build_plan() includes an item only if that specific MemberContext flag is true, not the whole profile at once.",
     "extractedOn": "2026-07-01"
   },
   "coreFraming": {
@@ -170,43 +170,43 @@
     }
   ],
   "peopleBeforeDocuments": {
-    "principle": "Niki never starts with 'you need a will.' She starts with 'who are the people in your life?' — abstract legal concepts become concrete by attaching real names first, then mapping people to document roles.",
+    "principle": "The method never starts with 'you need a will.' It starts with 'who are the people in your life?' — abstract legal concepts become concrete by attaching real names first, then mapping people to document roles.",
     "quote": "Those people you identify as emergency contacts — the question is, are they going to be in your will? Are they going to be the executor, power of attorney, medical advance directive?",
     "mapping": [
       {
-        "whoNikiAsksAbout": "Emergency contacts",
         "becomesRole": "Seeds the executor conversation",
-        "question": "Who would you call if something happened to you tonight? Does that person know they're your first call?"
+        "question": "Who would you call if something happened to you tonight? Does that person know they're your first call?",
+        "whoToIdentify": "Emergency contacts"
       },
       {
-        "whoNikiAsksAbout": "The 'first call' person",
         "becomesRole": "Often becomes executor",
-        "question": "If you died, who takes the first action? That person is probably your executor."
+        "question": "If you died, who takes the first action? That person is probably your executor.",
+        "whoToIdentify": "The 'first call' person"
       },
       {
-        "whoNikiAsksAbout": "Most trusted with money",
         "becomesRole": "POA financial",
-        "question": "Who do you trust most with your financial decisions if you can't make them?"
+        "question": "Who do you trust most with your financial decisions if you can't make them?",
+        "whoToIdentify": "Most trusted with money"
       },
       {
-        "whoNikiAsksAbout": "Most trusted with health decisions",
         "becomesRole": "POA healthcare / proxy",
-        "question": "Who knows your healthcare wishes? Who would you trust to make those decisions?"
+        "question": "Who knows your healthcare wishes? Who would you trust to make those decisions?",
+        "whoToIdentify": "Most trusted with health decisions"
       },
       {
-        "whoNikiAsksAbout": "Kids' guardian (if applicable)",
         "becomesRole": "Named in will",
-        "question": "If something happened to both you and your spouse, who takes the kids? Does that person know?"
+        "question": "If something happened to both you and your spouse, who takes the kids? Does that person know?",
+        "whoToIdentify": "Kids' guardian (if applicable)"
       },
       {
-        "whoNikiAsksAbout": "Business co-owner or successor",
         "becomesRole": "Business continuity doc",
-        "question": "If you were gone tomorrow, who runs the business? Do they have what they need?"
+        "question": "If you were gone tomorrow, who runs the business? Do they have what they need?",
+        "whoToIdentify": "Business co-owner or successor"
       },
       {
-        "whoNikiAsksAbout": "Parent's first responder",
         "becomesRole": "Emergency contact for parent",
-        "question": "Does the neighbor/caregiver have your phone number? Could they reach you if something happened?"
+        "question": "Does the neighbor/caregiver have your phone number? Could they reach you if something happened?",
+        "whoToIdentify": "Parent's first responder"
       }
     ]
   },
@@ -629,7 +629,7 @@
       ]
     },
     "conversationScripts": {
-      "note": "Niki gives exact language for difficult conversations. Reuse these verbatim where the profile matches — don't paraphrase, the phrasing is deliberately low-friction/non-confrontational.",
+      "note": "These give exact language for difficult conversations. Reuse these verbatim where the profile matches — don't paraphrase, the phrasing is deliberately low-friction/non-confrontational.",
       "scripts": [
         {
           "context": "Approaching an aging parent for documents",
@@ -651,7 +651,7 @@
     "terms": [
       {
         "term": "Digital thanatologist",
-        "note": "Niki's professional title/framing."
+        "note": "Professional title/framing."
       },
       {
         "term": "Final Playbook",
@@ -663,7 +663,7 @@
       },
       {
         "term": "Digital Legacy Planning — Made Easy",
-        "note": "Name of Niki's presentation/talk (20-90 minutes)."
+        "note": "Name of the presentation/talk (20-90 minutes)."
       },
       {
         "term": "The three death scenarios",
@@ -750,5 +750,435 @@
       "sourceRef": "situationProfiles.profile_young_children",
       "validated": false
     }
-  ]
+  ],
+  "domainAssessment": {
+    "_note": "Condensed consumer model derived from the full domain source in content-sources/04-domain-notes/. One action per answer; steps are shown behind a 'show me how' expander. DRAFT, pending expert sign-off.",
+    "validated": false,
+    "basicsFirst": [
+      {
+        "id": "basics_docbox",
+        "domain": "digital",
+        "title": "Set up your doc box",
+        "action": "Create one central, secure place ('doc box') where all your important documents live -- so everything else can actually be found.",
+        "steps": [
+          "Pick one secure location (a fireproof/waterproof box, or a single encrypted cloud folder). One place, not five.",
+          "Put your key documents there as you complete each step below.",
+          "Tell your trusted person it exists and how to reach it."
+        ]
+      },
+      {
+        "id": "basics_legacy_contact",
+        "domain": "digital",
+        "title": "Set up a Legacy Contact on your phone (iPhone & Android)",
+        "action": "Add a Legacy Contact so your trusted person can reach your device and accounts. It's free and takes 2 minutes -- on whichever phone you use.",
+        "steps": [
+          "iPhone: Settings > tap your name > Sign-In & Security > Legacy Contact > Add Legacy Contact.",
+          "Android / Google: myaccount.google.com > Data & privacy > 'Make a plan for your account' (Inactive Account Manager).",
+          "Choose the person you trust to handle your device and accounts.",
+          "Tell them they've been named and what it's for."
+        ],
+        "fields": [
+          {
+            "key": "trustedPersonName",
+            "label": "Trusted person's name"
+          },
+          {
+            "key": "phonePlatform",
+            "label": "Phone (iPhone / Android)"
+          },
+          {
+            "key": "legacyContactSetupDate",
+            "label": "Date set up"
+          }
+        ]
+      }
+    ],
+    "questions": [
+      {
+        "id": "FIN_contacts",
+        "domain": "financial",
+        "question": "If something happened tomorrow, would the person managing your money know exactly which financial institutions to call?",
+        "options": [
+          {
+            "value": "yes",
+            "label": "Yes -- they have the names and contacts in writing",
+            "resultType": "review",
+            "action": "Review your financial contact list so it still reflects your current accounts and institutions.",
+            "checklist": [
+              "Are all institutions still correct and active?",
+              "Have you opened or closed any accounts recently?",
+              "Are the contact names and phone numbers still accurate?",
+              "Does your agent know where this list is stored?"
+            ]
+          },
+          {
+            "value": "partial",
+            "label": "They know some institutions but not all the contacts",
+            "resultType": "steps",
+            "action": "Complete your financial contact list so your agent has everything they need in an emergency.",
+            "steps": [
+              "Gather all your financial institutions (banks, credit unions, investment and retirement accounts, insurance).",
+              "Add contact names, phone numbers, and departments for each.",
+              "Update the list with any new accounts or changes.",
+              "Give your agent a copy and tell them where the original is stored."
+            ]
+          },
+          {
+            "value": "no",
+            "label": "No",
+            "resultType": "steps",
+            "action": "Create a complete list of your financial institutions and contacts so your agent can act without delays.",
+            "steps": [
+              "Write down every financial institution you use.",
+              "Add contact names, phone numbers, and departments.",
+              "Store the list somewhere secure and accessible.",
+              "Give your agent a copy so they can act immediately if needed."
+            ]
+          }
+        ]
+      },
+      {
+        "id": "FIN_beneficiaries",
+        "domain": "financial",
+        "question": "Have you named -- and recently checked -- the beneficiaries on your 401(k), IRA, and bank/investment accounts?",
+        "options": [
+          {
+            "value": "yes",
+            "label": "Yes -- all named and reviewed in the last year or two",
+            "resultType": "review",
+            "action": "Review your beneficiary designations. These override your will, so a stale one sends money to the wrong person.",
+            "checklist": [
+              "Is every retirement account (401k, IRA) beneficiary current?",
+              "Are bank and investment account beneficiaries (TOD/POD) set?",
+              "Did a marriage, divorce, birth, or death change who you'd name?",
+              "Do you have both a primary AND a contingent beneficiary on each?"
+            ]
+          },
+          {
+            "value": "partial",
+            "label": "Some are named, but I haven't checked them in years",
+            "resultType": "steps",
+            "action": "Review and update your beneficiary designations -- they override your will, so out-of-date ones cause the biggest, most avoidable mistakes.",
+            "steps": [
+              "List every account that names a beneficiary (401k, IRA, pension, bank, brokerage, life insurance).",
+              "Log in or call each institution and confirm who's named.",
+              "Add or fix a primary and a contingent beneficiary on each.",
+              "Re-check after any big life change (marriage, divorce, birth, death)."
+            ]
+          },
+          {
+            "value": "no",
+            "label": "No, or I'm not sure",
+            "resultType": "steps",
+            "action": "Name beneficiaries on your accounts. This is one of the highest-impact steps -- beneficiary designations pass money directly, skipping probate.",
+            "steps": [
+              "List your 401k, IRA, bank, and investment accounts.",
+              "For each, ask the institution how to add a beneficiary (often called TOD/POD on bank/brokerage accounts).",
+              "Name a primary and a contingent (backup) beneficiary.",
+              "Keep a note of who you named with your other documents."
+            ]
+          }
+        ]
+      },
+      {
+        "id": "PHYS_directive",
+        "domain": "physical",
+        "question": "If you were unconscious in an ICU tomorrow, do you have a Medical Advance Directive telling doctors what care you want?",
+        "options": [
+          {
+            "value": "yes",
+            "label": "Yes -- signed and on file with my doctor and Healthcare POA",
+            "resultType": "review",
+            "action": "Review your Advance Directive so it still reflects your current wishes.",
+            "checklist": [
+              "Is your directive still exactly what you want?",
+              "Does your doctor have the most recent version?",
+              "Does your Healthcare POA know where the original is stored?",
+              "Have related documents (HIPAA release, POLST, DNR) been updated?"
+            ]
+          },
+          {
+            "value": "partial",
+            "label": "I've started one but it isn't signed or distributed",
+            "resultType": "steps",
+            "action": "Finish and distribute your Advance Directive so it can actually guide your care.",
+            "steps": [
+              "Finish writing it -- what treatments you do and don't want (ventilation, resuscitation, feeding tubes, comfort-only care).",
+              "Sign it per your state's requirements (witnesses or notary).",
+              "Give copies to your doctor, hospital system, and Healthcare POA.",
+              "Store the original securely and tell your POA where it is."
+            ]
+          },
+          {
+            "value": "no",
+            "label": "No",
+            "resultType": "steps",
+            "action": "Create a Medical Advance Directive so doctors know your wishes if you can't speak for yourself.",
+            "steps": [
+              "Decide what interventions you'd want or decline (CPR, ventilation, feeding tubes, comfort-only care).",
+              "Write your choices in a directive form for your state.",
+              "Sign with required witnesses or a notary.",
+              "Give copies to your doctor, hospital, and Healthcare POA; store the original securely."
+            ]
+          }
+        ]
+      },
+      {
+        "id": "DIG_password_manager",
+        "domain": "digital",
+        "question": "If something happened tomorrow, could your trusted person get into your accounts -- do you use a password manager they can reach?",
+        "options": [
+          {
+            "value": "yes",
+            "label": "Yes -- I use one and emergency access is set up",
+            "resultType": "review",
+            "action": "Review your password manager so your critical accounts and emergency access are current.",
+            "checklist": [
+              "Are your major accounts (email, banking, cloud) all in it?",
+              "Are recovery codes and 2FA backups stored?",
+              "Is emergency access set up and assigned to the right person?",
+              "Is your master password written down somewhere secure?"
+            ]
+          },
+          {
+            "value": "partial",
+            "label": "I use one, but no one else has a way in",
+            "resultType": "steps",
+            "action": "Give your trusted person a secure way into your password manager.",
+            "steps": [
+              "Set up emergency access (1Password/Bitwarden/Dashlane) or a Legacy Contact if supported.",
+              "Write your master password down and store it securely (safe, sealed envelope, attorney's file).",
+              "Document one simple page of unlock instructions.",
+              "Tell your trusted person where that information is stored."
+            ]
+          },
+          {
+            "value": "no",
+            "label": "No -- I don't use a password manager",
+            "resultType": "steps",
+            "action": "Start using a password manager so your logins are secure and reachable if someone needs to step in.",
+            "steps": [
+              "Choose a password manager (1Password, Bitwarden, Apple Keychain).",
+              "Add your most important accounts first (email, banking, cloud).",
+              "Turn on 2FA and store the recovery codes in the manager.",
+              "Set up emergency access or store your master password securely, and tell your trusted person how to reach it."
+            ]
+          }
+        ]
+      },
+      {
+        "id": "DIG_online_banking",
+        "domain": "digital",
+        "question": "Could your trusted person actually get into your online banking and bill-pay if they had to -- not just know the bank's name, but log in?",
+        "options": [
+          {
+            "value": "yes",
+            "label": "Yes -- logins and 2FA access are documented for them",
+            "resultType": "review",
+            "action": "Review your online-banking access so logins and two-factor methods are still current.",
+            "checklist": [
+              "Are all online banking / bill-pay logins captured?",
+              "Are 2FA methods (texts, authenticator apps) accounted for?",
+              "Are autopay and scheduled bills documented so nothing lapses?",
+              "Does your trusted person know where these are stored?"
+            ]
+          },
+          {
+            "value": "partial",
+            "label": "They know the banks but couldn't actually log in",
+            "resultType": "steps",
+            "action": "Document real login access to your online banking, including the two-factor step that usually blocks people.",
+            "steps": [
+              "List each bank's online login (username + where the password lives).",
+              "Note the 2FA method for each -- and how your person would receive the code (this is the part that traps families).",
+              "List autopay / scheduled payments so bills don't lapse.",
+              "Store this in your password manager and tell your person where it is."
+            ]
+          },
+          {
+            "value": "no",
+            "label": "No -- they'd be locked out",
+            "resultType": "steps",
+            "action": "Set up a way for your trusted person to reach your online banking so bills and accounts don't freeze up in an emergency.",
+            "steps": [
+              "Put each bank login into your password manager.",
+              "Write down the 2FA method for each and how a trusted person could get the code.",
+              "List recurring/autopay bills so they can keep them current.",
+              "Give your trusted person access to the manager or the sealed instructions."
+            ]
+          }
+        ]
+      },
+      {
+        "id": "DIG_photos",
+        "domain": "digital",
+        "question": "Are your photos, videos, and personal files backed up -- AND does your family know how to get to them?",
+        "options": [
+          {
+            "value": "yes",
+            "label": "Yes -- backed up and access is documented",
+            "resultType": "review",
+            "action": "Review your backups so they're current and your family can reach them.",
+            "checklist": [
+              "Are backups current (cloud and/or an external drive)?",
+              "Are the access details (logins, drive location) accurate?",
+              "Are those credentials in your password manager?",
+              "Does your trusted person know where the backup lives?"
+            ]
+          },
+          {
+            "value": "partial",
+            "label": "Backed up, but no one knows how to access them",
+            "resultType": "steps",
+            "action": "Make sure someone can actually find and open your photos and files -- a backup no one can reach is lost with you.",
+            "steps": [
+              "Confirm photos/videos/files are backed up (cloud and/or external drive).",
+              "Write down how to access each backup (logins, physical drive location, any app needed).",
+              "Store those access details in your password manager.",
+              "Tell your trusted person where the instructions are."
+            ]
+          },
+          {
+            "value": "no",
+            "label": "No -- not really backed up",
+            "resultType": "steps",
+            "action": "Back up your photos and files and leave a way in, so a lifetime of memories isn't lost.",
+            "steps": [
+              "Choose a cloud service (iCloud, Google Photos, OneDrive) and/or an external drive.",
+              "Back up your photos, videos, and important files.",
+              "Document how to access each backup and store logins in your manager.",
+              "Tell your trusted person where the backup and instructions are."
+            ]
+          }
+        ]
+      },
+      {
+        "id": "DIG_crypto",
+        "domain": "digital",
+        "question": "Do you own crypto or other digital assets (wallets, NFTs, domains, online business, loyalty points) -- and could anyone actually inherit them?",
+        "options": [
+          {
+            "value": "yes",
+            "label": "Yes -- documented with a secure access plan",
+            "resultType": "review",
+            "action": "Review your digital-asset access so wallet keys and logins are current and reachable.",
+            "checklist": [
+              "Are all assets still listed (wallets, NFTs, domains, points)?",
+              "Are wallet keys / recovery phrases / logins up to date?",
+              "Are they stored securely (manager or secure physical location)?",
+              "Does your trusted person know how to access them?"
+            ]
+          },
+          {
+            "value": "partial",
+            "label": "I own some, but no one could access them",
+            "resultType": "steps",
+            "action": "Document access to your digital assets -- crypto especially is gone forever without the keys, no bank can recover it.",
+            "steps": [
+              "List every digital asset (crypto wallets, NFTs, domains, online business, loyalty points).",
+              "Document access per asset -- wallet keys, recovery phrases, logins, transfer steps.",
+              "Store this in a password manager or a secure physical location.",
+              "Tell your trusted person where it is and how to use it."
+            ]
+          },
+          {
+            "value": "no",
+            "label": "I don't own any",
+            "resultType": "review",
+            "action": "No action needed now -- but re-check yearly. Digital assets accumulate quietly (a wallet, domains, loyalty points).",
+            "checklist": [
+              "Do a yearly check: any new wallet, domain, or online asset?",
+              "If yes, document access the same way as other accounts."
+            ]
+          }
+        ]
+      },
+      {
+        "id": "DIG_social",
+        "domain": "digital",
+        "question": "Have you decided what happens to your social media accounts (Facebook, Instagram, LinkedIn, etc.) -- memorialize, delete, or transfer?",
+        "options": [
+          {
+            "value": "yes",
+            "label": "Yes -- accounts listed and decisions documented",
+            "resultType": "review",
+            "action": "Review your social-media plan so accounts and decisions are still current.",
+            "checklist": [
+              "Are all accounts listed and still active?",
+              "Do your memorialize/delete/transfer choices still hold?",
+              "Are logins in your password manager?",
+              "Does your trusted person know where the plan is kept?"
+            ]
+          },
+          {
+            "value": "partial",
+            "label": "Some listed, but no decisions made",
+            "resultType": "steps",
+            "action": "Decide what happens to each social account so your online presence isn't left in limbo.",
+            "steps": [
+              "List every social account, including older/rarely used ones.",
+              "Decide for each: memorialize, delete, transfer, or archive.",
+              "Note where logins are stored (password manager).",
+              "Store the list securely and tell your trusted person where it is."
+            ]
+          },
+          {
+            "value": "no",
+            "label": "No",
+            "resultType": "steps",
+            "action": "Document your social accounts and what should happen to each.",
+            "steps": [
+              "List every account across all platforms.",
+              "Decide memorialize / delete / transfer for each.",
+              "Put logins in your password manager.",
+              "Tell your trusted person where your instructions are."
+            ]
+          }
+        ]
+      },
+      {
+        "id": "DIG_asset_manager",
+        "domain": "digital",
+        "question": "Have you named the specific person who's legally allowed to handle your digital accounts after death (a 'Digital Asset Manager')?",
+        "options": [
+          {
+            "value": "yes",
+            "label": "Yes -- named in writing and authorized in my will",
+            "resultType": "review",
+            "action": "Review your Digital Asset Manager designation so it still matches your digital life and your wishes.",
+            "checklist": [
+              "Is the named person still the right choice?",
+              "Is the authority stated in your will or estate documents?",
+              "Do they know the role and what it involves?",
+              "Can they find your access instructions?"
+            ]
+          },
+          {
+            "value": "partial",
+            "label": "I've picked someone but nothing's in writing",
+            "resultType": "steps",
+            "action": "Give your chosen person written, legal authority -- without it, platforms and courts can block them from your accounts.",
+            "steps": [
+              "Add a Digital Asset Manager designation to your will or estate plan.",
+              "Write clear instructions for accessing your digital accounts.",
+              "Store them securely and make sure your person knows where they are.",
+              "Review your digital-asset list so it includes everything they'll need."
+            ]
+          },
+          {
+            "value": "no",
+            "label": "No",
+            "resultType": "steps",
+            "action": "Name a Digital Asset Manager so your online accounts can be handled properly instead of frozen or lost.",
+            "steps": [
+              "Choose a trusted person who's comfortable with technology.",
+              "Add their role to your will or estate documents for legal authority.",
+              "Document your digital accounts and access instructions.",
+              "Store it securely and tell them where to find it."
+            ]
+          }
+        ]
+      }
+    ]
+  }
 }

@@ -1,4 +1,4 @@
-// Structured form data derived from knowledge-base/niki-content-library.json
+// Structured form data derived from knowledge-base/content-library.json
 // contextQuestions (C1-C5). C6 ("how do you want to track this?") is
 // intentionally omitted -- it has no corresponding MemberContext flag and
 // would be a dead-end input in this version.

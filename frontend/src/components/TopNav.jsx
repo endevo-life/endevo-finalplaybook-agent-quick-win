@@ -1,23 +1,36 @@
-import { LOGO_URL } from "../config/branding";
+import { COMPANY_NAME, PRODUCT_NAME } from "../config/branding";
+import Logo from "./Logo";
 
-export default function TopNav({ route, user, onHome }) {
+export default function TopNav({ route, user, account, onHome, onSignIn, onSignOut }) {
   return (
     <div className="fp-topnav">
       <div className="fp-topnav-brand" onClick={onHome}>
-        {LOGO_URL ? (
-          <img src={LOGO_URL} alt="Final Playbook" style={{ width: 30, height: 30, borderRadius: 8, objectFit: "contain" }} />
-        ) : (
-          <div className="fp-logo">E</div>
-        )}
-        <span className="fp-topnav-name">ENDevo</span>
-        <span className="fp-topnav-sub">· Final Playbook</span>
+        <Logo size={30} radius={8} fontSize={13} />
+        <span className="fp-topnav-name">{COMPANY_NAME}</span>
+        {PRODUCT_NAME !== COMPANY_NAME && <span className="fp-topnav-sub">· {PRODUCT_NAME}</span>}
       </div>
-      {user.name && route !== "welcome" && (
-        <div className="fp-topnav-user">
-          <div className="fp-avatar">{user.name.charAt(0).toUpperCase()}</div>
-          <span className="fp-dim">{user.name}</span>
-        </div>
-      )}
+
+      <div className="fp-topnav-user">
+        {account ? (
+          <>
+            <span className={`fp-tier-pill ${account.tier === "paid" ? "paid" : ""}`}>
+              {account.tier === "paid" ? "Personalized" : "Free"}
+            </span>
+            <div className="fp-avatar">{account.email.charAt(0).toUpperCase()}</div>
+            <button className="fp-btn-back" onClick={onSignOut}>sign out</button>
+          </>
+        ) : (
+          <>
+            {user?.name && route !== "welcome" && route !== "landing" && (
+              <>
+                <div className="fp-avatar">{user.name.charAt(0).toUpperCase()}</div>
+                <span className="fp-dim">{user.name}</span>
+              </>
+            )}
+            <button className="fp-btn-back" onClick={onSignIn}>sign in</button>
+          </>
+        )}
+      </div>
     </div>
   );
 }

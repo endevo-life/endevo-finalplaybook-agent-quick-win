@@ -72,19 +72,19 @@ def test_matched_action_items_carry_scripts_where_defined():
 
 
 def test_no_flags_no_llm_call():
-    """Empty plan on the paid tier must not reach the LLM -- see guardrails.md."""
-    result = run({}, member_first_name="Test", tier="paid")
+    """Empty plan with personalize=True must not reach the LLM -- see guardrails.md."""
+    result = run({}, member_first_name="Test", personalize=True)
     assert result["plan"]["leadProfile"] is None
     assert result["personalized"] is None
 
 
-def test_trial_tier_never_calls_llm_and_needs_no_dependency():
+def test_free_path_never_calls_llm_and_needs_no_dependency():
     """This test intentionally does not require the `anthropic` package to be
-    importable to prove trial tier has no such dependency at runtime."""
+    importable to prove the free path has no such dependency at runtime."""
     result = run(
         {"hasAgingParent": True, "parentHasNoDocs": True},
         member_first_name="Elisa",
-        tier="trial",
+        personalize=False,
     )
-    assert result["tier"] == "trial"
+    assert result["tier"] == "free"
     assert "personalized" not in result

@@ -1,40 +1,125 @@
 import { useEffect, useState } from "react";
 import TopNav from "./components/TopNav";
 import Disclaimer from "./components/Disclaimer";
+import Landing from "./components/Landing";
 import Welcome from "./components/Welcome";
 import Identify from "./components/Identify";
 import ScenarioPicker from "./components/ScenarioPicker";
 import Session from "./components/Session";
 import ResultsPanel from "./components/ResultsPanel";
-import { getGlossary } from "./api/client";
+import Assessment from "./components/Assessment";
+import LoginModal from "./components/LoginModal";
+import { getGlossary, startCheckout, devUpgrade, getToken } from "./api/client";
+import { useAuth } from "./auth/useAuth";
+import { UPGRADE_URL } from "./config/branding";
 
 export default function App() {
-  const [route, setRoute] = useState("welcome"); // welcome | identify | scenarios | session | results
-  const [user, setUser] = useState({ name: "", tier: "trial" });
+  // landing | welcome | identify | scenarios | session | results
+  const [route, setRoute] = useState("landing");
+  const [user, setUser] = useState({ name: "", tier: "free" });
   const [flags, setFlags] = useState({});
   const [result, setResult] = useState(null);
   const [glossary, setGlossary] = useState([]);
+  const [showLogin, setShowLogin] = useState(false);
+
+  const auth = useAuth();
 
   useEffect(() => {
     getGlossary().then(setGlossary).catch(() => setGlossary([]));
   }, []);
 
+  // The effective tier is always the server-side entitlement, never a client
+  // toggle -- so a free user can't self-select "paid" and get LLM output.
+  useEffect(() => {
+    setUser((u) => ({ ...u, tier: auth.isPaid ? "paid" : "free" }));
+  }, [auth.isPaid]);
+
+  // Return from Stripe Checkout: refresh entitlement so the UI reflects the
+  // (webhook-driven) upgrade, and clean the URL.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("checkout")) {
+      auth.refresh();
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+  }, [auth]);
+
   function restart() {
-    setUser({ name: "", tier: "trial" });
+    setUser({ name: "", tier: auth.isPaid ? "paid" : "free" });
     setFlags({});
     setResult(null);
-    setRoute("welcome");
+    setRoute("landing");
+  }
+
+  async function handleUpgrade() {
+    // Must be logged in to attach the upgrade to an account.
+    if (!getToken()) {
+      setShowLogin(true);
+      return;
+    }
+    try {
+      // Preferred path: real Stripe Checkout when billing is configured.
+      const { url } = await startCheckout();
+      window.location.href = url;
+      return;
+    } catch (e) {
+      // 503 = billing not configured yet. Fall back to the dev unlock so the
+      // premium experience is still usable/demoable before Stripe is live.
+      if (e.status === 503) {
+        try {
+          await devUpgrade();
+          await auth.refresh(); // reflect paid tier in the UI immediately
+          return;
+        } catch {
+          /* fall through to static link */
+        }
+      }
+      window.open(UPGRADE_URL, "_blank", "noopener,noreferrer");
+    }
   }
 
   return (
     <div style={{ minHeight: "100vh" }}>
-      <TopNav route={route} user={user} onHome={restart} />
+      <TopNav
+        route={route}
+        user={user}
+        account={auth.account}
+        onHome={restart}
+        onSignIn={() => setShowLogin(true)}
+        onSignOut={auth.logout}
+      />
       <Disclaimer />
+
+      {route === "landing" && (
+        <Landing
+          onStart={() => setRoute("identify")}
+          onSignIn={() => setShowLogin(true)}
+          onUpgrade={handleUpgrade}
+          isPaid={auth.isPaid}
+        />
+      )}
 
       {route === "welcome" && <Welcome onStart={() => setRoute("identify")} />}
 
       {route === "identify" && (
-        <Identify user={user} setUser={setUser} onNext={() => setRoute("scenarios")} onBack={() => setRoute("welcome")} />
+        <Identify
+          user={user}
+          setUser={setUser}
+          account={auth.account}
+          isPaid={auth.isPaid}
+          onSignIn={() => setShowLogin(true)}
+          onNext={() => setRoute("assessment")}
+          onBack={() => setRoute("landing")}
+        />
+      )}
+
+      {route === "assessment" && (
+        <Assessment
+          user={user}
+          isPaid={auth.isPaid}
+          onUpgrade={handleUpgrade}
+          onBack={() => setRoute("landing")}
+        />
       )}
 
       {route === "scenarios" && (
@@ -59,7 +144,21 @@ export default function App() {
       )}
 
       {route === "results" && result && (
-        <ResultsPanel user={user} result={result} onRestart={restart} />
+        <ResultsPanel
+          user={user}
+          account={auth.account}
+          result={result}
+          onUpgrade={handleUpgrade}
+          onRestart={restart}
+        />
+      )}
+
+      {showLogin && (
+        <LoginModal
+          auth={auth}
+          onClose={() => setShowLogin(false)}
+          onLoggedIn={() => setShowLogin(false)}
+        />
       )}
     </div>
   );

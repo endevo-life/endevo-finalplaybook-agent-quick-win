@@ -1,33 +1,90 @@
-const BASE_URL = "http://localhost:8001";
+// API base URL comes from the Vite env (VITE_API_BASE_URL) so the same build
+// points at localhost in dev and the API Gateway URL in production. Falls back
+// to the local dev server.
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8001";
 
-export async function postPlan({ flags, memberFirstName, tier }) {
-  const res = await fetch(`${BASE_URL}/api/plan`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ flags, memberFirstName, tier }),
+// --- session token (persisted so a refresh keeps you logged in) --------------
+const TOKEN_KEY = "fp_token";
+export function getToken() {
+  return localStorage.getItem(TOKEN_KEY);
+}
+export function setToken(token) {
+  if (token) localStorage.setItem(TOKEN_KEY, token);
+  else localStorage.removeItem(TOKEN_KEY);
+}
+
+function authHeaders() {
+  const t = getToken();
+  return t ? { Authorization: `Bearer ${t}` } : {};
+}
+
+async function request(path, { method = "GET", body } = {}) {
+  const res = await fetch(`${BASE_URL}${path}`, {
+    method,
+    headers: {
+      ...(body ? { "Content-Type": "application/json" } : {}),
+      ...authHeaders(),
+    },
+    body: body ? JSON.stringify(body) : undefined,
   });
   const data = await res.json().catch(() => null);
   if (!res.ok) {
-    throw new Error(data?.detail || `Request failed (${res.status})`);
+    const err = new Error(data?.detail || `Request failed (${res.status})`);
+    err.status = res.status;
+    throw err;
   }
   return data;
 }
 
-export async function getGlossary() {
-  const res = await fetch(`${BASE_URL}/api/glossary`);
-  if (!res.ok) return [];
-  return res.json();
+// --- agent -------------------------------------------------------------------
+export function postPlan({ flags, memberFirstName, tier }) {
+  return request("/api/plan", { method: "POST", body: { flags, memberFirstName, tier } });
 }
 
-export async function postChat({ plan, memberFirstName, history }) {
-  const res = await fetch(`${BASE_URL}/api/chat`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ plan, memberFirstName, history }),
-  });
-  const data = await res.json().catch(() => null);
-  if (!res.ok) {
-    throw new Error(data?.detail || `Request failed (${res.status})`);
+export async function getGlossary() {
+  try {
+    return await request("/api/glossary");
+  } catch {
+    return [];
   }
-  return data; // { reply: string }
+}
+
+export function postChat({ plan, memberFirstName, history }) {
+  return request("/api/chat", { method: "POST", body: { plan, memberFirstName, history } });
+}
+
+// --- pricing / marketing -----------------------------------------------------
+export function getPricing() {
+  return request("/api/pricing");
+}
+
+// --- domain assessment (condensed, deterministic, free) ----------------------
+export function getAssessment() {
+  return request("/api/assessment");
+}
+export function postAssessmentPlan(answers) {
+  return request("/api/assessment/plan", { method: "POST", body: { answers } });
+}
+
+// --- auth --------------------------------------------------------------------
+export function authStart(email) {
+  return request("/api/auth/start", { method: "POST", body: { email } });
+}
+export function authVerify(email, code) {
+  return request("/api/auth/verify", { method: "POST", body: { email, code } });
+}
+export function getMe() {
+  return request("/api/me");
+}
+export function authLogout() {
+  return request("/api/auth/logout", { method: "POST" });
+}
+
+// --- billing -----------------------------------------------------------------
+export function startCheckout() {
+  return request("/api/billing/checkout", { method: "POST" });
+}
+// Dev-only unlock (no Stripe). Backend gates this behind ALLOW_DEV_UPGRADE.
+export function devUpgrade() {
+  return request("/api/billing/dev-upgrade", { method: "POST" });
 }

@@ -17,7 +17,7 @@ ever present in the response, and require no `ANTHROPIC_API_KEY`).
 ## 2. The LLM only ever sees already-matched, human-authored content
 
 `personalize()` is passed the output of `build_plan()` — 2-5 action items,
-optionally a handful of quotes — never the full `niki-content-library.json`.
+optionally a handful of quotes — never the full `content-library.json`.
 The model has no ungrounded material available to draw on even if it wanted
 to. This is enforced structurally (by what `personalize()`'s function
 signature accepts), not just by prompt instruction.
@@ -42,8 +42,8 @@ would render uncritically.
 
 ## 5. Content is marked as unvalidated where it is
 
-`niki-content-library.json`'s `_meta.status` field says this in plain text.
-Anyone extending the content library should preserve that marker until Niki
+`content-library.json`'s `_meta.status` field says this in plain text.
+Anyone extending the content library should preserve that marker until the expert
 and Andrea complete the validation pass described in the original routing
 rules document (Section 8 of `niki_routing_rules_v1.html`), and should not
 present draft content to end users as clinically final without that sign-off.

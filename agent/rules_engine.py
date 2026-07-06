@@ -10,14 +10,14 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
 
-CONTENT_LIBRARY_PATH = Path(__file__).parent.parent / "knowledge-base" / "niki-content-library.json"
+CONTENT_LIBRARY_PATH = Path(__file__).parent.parent / "knowledge-base" / "content-library.json"
 
 with open(CONTENT_LIBRARY_PATH, encoding="utf-8") as f:
     CONTENT_LIBRARY = json.load(f)
 
 PROFILES_BY_ID = {p["id"]: p for p in CONTENT_LIBRARY["situationProfiles"]}
 
-MAX_ACTION_ITEMS_PER_PLAN = 5  # Niki's rule: more than 5 kills momentum
+MAX_ACTION_ITEMS_PER_PLAN = 5  # clinical routing rule: more than 5 kills momentum
 
 
 @dataclass
@@ -46,14 +46,14 @@ class MemberContext:
     # Digital assessment (D1-D3) -- each true flag pulls in its matching
     # action item from profile_digital_gap (always parallel, like business
     # owner). Flagged as an unvalidated draft addition -- see
-    # niki-content-library.json.
+    # content-library.json.
     noLegacyContact: bool = False
     noSocialMediaPlan: bool = False
     noPasswordManager: bool = False
 
 
 def _match_lead_profile(ctx: MemberContext) -> Optional[str]:
-    """First matching rule wins the 'lead' slot -- mirrors Niki's stated
+    """First matching rule wins the 'lead' slot -- mirrors the clinical
     priority overrides (aging parent > beneficiary audit > guardian naming >
     solo-ager TOD setup > pressure-test / clean-slate baseline)."""
     if ctx.hasAgingParent and ctx.parentHasNoDocs:
@@ -75,8 +75,8 @@ DIGITAL_GAP_FLAGS = ("noLegacyContact", "noSocialMediaPlan", "noPasswordManager"
 
 
 def match_profiles(ctx: MemberContext) -> dict:
-    """Business owner and digital gaps always run in parallel -- Niki treats
-    these as separate checklists, never competing for priority with the lead
+    """Business owner and digital gaps always run in parallel -- the routing
+    treats these as separate checklists, never competing for priority with the lead
     profile."""
     lead = _match_lead_profile(ctx)
     parallel = []
@@ -123,3 +123,68 @@ def build_plan(ctx: MemberContext) -> dict:
             plan["businessActionItems"] = profile["actionItems"][:MAX_ACTION_ITEMS_PER_PLAN]
 
     return plan
+
+
+# ── Domain assessment (condensed tiered model) ──────────────────────────────
+# A newer, deterministic question->answer->action model derived from the full
+# domain source in content-sources/04-domain-notes/. Basics-first steps always
+# come first (docbox, phone Legacy Contact), then one highest-impact question per
+# domain. Each answer resolves to a single action plus (optionally) the numbered
+# steps the UI hides behind a "show me how" expander. Still zero-LLM.
+
+DOMAIN_ASSESSMENT = CONTENT_LIBRARY.get("domainAssessment", {})
+_ASSESSMENT_QUESTIONS_BY_ID = {q["id"]: q for q in DOMAIN_ASSESSMENT.get("questions", [])}
+
+
+def assessment_questions() -> list:
+    """The questions to ask, with their answer options -- served to the UI.
+    Basics-first items are sequence rules (no question), returned separately."""
+    return {
+        "basicsFirst": DOMAIN_ASSESSMENT.get("basicsFirst", []),
+        "questions": DOMAIN_ASSESSMENT.get("questions", []),
+    }
+
+
+def build_domain_plan(answers: dict) -> dict:
+    """Map a member's answers to their resolved action items.
+
+    `answers` is {questionId: optionValue}, e.g. {"FIN_contacts": "no"}.
+    Unknown question ids and unknown option values are skipped (not an error --
+    the member simply didn't answer that one). Basics-first items are always
+    prepended, in order, for everyone.
+    """
+    basics = [
+        {
+            "id": b["id"],
+            "domain": b["domain"],
+            "title": b.get("title"),
+            "action": b["action"],
+            "steps": b.get("steps", []),
+            "fields": b.get("fields", []),
+            "resultType": "steps",
+            "basic": True,
+        }
+        for b in DOMAIN_ASSESSMENT.get("basicsFirst", [])
+    ]
+
+    resolved = []
+    for qid, value in (answers or {}).items():
+        question = _ASSESSMENT_QUESTIONS_BY_ID.get(qid)
+        if not question:
+            continue
+        option = next((o for o in question["options"] if o["value"] == value), None)
+        if not option:
+            continue
+        resolved.append({
+            "id": qid,
+            "domain": question["domain"],
+            "question": question["question"],
+            "answer": option["label"],
+            "resultType": option.get("resultType", "steps"),
+            "action": option["action"],
+            "steps": option.get("steps", []),
+            "checklist": option.get("checklist", []),
+            "fields": option.get("fields", []),
+        })
+
+    return {"basicsFirst": basics, "domainItems": resolved}
