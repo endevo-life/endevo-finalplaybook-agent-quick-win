@@ -9,8 +9,8 @@ silent overspend.
 """
 from dataclasses import dataclass
 
-from plans import get_plan
-from store import get_store
+from app.services.plans import get_plan
+from app.data.store import get_store
 
 
 class EntitlementError(Exception):

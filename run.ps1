@@ -25,7 +25,7 @@ if (-not (Test-Path $python)) { $python = "python" }  # fall back to PATH
 
 function Stop-Backend {
   Get-CimInstance Win32_Process -Filter "Name='python.exe'" |
-    Where-Object { $_.CommandLine -like '*uvicorn*api:app*' } |
+    Where-Object { $_.CommandLine -like '*uvicorn*app.main:app*' } |
     ForEach-Object { Write-Host "Stopping backend PID $($_.ProcessId)"; Stop-Process -Id $_.ProcessId -Force }
 }
 
@@ -38,7 +38,7 @@ if ($Backend -or $both) {
   Start-Sleep -Seconds 1
   Write-Host "Starting backend on http://localhost:8001 ..."
   Start-Process -FilePath $python `
-    -ArgumentList "-m","uvicorn","api:app","--port","8001","--reload" `
+    -ArgumentList "-m","uvicorn","app.main:app","--port","8001","--reload" `
     -WorkingDirectory "$root\agent" -WindowStyle Hidden `
     -RedirectStandardError "$env:TEMP\fp_backend.log"
   Start-Sleep -Seconds 5

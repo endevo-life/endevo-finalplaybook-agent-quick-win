@@ -15,14 +15,8 @@ import os
 
 from pydantic import BaseModel
 
-from brand import PRODUCT_NAME, tone_descriptor, tone_lines_block
-from personalize import MODEL_TRIAL, build_grounding_context
-
-try:
-    from dotenv import load_dotenv
-    load_dotenv()
-except ImportError:
-    pass  # python-dotenv is optional -- fine if env vars are set another way
+from app.config import PRODUCT_NAME, tone_descriptor, tone_lines_block
+from app.agent.personalize import MODEL_TRIAL, build_grounding_context
 
 CHAT_SYSTEM_PROMPT = f"""You are the guide answering a member's follow-up questions \
 inside the {PRODUCT_NAME} app. We are educators and we are not legal, financial, or \
@@ -64,7 +58,10 @@ def _chat_anthropic(plan: dict, member_first_name: str, history: list[ChatMessag
     client = anthropic.Anthropic()
     response = client.messages.parse(
         model=MODEL_TRIAL,
-        max_tokens=512,
+        # 512 truncated multi-sentence answers mid-word (esp. step-by-step "how
+        # do I..." replies). 1024 gives room for a complete answer while the
+        # system prompt still keeps replies concise (2-5 sentences).
+        max_tokens=1024,
         system=[{
             "type": "text",
             "text": CHAT_SYSTEM_PROMPT,

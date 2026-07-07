@@ -10,7 +10,18 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
 
-CONTENT_LIBRARY_PATH = Path(__file__).parent.parent / "knowledge-base" / "content-library.json"
+def _find_content_library() -> Path:
+    """Walk up from this file until we find knowledge-base/content-library.json,
+    so the path is robust to where this module lives in the package tree."""
+    here = Path(__file__).resolve()
+    for parent in here.parents:
+        candidate = parent / "knowledge-base" / "content-library.json"
+        if candidate.exists():
+            return candidate
+    raise FileNotFoundError("knowledge-base/content-library.json not found above " + str(here))
+
+
+CONTENT_LIBRARY_PATH = _find_content_library()
 
 with open(CONTENT_LIBRARY_PATH, encoding="utf-8") as f:
     CONTENT_LIBRARY = json.load(f)

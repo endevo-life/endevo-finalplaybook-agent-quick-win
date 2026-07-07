@@ -23,18 +23,12 @@ from typing import Optional
 
 from pydantic import BaseModel
 
-from brand import (
+from app.config import (
     PRODUCT_NAME,
     tone_descriptor,
     tone_lines_block,
     voice_descriptor,
 )
-
-try:
-    from dotenv import load_dotenv
-    load_dotenv()
-except ImportError:
-    pass  # python-dotenv is optional -- fine if env vars are set another way
 
 MODEL_TRIAL = "claude-haiku-4-5"  # not currently called -- trial tier is LLM-free by design
 MODEL_PAID = "claude-sonnet-5"

@@ -24,7 +24,7 @@ Env:
 """
 import os
 
-from store import get_store
+from app.data.store import get_store
 
 
 def is_configured() -> bool:

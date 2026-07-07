@@ -21,6 +21,9 @@ export default function App() {
   const [result, setResult] = useState(null);
   const [glossary, setGlossary] = useState([]);
   const [showLogin, setShowLogin] = useState(false);
+  // When true, a successful login should immediately resume the upgrade flow
+  // (user clicked Upgrade while logged out).
+  const [pendingUpgrade, setPendingUpgrade] = useState(false);
 
   const auth = useAuth();
 
@@ -51,12 +54,8 @@ export default function App() {
     setRoute("landing");
   }
 
-  async function handleUpgrade() {
-    // Must be logged in to attach the upgrade to an account.
-    if (!getToken()) {
-      setShowLogin(true);
-      return;
-    }
+  // The actual upgrade action (assumes the user is logged in).
+  async function doUpgrade() {
     try {
       // Preferred path: real Stripe Checkout when billing is configured.
       const { url } = await startCheckout();
@@ -75,6 +74,27 @@ export default function App() {
         }
       }
       window.open(UPGRADE_URL, "_blank", "noopener,noreferrer");
+    }
+  }
+
+  function handleUpgrade() {
+    // Must be logged in to attach the upgrade to an account. If not, open the
+    // login modal and remember to resume the upgrade once they're in.
+    if (!getToken()) {
+      setPendingUpgrade(true);
+      setShowLogin(true);
+      return;
+    }
+    doUpgrade();
+  }
+
+  // Called by the login modal on success. If the login was triggered by an
+  // Upgrade click, continue straight into the upgrade.
+  function handleLoggedIn() {
+    setShowLogin(false);
+    if (pendingUpgrade) {
+      setPendingUpgrade(false);
+      doUpgrade();
     }
   }
 
@@ -156,8 +176,8 @@ export default function App() {
       {showLogin && (
         <LoginModal
           auth={auth}
-          onClose={() => setShowLogin(false)}
-          onLoggedIn={() => setShowLogin(false)}
+          onClose={() => { setShowLogin(false); setPendingUpgrade(false); }}
+          onLoggedIn={handleLoggedIn}
         />
       )}
     </div>

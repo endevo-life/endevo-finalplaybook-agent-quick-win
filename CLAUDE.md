@@ -6,7 +6,7 @@ LLM call to personalize the output in a warm, neutral guide voice. The free tier
 never touches an LLM.
 
 The product is **expert-agnostic** by default — no single person is named or
-impersonated. All brand/voice text is config-driven (`agent/brand.py`,
+impersonated. All brand/voice text is config-driven (`agent/app/config.py`,
 `frontend/src/config/branding.js`), so it can ship under any name. An expert
 persona can optionally be surfaced (with permission) by setting `EXPERT_NAME`.
 
@@ -42,21 +42,21 @@ Final-Playbook/
 │   └── content-library.json     # Q&A, situation profiles, scripts, quotes (DRAFT)
 ├── infra/
 │   └── template.yaml            # AWS SAM: Lambda + API Gateway + DynamoDB
-├── agent/
-│   ├── rules_engine.py          # zero-token routing (context flags -> plan)
-│   ├── personalize.py           # the one Claude call (paid tier only)
-│   ├── chat_agent.py            # grounded follow-up chat (paid tier)
-│   ├── orchestrator.py          # run(flags, name, personalize=bool) entrypoint
-│   ├── brand.py                 # product name / voice config (de-branding seam)
-│   ├── plans.py                 # plan definitions + usage quotas (pricing source of truth)
-│   ├── store.py                 # persistence: memory (dev) or DynamoDB (prod)
-│   ├── auth.py                  # email + opaque-token sessions
-│   ├── entitlements.py          # SERVER-SIDE tier + quota enforcement
-│   ├── billing.py               # Stripe Checkout + webhook
-│   ├── api.py                   # FastAPI app (routes for agent + SaaS)
-│   ├── lambda_handler.py        # Mangum wrapper for AWS Lambda
-│   ├── demo.py                  # manual smoke test
-│   ├── tests/                   # unit + e2e (auth, entitlement, agent)
+├── agent/                       # layered FastAPI backend
+│   ├── app/
+│   │   ├── main.py              # FastAPI app factory (wires routers + CORS)
+│   │   ├── config.py           # brand/voice + runtime settings (de-branding seam)
+│   │   ├── api/
+│   │   │   ├── deps.py         # auth dependencies (current_email / require_email)
+│   │   │   └── routes/         # meta, auth, assessment, plan, chat, billing
+│   │   ├── schemas/requests.py # Pydantic request models
+│   │   ├── services/           # BUSINESS logic: auth, billing, entitlements, plans
+│   │   ├── agent/              # the AI agent: rules_engine, orchestrator,
+│   │   │                       #   personalize, chat (rules = free, LLM = paid)
+│   │   └── data/store/         # DATA layer: base(+factory), memory, sqlite, dynamodb
+│   ├── lambda_handler.py       # Mangum wrapper for AWS Lambda (imports app.main)
+│   ├── demo.py                 # manual smoke test
+│   ├── tests/                  # unit + e2e (conftest forces in-memory store)
 │   └── requirements.txt
 └── frontend/                    # Vite + React UI (landing, auth, walkthrough)
     └── src/
@@ -71,7 +71,7 @@ Final-Playbook/
 Backend (from `agent/`):
 ```
 pip install -r requirements.txt
-python -m uvicorn api:app --port 8001
+python -m uvicorn app.main:app --port 8001
 ```
 Store defaults to in-memory (`STORE_BACKEND=memory`) — no database needed for
 local dev. Port 8001 is just a convention; change freely.
@@ -117,15 +117,21 @@ first and payments can be turned on later.
 
 ## Conventions for future work in this repo
 
+- **Layered structure:** routes (`app/api/routes/`) stay thin — validate + call a
+  service. Business logic lives in `app/services/`, the AI in `app/agent/`, and all
+  persistence behind `app/data/store/` (never touch a DB from a route).
 - Never add action items, scripts, or clinical claims that aren't already in
   `content-library.json`. If a gap is found, add it to the content library first
-  (and flag it as unvalidated), then wire it into `rules_engine.py` — don't let
-  the LLM improvise around a gap.
-- Keep `personalize.py`'s system prompt (built from `brand.py`) as the single
-  source of truth for tone/scope rules. If you change it, update `docs/prompts.md`.
+  (and flag it as unvalidated), then wire it into `app/agent/rules_engine.py` —
+  don't let the LLM improvise around a gap.
+- Keep `app/agent/personalize.py`'s system prompt (built from `app/config.py`) as
+  the single source of truth for tone/scope rules. If you change it, update
+  `docs/prompts.md`.
 - Additive only on `MemberContext` — don't repurpose an existing flag's meaning;
   the content library's flag names are load-bearing across profiles.
-- Keep all user-facing brand/voice text in `brand.py` / `branding.js`. Don't
+- Keep all user-facing brand/voice text in `app/config.py` / `branding.js`. Don't
   hard-code a product or person's name back into prompts or components.
-- Pricing/limits live in `plans.py` and flow to the UI via `/api/pricing` — edit
-  them there, not in the frontend.
+- Pricing/limits live in `app/services/plans.py` and flow to the UI via
+  `/api/pricing` — edit them there, not in the frontend.
+- To add a new store backend, implement the full method set in a new
+  `app/data/store/<name>.py` and register it in `base.py`'s `get_store()`.

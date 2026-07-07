@@ -450,6 +450,15 @@ button, input, textarea {
 .fp-lock-title { font-size: 15px; font-weight: 700; color: var(--ink); margin: 0 0 8px; }
 .fp-lock-body { font-size: 13.5px; color: var(--body); line-height: 1.6; margin: 0 0 16px; }
 
+/* premium: personalized 7-day narrative CTA */
+.fp-personalized-cta {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  background: var(--brand-lt); border: 1px solid var(--accent); border-radius: 12px;
+  padding: 16px 18px; margin: 18px 0;
+}
+.fp-personalized-cta-title { font-size: 14px; font-weight: 700; color: var(--brand); margin: 0 0 3px; }
+.fp-personalized-cta-sub { font-size: 12.5px; color: var(--body); margin: 0; line-height: 1.45; }
+
 /* premium: per-step checkable rows */
 .fp-card-progress {
   display: inline-block; font-size: 11px; font-weight: 700; color: var(--accent);

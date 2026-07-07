@@ -19,7 +19,7 @@ import secrets
 import time
 from typing import Optional
 
-from store import get_store
+from app.data.store import get_store
 
 SESSION_TTL_SECONDS = 60 * 60 * 24 * 30   # 30 days
 LOGIN_CODE_TTL_SECONDS = 60 * 15          # 15 minutes

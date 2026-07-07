@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
-import { getAssessment, postAssessmentPlan, getPricing } from "../api/client";
+import {
+  getAssessment, postAssessmentPlan, postAssessmentPersonalize, getPricing,
+  getMyPlan, saveMyPlan, getToken,
+} from "../api/client";
 import ActionCard from "./ActionCard";
 import ChatWidget from "./ChatWidget";
 import { PRODUCT_NAME } from "../config/branding";
@@ -8,10 +11,14 @@ import { PRODUCT_NAME } from "../config/branding";
 // the assessment result (basicsFirst + domainItems) into that shape so a paid
 // user can ask grounded questions about THIS plan, same as the other flow.
 function toChatPlan(plan) {
-  const items = [
-    ...plan.basicsFirst.map((b) => ({ text: b.action, domain: b.domain })),
-    ...plan.domainItems.map((d) => ({ text: d.action, domain: d.domain })),
-  ];
+  // Include the steps/checklist so the AI can answer "how do I do this?" from the
+  // detail we actually have -- not just the one-line action.
+  const mapItem = (it) => ({
+    text: it.action,
+    domain: it.domain,
+    steps: it.resultType === "review" ? it.checklist : it.steps,
+  });
+  const items = [...plan.basicsFirst.map(mapItem), ...plan.domainItems.map(mapItem)];
   return {
     leadProfile: { id: "domain_assessment", name: "Your Final Playbook assessment" },
     actionItems: items,
@@ -38,6 +45,23 @@ export default function Assessment({ user, onBack, onUpgrade, isPaid }) {
     try { return JSON.parse(localStorage.getItem(TRACK_KEY)) || {}; } catch { return {}; }
   });
   const [price, setPrice] = useState(25);
+  // Paid: the personalized 7-day narrative (LLM) generated from the answers.
+  const [narrative, setNarrative] = useState(null);
+  const [narrativeLoading, setNarrativeLoading] = useState(false);
+  const [narrativeError, setNarrativeError] = useState("");
+
+  async function getNarrative() {
+    setNarrativeLoading(true);
+    setNarrativeError("");
+    try {
+      const res = await postAssessmentPersonalize(answers, user?.name || "there");
+      setNarrative(res.personalized);
+    } catch (e) {
+      setNarrativeError(e.message || "Couldn't generate your personalized plan.");
+    } finally {
+      setNarrativeLoading(false);
+    }
+  }
 
   useEffect(() => {
     getPricing()
@@ -63,6 +87,31 @@ export default function Assessment({ user, onBack, onUpgrade, isPaid }) {
       .then((d) => setQuestions(d.questions || []))
       .catch(() => setError("Couldn't load the assessment. Is the server running?"));
   }, []);
+
+  // On mount for a logged-in user: restore their saved answers, plan, progress,
+  // and narrative from the server so they resume where they left off (any device).
+  useEffect(() => {
+    if (!getToken()) return;
+    getMyPlan()
+      .then((saved) => {
+        if (saved.tracked && Object.keys(saved.tracked).length) setTracked(saved.tracked);
+        if (saved.narrative) setNarrative(saved.narrative);
+        // If they have a saved plan and answered questions, jump straight to it.
+        if (saved.plan && saved.answers && Object.keys(saved.answers).length) {
+          setAnswers(saved.answers);
+          setPlan(saved.plan);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  // Auto-save the user's plan + progress + narrative to the server whenever it
+  // changes (logged-in only). This is what makes "log in later, get it all back"
+  // actually work.
+  useEffect(() => {
+    if (!getToken() || !plan) return;
+    saveMyPlan({ answers, plan, tracked, narrative }).catch(() => {});
+  }, [plan, tracked, narrative]);
 
   if (error) return <div className="fp-page-narrow"><p className="fp-error">{error}</p></div>;
   if (!questions) return <div className="fp-page-narrow"><p className="fp-body">Loading…</p></div>;
@@ -131,6 +180,36 @@ export default function Assessment({ user, onBack, onUpgrade, isPaid }) {
               <div className="fp-progress-bar-fill" style={{ width: `${pct}%` }} />
             </div>
             <p className="fp-progress-label">{doneSteps} of {totalSteps} steps done · {pct}%</p>
+
+            {/* Personalized 7-day narrative (the paid LLM feature). */}
+            {!narrative ? (
+              <div className="fp-personalized-cta">
+                <div>
+                  <p className="fp-personalized-cta-title">Your personalized next 7 days</p>
+                  <p className="fp-personalized-cta-sub">
+                    Get a warm, personal walk-through of exactly what to do this week,
+                    written for your situation.
+                  </p>
+                </div>
+                <button className="fp-btn" onClick={getNarrative} disabled={narrativeLoading}>
+                  {narrativeLoading ? "Writing your plan…" : "Generate →"}
+                </button>
+              </div>
+            ) : (
+              <div className="fp-personalized">
+                <p className="fp-question-topic">Your next 7 days, personalized</p>
+                <h3 style={{ margin: "0 0 12px" }}>{narrative.headline}</h3>
+                {narrative.steps.map((s, i) => (
+                  <div key={i} style={{ marginBottom: 12 }}>
+                    <p className="fp-item-text" style={{ fontWeight: 600 }}>{s.step}</p>
+                    <p className="fp-dim">{s.why_it_matters}</p>
+                    {s.script && <p className="fp-item-script">"{s.script}"</p>}
+                  </div>
+                ))}
+                <p className="fp-body" style={{ marginTop: 12, marginBottom: 0 }}>{narrative.closing_note}</p>
+              </div>
+            )}
+            {narrativeError && <p className="fp-error">{narrativeError}</p>}
           </>
         ) : (
           <p className="fp-body">

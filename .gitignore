@@ -34,3 +34,9 @@ content-sources/04-domain-notes/*.docx
 # Real client IP + PII: session transcripts and Niki's proprietary method sheets.
 # NEVER commit — real people's names and end-of-life details are in here.
 docs/decode_finalplaybook_niki's_ip/
+
+# Local SQLite store (dev data — not for git)
+final_playbook.db
+final_playbook.db-*
+agent/final_playbook.db
+agent/final_playbook.db-*

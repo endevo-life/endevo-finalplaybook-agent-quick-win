@@ -40,7 +40,7 @@ Backend (from `agent/`):
 ```bash
 pip install -r requirements.txt
 cp .env.example .env          # fill in ANTHROPIC_API_KEY if you want the paid tier
-python -m uvicorn api:app --port 8001
+python -m uvicorn app.main:app --port 8001
 ```
 The store defaults to `memory` — no database needed locally. Run tests with
 `pytest tests/ -v` (all pass with no API key; LLM tests auto-skip).

@@ -15,8 +15,8 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 import pytest
 from fastapi.testclient import TestClient
 
-from api import app
-from store import get_store
+from app.main import app
+from app.data.store import get_store
 
 client = TestClient(app)
 

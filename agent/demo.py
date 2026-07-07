@@ -2,7 +2,7 @@
 needed. The paid path (personalize=True) requires ANTHROPIC_API_KEY."""
 import json
 
-from orchestrator import run
+from app.agent.orchestrator import run
 
 # Example: aging parent living alone with no documents -- should route to the
 # highest-priority profile per the clinical routing rules.

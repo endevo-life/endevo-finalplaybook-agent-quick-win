@@ -5,8 +5,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from rules_engine import MemberContext, build_plan, match_profiles, MAX_ACTION_ITEMS_PER_PLAN
-from orchestrator import run
+from app.agent.rules_engine import MemberContext, build_plan, match_profiles, MAX_ACTION_ITEMS_PER_PLAN
+from app.agent.orchestrator import run
 
 
 def test_aging_parent_is_highest_priority():

@@ -65,6 +65,22 @@ export function getAssessment() {
 export function postAssessmentPlan(answers) {
   return request("/api/assessment/plan", { method: "POST", body: { answers } });
 }
+// Paid: turn the assessment into a personalized 7-day narrative (one LLM call).
+export function postAssessmentPersonalize(answers, memberFirstName) {
+  return request("/api/assessment/personalize", {
+    method: "POST",
+    body: { answers, memberFirstName },
+  });
+}
+
+// Per-user saved plan: answers, generated plan, tracked progress, narrative,
+// and chat history. Restores a logged-in user's session across devices.
+export function getMyPlan() {
+  return request("/api/my/plan");
+}
+export function saveMyPlan({ answers, plan, tracked, narrative }) {
+  return request("/api/my/plan", { method: "POST", body: { answers, plan, tracked, narrative } });
+}
 
 // --- auth --------------------------------------------------------------------
 export function authStart(email) {

@@ -5,8 +5,8 @@ Whether the paid path runs is decided by the *caller* via `personalize=True/Fals
 (the API layer sets this from the user's server-side entitlement, never from a
 client-supplied tier string). build_plan() itself is always free to run.
 """
-from rules_engine import MemberContext, build_plan
-from personalize import personalize as _personalize
+from app.agent.rules_engine import MemberContext, build_plan
+from app.agent.personalize import personalize as _personalize
 
 
 def run(flags: dict, member_first_name: str, personalize: bool = False) -> dict:
