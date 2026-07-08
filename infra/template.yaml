@@ -1,21 +1,23 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: >
-  Final Playbook API -- FastAPI (via Mangum) on Lambda behind API Gateway, with
+  Final Playbook API -- FastAPI (via Mangum) on Lambda behind API Gateway. The
   seven prefixed DynamoDB tables (users/sessions/usage/plans/chat/events/config)
-  for entitlements, usage metering, saved plans, chat history, and B2C analytics.
-  The deterministic rules engine (free tier) and the one paid-tier LLM call run
-  inside the same function; free-tier requests never touch the LLM. Auth is
-  AWS Cognito (custom-auth email codes) against a pool created outside this
-  template -- pass its IDs in as parameters.
+  and the Cognito user pool (custom-auth email codes) are created OUTSIDE this
+  template and referenced by name/id -- pass TablePrefix + the Cognito IDs in as
+  parameters. This template owns only the Lambda + HTTP API. The deterministic
+  rules engine (free tier) and the one paid-tier LLM call run inside the same
+  function; free-tier requests never touch the LLM.
 
 Parameters:
   TablePrefix:
     Type: String
     Default: "mfp-dev-"
     Description: >
-      Prefix for all 7 DynamoDB tables (matches DDB_TABLE_PREFIX). Creates
-      {prefix}users, sessions, usage, plans, chat, events, config.
+      Prefix for the 7 existing DynamoDB tables (matches DDB_TABLE_PREFIX):
+      {prefix}users, sessions, usage, plans, chat, events, config. The tables
+      are NOT created here -- they already exist; this only grants the Lambda
+      access to them by name.
   AnthropicApiKey:
     Type: String
     NoEcho: true
@@ -96,105 +98,6 @@ Globals:
     Runtime: python3.12
 
 Resources:
-  UsersTable:
-    Type: AWS::DynamoDB::Table
-    Properties:
-      TableName: !Sub "${TablePrefix}users"
-      BillingMode: PAY_PER_REQUEST
-      AttributeDefinitions:
-        - AttributeName: email
-          AttributeType: S
-      KeySchema:
-        - AttributeName: email
-          KeyType: HASH
-
-  SessionsTable:
-    Type: AWS::DynamoDB::Table
-    Properties:
-      TableName: !Sub "${TablePrefix}sessions"
-      BillingMode: PAY_PER_REQUEST
-      AttributeDefinitions:
-        - AttributeName: token
-          AttributeType: S
-      KeySchema:
-        - AttributeName: token
-          KeyType: HASH
-      TimeToLiveSpecification:
-        AttributeName: expires_at
-        Enabled: true
-
-  UsageTable:
-    Type: AWS::DynamoDB::Table
-    Properties:
-      TableName: !Sub "${TablePrefix}usage"
-      BillingMode: PAY_PER_REQUEST
-      AttributeDefinitions:
-        - AttributeName: email
-          AttributeType: S
-        - AttributeName: month
-          AttributeType: S
-      KeySchema:
-        - AttributeName: email
-          KeyType: HASH
-        - AttributeName: month
-          KeyType: RANGE
-
-  PlansTable:
-    Type: AWS::DynamoDB::Table
-    Properties:
-      TableName: !Sub "${TablePrefix}plans"
-      BillingMode: PAY_PER_REQUEST
-      AttributeDefinitions:
-        - AttributeName: email
-          AttributeType: S
-      KeySchema:
-        - AttributeName: email
-          KeyType: HASH
-
-  ChatTable:
-    Type: AWS::DynamoDB::Table
-    Properties:
-      TableName: !Sub "${TablePrefix}chat"
-      BillingMode: PAY_PER_REQUEST
-      AttributeDefinitions:
-        - AttributeName: email
-          AttributeType: S
-        - AttributeName: ts
-          AttributeType: S
-      KeySchema:
-        - AttributeName: email
-          KeyType: HASH
-        - AttributeName: ts
-          KeyType: RANGE
-
-  EventsTable:
-    Type: AWS::DynamoDB::Table
-    Properties:
-      TableName: !Sub "${TablePrefix}events"
-      BillingMode: PAY_PER_REQUEST
-      AttributeDefinitions:
-        - AttributeName: plane
-          AttributeType: S
-        - AttributeName: ts_id
-          AttributeType: S
-      KeySchema:
-        - AttributeName: plane
-          KeyType: HASH
-        - AttributeName: ts_id
-          KeyType: RANGE
-
-  ConfigTable:
-    Type: AWS::DynamoDB::Table
-    Properties:
-      TableName: !Sub "${TablePrefix}config"
-      BillingMode: PAY_PER_REQUEST
-      AttributeDefinitions:
-        - AttributeName: key
-          AttributeType: S
-      KeySchema:
-        - AttributeName: key
-          KeyType: HASH
-
   ApiFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -204,7 +107,6 @@ Resources:
         Variables:
           STORE_BACKEND: dynamodb
           DDB_TABLE_PREFIX: !Ref TablePrefix
-          AWS_DEFAULT_REGION: !Ref AWS::Region
           LLM_BACKEND: anthropic
           ANTHROPIC_API_KEY: !Ref AnthropicApiKey
           STRIPE_SECRET_KEY: !Ref StripeSecretKey
@@ -222,20 +124,22 @@ Resources:
           ALLOW_DEV_UPGRADE: "false"
           PRODUCT_NAME: "Final Playbook"
       Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !Ref UsersTable
-        - DynamoDBCrudPolicy:
-            TableName: !Ref SessionsTable
-        - DynamoDBCrudPolicy:
-            TableName: !Ref UsageTable
-        - DynamoDBCrudPolicy:
-            TableName: !Ref PlansTable
-        - DynamoDBCrudPolicy:
-            TableName: !Ref ChatTable
-        - DynamoDBCrudPolicy:
-            TableName: !Ref EventsTable
-        - DynamoDBCrudPolicy:
-            TableName: !Ref ConfigTable
+        # The 7 tables already exist (created outside this stack); grant CRUD on
+        # them by ARN pattern rather than !Ref-ing table resources we don't own.
+        - Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:GetItem
+                - dynamodb:PutItem
+                - dynamodb:UpdateItem
+                - dynamodb:DeleteItem
+                - dynamodb:Query
+                - dynamodb:Scan
+                - dynamodb:BatchGetItem
+                - dynamodb:BatchWriteItem
+              Resource:
+                - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${TablePrefix}*"
+                - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${TablePrefix}*/index/*"
         - Statement:
             - Effect: Allow
               Action:
@@ -244,7 +148,7 @@ Resources:
                 - cognito-idp:AdminSetUserPassword
                 - cognito-idp:InitiateAuth
                 - cognito-idp:RespondToAuthChallenge
-              Resource: "*"
+              Resource: !Sub "arn:aws:cognito-idp:${CognitoRegion}:${AWS::AccountId}:userpool/${CognitoUserPoolId}"
       Events:
         ApiRoot:
           Type: HttpApi

@@ -100,12 +100,31 @@ FastAPI app. Once you have:
 `agent/app/services/auth_cognito.py`'s module docstring for the exact API
 calls the backend makes against the pool.
 
-### 3b. Deploy the API + tables
+### 3b. The 7 DynamoDB tables (created outside SAM)
+
+The app uses **seven** prefixed DynamoDB tables
+(`{prefix}users/sessions/usage/plans/chat/events/config` — the last two back the
+analytics/admin-config store in `agent/app/data/events.py`). These are **not**
+created by `infra/template.yaml`: in the `mfp-dev-` environment they already
+exist (created by hand), and CloudFormation can only create tables it owns, so
+the template references them by name and only grants the Lambda CRUD access to
+`{prefix}*`. If you deploy into a **new** environment where the tables don't yet
+exist, create them first (matching the key schema in
+`agent/app/data/store/dynamodb.py` + `events.py`) before deploying, or add
+`AWS::DynamoDB::Table` resources back to the template for that env.
+
+Validate before building:
+
+```bash
+cd infra
+sam validate --lint
+```
+
+### 3c. Deploy the API (Lambda + HTTP API)
 
 The [`infra/template.yaml`](infra/template.yaml) SAM template provisions a
-Lambda (the FastAPI app via Mangum), an HTTP API Gateway, and **seven** prefixed
-DynamoDB tables (`{prefix}users/sessions/usage/plans/chat/events/config` — the
-last two back the analytics/admin-config store in `agent/app/data/events.py`).
+Lambda (the FastAPI app via Mangum) and an HTTP API Gateway — that's all it
+owns; tables and the Cognito pool are external (steps 3a/3b).
 
 ```bash
 cd infra
@@ -114,13 +133,16 @@ sam deploy --guided \
   --parameter-overrides \
     AnthropicApiKey=sk-ant-... \
     AuthBackend=cognito \
-    CognitoUserPoolId=us-east-1_XXXXXXXXX \
-    CognitoClientId=xxxxxxxxxxxxxxxxxxxxxxxxxx \
+    CognitoUserPoolId=us-east-1_ikCfp5RAL \
+    CognitoClientId=2hsqh99bm3l6hqj9uskbtbgdgd \
     CognitoRegion=us-east-1 \
     AdminToken=your-strong-admin-secret \
+    AdminEmails=hello@endevo.life,bluesproutagency@gmail.com \
     AllowedOrigins=https://your-frontend-domain.com \
     AppBaseUrl=https://your-frontend-domain.com
 ```
+(The Cognito IDs above are the live `mfp-dev-` pool/client. `TablePrefix`
+defaults to `mfp-dev-`; override it for other environments.)
 `--guided` walks you through stack name/region and saves your answers to
 `samconfig.toml` so future deploys are just `sam deploy`.
 
