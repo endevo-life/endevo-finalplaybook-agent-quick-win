@@ -1,4 +1,4 @@
-import { PRODUCT_NAME, TAGLINE } from "../config/branding";
+import { PRODUCT_NAME, TAGLINE, PRIMARY_CTA } from "../config/branding";
 import Pricing from "./Pricing";
 
 // Public marketing page. Positioning (per growth strategy): we own DIGITAL death
@@ -36,7 +36,7 @@ export default function Landing({ onStart, onSignIn, onUpgrade, isPaid }) {
         </p>
         <div className="fp-hero-cta-row">
           <button className="fp-btn" style={{ padding: "14px 30px", fontSize: 15 }} onClick={onStart}>
-            Start free →
+            {PRIMARY_CTA} →
           </button>
           <button className="fp-btn-secondary" onClick={onSignIn}>Sign in</button>
         </div>
@@ -111,7 +111,7 @@ export default function Landing({ onStart, onSignIn, onUpgrade, isPaid }) {
       <div className="fp-section" style={{ textAlign: "center", paddingTop: 8 }}>
         <h2 className="fp-section-title" style={{ marginBottom: 18 }}>{TAGLINE}</h2>
         <button className="fp-btn" style={{ padding: "14px 30px", fontSize: 15 }} onClick={onStart}>
-          Start your plan — it's free →
+          {PRIMARY_CTA} — it's free →
         </button>
       </div>
     </div>

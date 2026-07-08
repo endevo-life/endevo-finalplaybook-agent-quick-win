@@ -134,6 +134,12 @@ class DynamoStore:
         )
         return int(resp["Attributes"][field])
 
+    def reset_usage(self, email: str) -> None:
+        self.t_usage.put_item(Item={
+            "email": email, "month": month_key(),
+            "personalize_count": 0, "chat_count": 0,
+        })
+
     # --- saved plan + progress (paid experience) ---
     def get_plan(self, email: str) -> Optional[dict]:
         item = self.t_plans.get_item(Key={"email": email}).get("Item")

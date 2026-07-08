@@ -141,6 +141,13 @@ class SqliteStore:
         self._conn.commit()
         return self.get_usage(email)[field]
 
+    def reset_usage(self, email: str) -> None:
+        self._conn.execute(
+            "INSERT OR REPLACE INTO usage (email, month, personalize_count, chat_count) "
+            "VALUES (?,?,0,0)", (email, month_key()),
+        )
+        self._conn.commit()
+
     # --- saved plan + progress ---
     def get_plan(self, email: str) -> Optional[dict]:
         import json as _json

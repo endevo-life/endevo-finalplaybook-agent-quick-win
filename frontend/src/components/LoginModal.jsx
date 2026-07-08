@@ -7,6 +7,9 @@ export default function LoginModal({ auth, onClose, onLoggedIn }) {
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [devCode, setDevCode] = useState(null);
+  // Cognito challenge session (cognito auth backend): opaque, single-use,
+  // returned by /auth/start and echoed on verify. Null for local auth.
+  const [session, setSession] = useState(null);
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -16,6 +19,7 @@ export default function LoginModal({ auth, onClose, onLoggedIn }) {
     try {
       const res = await auth.startLogin(email.trim());
       setDevCode(res.devLoginCode || null);
+      setSession(res.session || null);
       if (res.devLoginCode) setCode(res.devLoginCode); // dev convenience
       setStep("code");
     } catch (e) {
@@ -29,10 +33,13 @@ export default function LoginModal({ auth, onClose, onLoggedIn }) {
     setErr("");
     setBusy(true);
     try {
-      const user = await auth.verifyLogin(email.trim(), code.trim());
+      const user = await auth.verifyLogin(email.trim(), code.trim(), session);
       onLoggedIn?.(user);
       onClose();
     } catch (e) {
+      // Wrong code with attempts left: the server hands back a fresh
+      // single-use session — keep it so the user's next try works.
+      if (e.detail?.session) setSession(e.detail.session);
       setErr(e.message || "Invalid code.");
     } finally {
       setBusy(false);

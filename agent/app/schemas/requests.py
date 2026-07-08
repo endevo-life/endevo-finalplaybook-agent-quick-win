@@ -41,3 +41,6 @@ class AuthStartRequest(BaseModel):
 class AuthVerifyRequest(BaseModel):
     email: str
     code: str
+    # Cognito custom-auth challenge session (AUTH_BACKEND=cognito only): opaque,
+    # returned by /auth/start and echoed back here. Unused for local auth.
+    session: Optional[str] = None

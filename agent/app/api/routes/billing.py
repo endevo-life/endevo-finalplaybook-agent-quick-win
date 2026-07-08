@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, Header, HTTPException, Request
 from app.api.deps import require_email
 from app.config import ALLOW_DEV_UPGRADE
 from app.data.store import get_store
-from app.services import billing as billing_service
+from app.services import analytics, billing as billing_service
 from app.services.entitlements import entitlement_for
 
 router = APIRouter(prefix="/api/billing", tags=["billing"])
@@ -32,6 +32,7 @@ def billing_dev_upgrade(email: str = Depends(require_email)):
     if not ALLOW_DEV_UPGRADE:
         raise HTTPException(403, "Dev upgrade is disabled. Use Stripe checkout.")
     get_store().set_tier(email, "paid")
+    analytics.emit(analytics.UPGRADE, email=email, via="dev")
     return entitlement_for(email).snapshot()
 
 
@@ -39,8 +40,12 @@ def billing_dev_upgrade(email: str = Depends(require_email)):
 async def billing_webhook(request: Request, stripe_signature: Optional[str] = Header(None)):
     payload = await request.body()
     try:
-        return billing_service.handle_webhook(payload, stripe_signature)
+        result = billing_service.handle_webhook(payload, stripe_signature)
     except ValueError as e:
         raise HTTPException(400, str(e))
     except Exception as e:
         raise HTTPException(502, f"Webhook error: {e}")
+    # A real Stripe upgrade -> record it for conversion analytics.
+    if isinstance(result, dict) and result.get("tier") == "paid" and result.get("email"):
+        analytics.emit(analytics.UPGRADE, email=result["email"], via="stripe")
+    return result

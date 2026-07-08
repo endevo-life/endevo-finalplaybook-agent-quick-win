@@ -11,7 +11,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import DEV_CORS, PRODUCT_NAME, allowed_origins
-from app.api.routes import assessment, auth, billing, chat, meta, plan
+from app.api.routes import admin, assessment, auth, billing, chat, meta, plan
 
 
 def create_app() -> FastAPI:
@@ -27,7 +27,7 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
 
-    for module in (meta, auth, assessment, plan, chat, billing):
+    for module in (meta, auth, assessment, plan, chat, billing, admin):
         app.include_router(module.router)
 
     return app

@@ -11,7 +11,6 @@ import Assessment from "./components/Assessment";
 import LoginModal from "./components/LoginModal";
 import { getGlossary, startCheckout, devUpgrade, getToken } from "./api/client";
 import { useAuth } from "./auth/useAuth";
-import { UPGRADE_URL } from "./config/branding";
 
 export default function App() {
   // landing | welcome | identify | scenarios | session | results
@@ -24,6 +23,10 @@ export default function App() {
   // When true, a successful login should immediately resume the upgrade flow
   // (user clicked Upgrade while logged out).
   const [pendingUpgrade, setPendingUpgrade] = useState(false);
+  // When true, a successful login should start the assessment flow (user clicked
+  // "Get My Final Playbook" while logged out). Even the FREE experience requires
+  // an account so the AI-guide taste works and progress persists per user.
+  const [pendingStart, setPendingStart] = useState(false);
 
   const auth = useAuth();
 
@@ -69,12 +72,28 @@ export default function App() {
           await devUpgrade();
           await auth.refresh(); // reflect paid tier in the UI immediately
           return;
-        } catch {
-          /* fall through to static link */
+        } catch (devErr) {
+          // Surface the real reason instead of silently opening a placeholder.
+          alert("Upgrade failed: " + (devErr.message || "unknown error") +
+                "\n(Dev upgrade may be disabled — set ALLOW_DEV_UPGRADE=true.)");
+          return;
         }
       }
-      window.open(UPGRADE_URL, "_blank", "noopener,noreferrer");
+      // Any other error: tell the user rather than dead-ending.
+      alert("Couldn't start checkout: " + (e.message || "unknown error"));
     }
+  }
+
+  // Start the (free) assessment. Requires an account first: the free tier still
+  // needs a logged-in user for the AI-guide taste and per-user progress. If not
+  // signed in, open the login modal and resume into the flow on success.
+  function startFlow() {
+    if (!getToken()) {
+      setPendingStart(true);
+      setShowLogin(true);
+      return;
+    }
+    setRoute("identify");
   }
 
   function handleUpgrade() {
@@ -95,6 +114,11 @@ export default function App() {
     if (pendingUpgrade) {
       setPendingUpgrade(false);
       doUpgrade();
+      return;
+    }
+    if (pendingStart) {
+      setPendingStart(false);
+      setRoute("identify");
     }
   }
 
@@ -112,14 +136,14 @@ export default function App() {
 
       {route === "landing" && (
         <Landing
-          onStart={() => setRoute("identify")}
+          onStart={startFlow}
           onSignIn={() => setShowLogin(true)}
           onUpgrade={handleUpgrade}
           isPaid={auth.isPaid}
         />
       )}
 
-      {route === "welcome" && <Welcome onStart={() => setRoute("identify")} />}
+      {route === "welcome" && <Welcome onStart={startFlow} />}
 
       {route === "identify" && (
         <Identify
@@ -176,7 +200,7 @@ export default function App() {
       {showLogin && (
         <LoginModal
           auth={auth}
-          onClose={() => { setShowLogin(false); setPendingUpgrade(false); }}
+          onClose={() => { setShowLogin(false); setPendingUpgrade(false); setPendingStart(false); }}
           onLoggedIn={handleLoggedIn}
         />
       )}

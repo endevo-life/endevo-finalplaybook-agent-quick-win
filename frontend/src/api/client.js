@@ -29,8 +29,13 @@ async function request(path, { method = "GET", body } = {}) {
   });
   const data = await res.json().catch(() => null);
   if (!res.ok) {
-    const err = new Error(data?.detail || `Request failed (${res.status})`);
+    // detail is usually a string, but can be an object (e.g. auth code-retry
+    // returns {message, session}). Keep the object on err.detail either way.
+    const detail = data?.detail;
+    const message = typeof detail === "string" ? detail : detail?.message;
+    const err = new Error(message || `Request failed (${res.status})`);
     err.status = res.status;
+    err.detail = detail;
     throw err;
   }
   return data;
@@ -86,8 +91,10 @@ export function saveMyPlan({ answers, plan, tracked, narrative }) {
 export function authStart(email) {
   return request("/api/auth/start", { method: "POST", body: { email } });
 }
-export function authVerify(email, code) {
-  return request("/api/auth/verify", { method: "POST", body: { email, code } });
+export function authVerify(email, code, session) {
+  // `session` is the Cognito challenge session from authStart (cognito auth
+  // backend only); harmless extra field for the local auth backend.
+  return request("/api/auth/verify", { method: "POST", body: { email, code, session } });
 }
 export function getMe() {
   return request("/api/me");

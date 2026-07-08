@@ -59,6 +59,9 @@ class MemoryStore:
         rec[field] = rec.get(field, 0) + 1
         return rec[field]
 
+    def reset_usage(self, email: str) -> None:
+        self.usage[(email, month_key())] = {"personalize_count": 0, "chat_count": 0}
+
     # --- saved plan + progress ---
     def get_plan(self, email: str) -> Optional[dict]:
         return self.plans.get(email)

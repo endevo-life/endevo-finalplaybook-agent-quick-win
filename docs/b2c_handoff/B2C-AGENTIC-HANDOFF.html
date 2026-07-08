@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>B2C My Final Playbook (Agentic) - Architecture Handoff</title>
+<style>
+  :root { --ink:#1c2033; --soft:#4a5168; --gold:#a5842f; --line:#e6e1d6; --bg:#fbf9f4; }
+  * { box-sizing:border-box; }
+  body { font:16px/1.6 "Segoe UI",system-ui,-apple-system,sans-serif; color:var(--ink);
+    background:var(--bg); max-width:900px; margin:0 auto; padding:48px 40px; }
+  h1 { font-size:30px; border-bottom:4px solid var(--gold); padding-bottom:10px; margin-top:0; }
+  h2 { font-size:23px; margin-top:2em; border-bottom:1px solid var(--line); padding-bottom:6px; }
+  h3 { font-size:18px; margin-top:1.6em; color:var(--soft); }
+  p, li { color:var(--ink); }
+  code { background:#efe9db; padding:1px 6px; border-radius:4px; font:0.88em "Consolas",monospace; color:#6b551f; }
+  strong { color:var(--ink); }
+  a { color:var(--gold); }
+  table { border-collapse:collapse; width:100%; margin:1.2em 0; font-size:14.5px; background:#fff; }
+  th, td { border:1px solid var(--line); padding:8px 11px; text-align:left; vertical-align:top; }
+  th { background:#f2ecdd; font-weight:700; }
+  tr:nth-child(even) td { background:#fbf9f4; }
+  blockquote { border-left:4px solid var(--gold); margin:1.2em 0; padding:6px 16px;
+    background:#f6f1e6; color:var(--soft); font-style:italic; }
+  hr { border:0; border-top:1px solid var(--line); margin:2em 0; }
+  ul, ol { padding-left:1.4em; }
+  li { margin:4px 0; }
+  @media print { body { background:#fff; padding:0; max-width:none; } th { background:#eee !important; } }
+</style></head>
+<body>
+<h1>B2C My Final Playbook (Agentic) — architecture handoff</h1>
+<p>A freemium, AI-agent B2C product, built as a SEPARATE app from the B2B platform, but sharing ONE operator/analytics dashboard. This doc is the build brief: AWS, backend, tables, and the shared-admin design.</p>
+<p><strong>Status:</strong> not built, not hosted. This is the plan to hand to whoever builds it. <strong>Relationship to B2B:</strong> separate user pool, separate data, separate experience. Shared: the operator console + analytics, the shared control plane, the domain.</p>
+<hr>
+<h2>1. Product shape (what we are building)</h2>
+<table>
+<thead><tr><th>Tier</th><th>Playbook access</th><th>AI agent</th><th>Price</th></tr></thead>
+<tbody>
+<tr><td><strong>Free</strong></td><td>ONE action item unlocked; the rest LOCKED</td><td>3 queries total</td><td>$0</td></tr>
+<tr><td><strong>Paid</strong></td><td>Full plan: 7-day planner + all action items</td><td>Unlimited agent, with access to the member's own plan and general Q&amp;A</td><td>subscription</td></tr>
+</tbody></table>
+<ul>
+<li>Free is the hook: real value in one item, a locked preview of the rest, and a</li>
+</ul>
+<p>  taste of the agent (3 queries), so the upgrade is obvious.</p>
+<ul>
+<li>Paid unlocks: the full personalized plan, the planner, and an unlimited agent</li>
+</ul>
+<p>  that can read the member's plan ("what's my next step?", "explain a POA to me").</p>
+<p>The CONTENT and personalization engine are the SAME as B2B (questions, milestones, signals, the MOAT). B2C differs in packaging (gating + agent + payments), not in the underlying plan logic. Reuse, do not fork, the content model.</p>
+<hr>
+<h2>2. The core architectural decision: how "separate apps, one admin" works</h2>
+<p>The clean model is <strong>two data planes, one control/operator plane.</strong> Nothing here reopens the B2B locked decisions — B2C is additive alongside them.</p>
+<p>``<code>                         ┌─────────────────────────────┐                         │   SHARED CONTROL PLANE       │                         │  (already exists for B2B)    │                         │  - CloudFront + WAF          │                         │  - API Gateway + HTTP Lambda │                         │  - Operator Cognito pool     │                         │  - Control DDB (content,      │                         │    config, analytics stream) │                         │  - Audit bucket, SES, etc.   │                         └───────┬─────────────┬────────┘                                 │             │             ┌───────────────────┘             └──────────────────┐    ┌────────▼─────────┐                              ┌────────────▼─────────┐    │  B2B PLANE       │                              │  B2C PLANE           │    │  (this repo)     │                              │  (new app)           │    │  - Tenant Cognito│                              │  - B2C Cognito pool  │    │    pools (N)     │                              │    (ONE pool, self-  │    │  - Per-tenant DDB│                              │    service signup)   │    │  - Per-tenant KMS│                              │  - B2C DDB table     │    └──────────────────┘                              │  - Stripe billing    │                                                      └──────────────────────┘ </code>``</p>
+<p><strong>Why this shape:</strong></p>
+<ul>
+<li><strong>Separate user pools</strong> = a B2C consumer can never appear in a corporate tenant,</li>
+</ul>
+<p>  and vice versa. Different auth, different signup, different data-subject rights.</p>
+<ul>
+<li><strong>Shared operator pool + analytics</strong> = ONE admin dashboard. Operators log in</li>
+</ul>
+<p>  once and see both planes because both write to the SAME analytics stream and   audit bucket. The dashboard queries across planes; the members never mix.</p>
+<ul>
+<li><strong>Shared content plane</strong> = B2C reads the SAME published content bundle</li>
+</ul>
+<p>  (<code>GET /api/v2/content</code>) as B2B. One place to author questions/milestones.</p>
+<hr>
+<h2>3. Tables (naming stays consistent with the current family)</h2>
+<p>Keep the <code>lro-{env}-*</code> family so operations, tagging, and IaC stay uniform.</p>
+<table>
+<thead><tr><th>Table</th><th>Plane</th><th>Purpose</th><th>Key design</th></tr></thead>
+<tbody>
+<tr><td><code>lro-{env}-control</code></td><td>shared</td><td>content bundle, config, feature flags (EXISTS)</td><td><code>V2CONTENT#member</code>, etc.</td></tr>
+<tr><td><code>lro-{env}-tenant-{slug}</code></td><td>B2B</td><td>per-tenant member data (EXISTS)</td><td><code>MEMBER#{id}</code> / <code>V2#*</code></td></tr>
+<tr><td><strong><code>lro-{env}-b2c</code></strong> (NEW)</td><td>B2C</td><td>ALL B2C consumer data, single table</td><td>see below</td></tr>
+<tr><td><code>lros-audit</code> / analytics stream</td><td>shared</td><td>operator dashboard source</td><td>both planes emit here</td></tr>
+</tbody></table>
+<h3><code>lro-{env}-b2c</code> single-table design</h3>
+<p>B2C is one shared pool (not per-tenant), so ONE table with a user partition:</p>
+<table>
+<thead><tr><th>PK</th><th>SK</th><th>Item</th></tr></thead>
+<tbody>
+<tr><td><code>USER#{userId}</code></td><td><code>PROFILE</code></td><td>email, tier (free/paid), created, stripeCustomerId</td></tr>
+<tr><td><code>USER#{userId}</code></td><td><code>V2#STATE</code></td><td>answers, flags, assigned (same shape as B2B)</td></tr>
+<tr><td><code>USER#{userId}</code></td><td><code>V2#PROGRESS#{milestoneId}</code></td><td>status + persist-safe worksheet</td></tr>
+<tr><td><code>USER#{userId}</code></td><td><code>ENTITLEMENT</code></td><td>tier, planExpiresAt, agentQueriesUsed, unlockedActionIds[]</td></tr>
+<tr><td><code>USER#{userId}</code></td><td><code>AGENT#SESSION#{id}</code></td><td>agent conversation refs (NOT raw PII)</td></tr>
+<tr><td><code>USER#{userId}</code></td><td><code>SUB#{stripeSubId}</code></td><td>subscription status mirror (from Stripe webhook)</td></tr>
+</tbody></table>
+<ul>
+<li><strong>Same free-text rule as B2B:</strong> never store names/passwords/account numbers.</li>
+</ul>
+<p>  The agent works off the member's PLAN STRUCTURE, not stored sensitive text.</p>
+<ul>
+<li><strong>Entitlement is the gate:</strong> the <code>ENTITLEMENT</code> item is the single source of</li>
+</ul>
+<p>  truth for "free vs paid," how many agent queries are left, and which action is   unlocked. Every gated endpoint checks it.</p>
+<ul>
+<li>Encryption: table-level KMS (a B2C CMK) is enough; no per-user CMK needed</li>
+</ul>
+<p>  (consumers are not tenants, cryptographic-erase-per-tenant does not apply). A   GDPR delete is a per-user item purge on this one table.</p>
+<hr>
+<h2>4. Freemium gating (where the free/paid line is enforced)</h2>
+<p>Enforce SERVER-SIDE, never trust the client:</p>
+<table>
+<thead><tr><th>Gate</th><th>Rule</th><th>Enforced at</th></tr></thead>
+<tbody>
+<tr><td>Action items</td><td>Free: only <code>unlockedActionIds[0]</code> returns full content; others return a LOCKED stub (title + "upgrade to unlock"). Paid: all.</td><td>plan/read endpoint reads <code>ENTITLEMENT.tier</code></td></tr>
+<tr><td>Agent queries</td><td>Free: reject once <code>agentQueriesUsed &gt;= 3</code>. Paid: unlimited.</td><td>agent endpoint increments + checks <code>ENTITLEMENT</code> atomically</td></tr>
+<tr><td>7-day planner</td><td>Paid only.</td><td>planner endpoint checks tier</td></tr>
+</tbody></table>
+<p>The client shows locks/paywalls for UX, but the API is the boundary — a free user hitting a paid endpoint gets a 402/403, always.</p>
+<hr>
+<h2>5. The AI agent (the paid differentiator)</h2>
+<ul>
+<li><strong>Model:</strong> Claude (latest — this is an Anthropic-aligned build). The agent has a</li>
+</ul>
+<p>  system prompt scoped to legacy planning + the member's OWN plan structure   (assigned milestones, completion state — never their free-text).</p>
+<ul>
+<li><strong>Free tier:</strong> 3 queries, hard-capped by the <code>ENTITLEMENT.agentQueriesUsed</code></li>
+</ul>
+<p>  counter (atomic DDB update, so it cannot be raced past 3).</p>
+<ul>
+<li><strong>Paid tier:</strong> unlimited; can answer "what's my next step," "explain X,"</li>
+</ul>
+<p>  "reorder my plan for a divorce," grounded in the published content + their plan.</p>
+<ul>
+<li><strong>Data boundary:</strong> the agent NEVER sees stored PII (there is none). It sees the</li>
+</ul>
+<p>  plan skeleton + the shared content bundle. This keeps the agent useful and the   data safe — same Tripwire-10 posture as everything else.</p>
+<ul>
+<li>Runs on the shared HTTP Lambda under <code>/api/b2c/agent</code> (or its own Lambda if</li>
+</ul>
+<p>  streaming responses need it) — no new architecture, an added route.</p>
+<hr>
+<h2>6. Payments (Stripe — pattern already exists in B2B)</h2>
+<p>The B2B repo already has a Stripe integration (<code>services/api/src/routes/stripe.ts</code>, webhook). Reuse it:</p>
+<ul>
+<li>Checkout for the paid tier → Stripe.</li>
+<li>Webhook (<code>/api/b2c/stripe/webhook</code>) updates <code>ENTITLEMENT.tier</code> = paid and</li>
+</ul>
+<p>  <code>SUB#{id}</code> on <code>checkout.session.completed</code> / <code>customer.subscription.*</code>.</p>
+<ul>
+<li>On cancel/lapse → tier back to free (or a grace window). All server-side.</li>
+</ul>
+<hr>
+<h2>7. The shared admin/analytics dashboard (your key requirement)</h2>
+<p>ONE operator dashboard, both planes visible, users never mixed:</p>
+<ul>
+<li><strong>Auth:</strong> operators use the EXISTING operator Cognito pool (TOTP MFA). No new</li>
+</ul>
+<p>  admin login.</p>
+<ul>
+<li><strong>How both planes show up:</strong> both B2B and B2C emit the SAME analytics events</li>
+</ul>
+<p>  (DynamoDB Streams → Firehose → S3 → Athena, already the B2B pattern) and the   SAME audit events. Add a <code>plane: 'b2b' | 'b2c'</code> dimension to every event.</p>
+<ul>
+<li><strong>Dashboard queries:</strong> the admin UI filters by <code>plane</code> — "show B2C conversions,"</li>
+</ul>
+<p>  "show B2B tenant X," or combined. Because it is one analytics store with a plane   tag, the dashboard is one app over both.</p>
+<ul>
+<li><strong>What operators see for B2C:</strong> signups, free→paid conversion, agent usage,</li>
+</ul>
+<p>  action-completion funnels, churn. All from the analytics stream, no direct   reads into member data (privacy preserved).</p>
+<p>Result: separate experiences, separate pools, separate tables — but one place to run the business, exactly as asked.</p>
+<hr>
+<h2>8. URL / hosting (roughly the same domain when live)</h2>
+<ul>
+<li>B2B today: <code>{tenant}.enterprise.endevo.life</code>.</li>
+<li>B2C suggestion: <code>app.endevo.life</code> or <code>my.endevo.life</code> (one consumer host, since</li>
+</ul>
+<p>  there is no per-tenant subdomain for consumers). Operator console stays   <code>admin.endevo.life</code>.</p>
+<ul>
+<li>Same CloudFront + wildcard ACM cert (<code>*.endevo.life</code>, already exists). B2C is a</li>
+</ul>
+<p>  new CloudFront behavior / distribution pointing at the B2C SPA bucket; the API   is the shared API Gateway with <code>/api/b2c/*</code> routes.</p>
+<hr>
+<h2>9. Build order (suggested)</h2>
+<ol>
+<li><code>lro-{env}-b2c</code> table + B2C Cognito pool (self-service signup) via CDK.</li>
+<li>B2C SPA skeleton (can reuse the V2 experience components — same content model).</li>
+<li>Entitlement item + gating middleware (free/paid, query counter).</li>
+<li><code>/api/b2c/*</code> routes on the shared Lambda: plan read (gated), agent, planner.</li>
+<li>Stripe checkout + webhook → entitlement flips.</li>
+<li>Analytics <code>plane</code> tag on every event; extend the operator dashboard with a</li>
+</ol>
+<p>   plane filter.</p>
+<ol>
+<li>CloudFront behavior + <code>my.endevo.life</code> DNS.</li>
+</ol>
+<hr>
+<h2>10. What this does NOT do (guardrails)</h2>
+<ul>
+<li>Does NOT touch B2B tenant tables or pools.</li>
+<li>Does NOT store consumer PII beyond identity + plan structure (Tripwire 10 holds).</li>
+<li>Does NOT fork the content/personalization engine — B2C reads the same bundle.</li>
+<li>Does NOT give the free tier a way to exceed limits (server-enforced).</li>
+</ul>
+<hr>
+<p style="color:#8a8577;font-size:13px">ENDevo — My Final Playbook · design review copy · print to PDF with Ctrl+P</p>
+</body></html>

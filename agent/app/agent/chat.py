@@ -97,7 +97,14 @@ def _chat_bedrock(plan: dict, member_first_name: str, history: list[ChatMessage]
 
     try:
         data = json.loads(raw_text)
-        return ChatReply(**data)
+        # Only a JSON OBJECT with a string "reply" is a valid structured result.
+        # Llama often returns a bare JSON string ("...answer...") or a list, which
+        # json.loads() decodes fine but ChatReply(**data) can't accept -- so guard
+        # the shape and otherwise fall through to the plain-text path below.
+        if isinstance(data, dict) and isinstance(data.get("reply"), str):
+            return ChatReply(reply=data["reply"])
+        if isinstance(data, str) and data.strip():
+            return ChatReply(reply=data.strip())
     except json.JSONDecodeError:
         pass  # fall through to the plain-text fallback below
 

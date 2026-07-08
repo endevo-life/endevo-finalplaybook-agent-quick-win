@@ -44,7 +44,7 @@ def create_checkout_session(email: str) -> str:
     if not is_configured():
         raise RuntimeError("Billing is not configured (set STRIPE_SECRET_KEY and STRIPE_PRICE_ID).")
     stripe = _client()
-    base = os.environ.get("APP_BASE_URL", "http://localhost:5173")
+    base = os.environ.get("APP_BASE_URL", "http://localhost:3200")
 
     store = get_store()
     user = store.get_user(email) or store.upsert_user(email, tier="free")

@@ -1,0 +1,72 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>Final Playbook — self test</title>
+<style>
+ body{font-family:system-ui;max-width:640px;margin:40px auto;padding:0 20px;color:#161f33}
+ .row{padding:8px 12px;margin:6px 0;border-radius:8px;border:1px solid #e3e1d9}
+ .ok{background:#e9f7ec;border-color:#8fd19e}
+ .fail{background:#fdecea;border-color:#f1a9a0}
+ button{background:#1b2a4a;color:#fff;border:0;border-radius:8px;padding:12px 20px;font-size:15px;cursor:pointer}
+ pre{background:#f2f0ec;padding:10px;border-radius:8px;overflow:auto;font-size:12px}
+</style></head>
+<body>
+<h1>Final Playbook — browser self-test</h1>
+<p>This runs the EXACT flow the app uses (fetch → sign in → upgrade), straight from your browser, and shows where it breaks.</p>
+<button onclick="run()">Run full test →</button>
+<div id="out"></div>
+<script>
+const BASE = "http://localhost:8001";
+const out = document.getElementById("out");
+function log(msg, ok){ const d=document.createElement("div"); d.className="row "+(ok?"ok":"fail"); d.innerHTML=msg; out.appendChild(d); }
+// Mirror the real app's client: always send JSON content-type when there's a body.
+async function call(path, opts={}){
+  const headers = { ...(opts.body ? {"Content-Type":"application/json"} : {}), ...(opts.headers||{}) };
+  const res = await fetch(BASE+path, { ...opts, headers });
+  const data = await res.json().catch(()=>null);
+  return { status: res.status, data };
+}
+async function run(){
+  out.innerHTML="";
+  const email = "selftest+"+Date.now()+"@test.com";
+  try {
+    log("① fetching /api/health ...");
+    const h = await call("/api/health");
+    log("① health: "+JSON.stringify(h.data)+" (status "+h.status+")", h.status===200);
+
+    log("② auth/start (send code) ...");
+    const s = await call("/api/auth/start",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email})});
+    log("② start: code="+(s.data&&s.data.devLoginCode)+" (status "+s.status+")", s.status===200 && s.data.devLoginCode);
+
+    log("③ auth/verify (log in) ...");
+    const v = await call("/api/auth/verify",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email, code:s.data.devLoginCode})});
+    const token = v.data && v.data.token;
+    log("③ verify: token="+(token?"YES":"NO")+", tier="+(v.data&&v.data.user&&v.data.user.tier)+" (status "+v.status+")", !!token);
+    if(!token){ log("STOPPED: no token — login failed here.", false); return; }
+    const auth = {Authorization:"Bearer "+token};
+
+    log("④ billing/checkout (expect 503) ...");
+    const c = await call("/api/billing/checkout",{method:"POST",headers:auth});
+    log("④ checkout: status "+c.status+" (503 = not configured, correct)", c.status===503);
+
+    log("⑤ billing/dev-upgrade ...");
+    const u = await call("/api/billing/dev-upgrade",{method:"POST",headers:auth});
+    log("⑤ dev-upgrade: tier="+(u.data&&u.data.tier)+" (status "+u.status+")", u.status===200 && u.data.tier==="paid");
+
+    log("⑥ /api/me (confirm premium) ...");
+    const me = await call("/api/me",{headers:auth});
+    log("⑥ me: tier="+(me.data&&me.data.tier)+" (status "+me.status+")", me.data&&me.data.tier==="paid");
+
+    log("⑦ chat (the AI assistant) — this can take a few seconds ...");
+    const plan = {leadProfile:{id:"x",name:"Your Final Playbook"},actionItems:[{text:"Name beneficiaries on your accounts",domain:"financial",steps:["Log in to each account"]}],businessActionItems:[],digitalActionItems:[],quotes:[]};
+    const chat = await call("/api/chat",{method:"POST",headers:auth,body:JSON.stringify({plan,memberFirstName:"You",history:[{role:"user",content:"what should I do first?"}]})});
+    const reply = chat.data && chat.data.reply;
+    log("⑦ chat: status "+chat.status+"<br><i>reply: "+(reply?reply.slice(0,140):JSON.stringify(chat.data))+"</i>", chat.status===200 && !!reply);
+
+    if(me.data&&me.data.tier==="paid" && reply) log("<b>✅ FULL FLOW (incl. CHAT) WORKS IN YOUR BROWSER — the app should work. If the app itself doesn't, hard-refresh (Ctrl+Shift+R) the app tab.</b>", true);
+  } catch(e){
+    log("<b>❌ ERROR: "+e.message+"</b><br>This is likely CORS or the backend being down. Check the browser console (F12).", false);
+  }
+}
+</script>
+</body>
+</html>

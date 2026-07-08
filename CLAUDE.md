@@ -81,7 +81,7 @@ Frontend (from `frontend/`):
 npm install
 npm run dev
 ```
-Then open `http://localhost:5173`. In dev the login code is returned in the
+Then open `http://localhost:3200`. In dev the login code is returned in the
 response (shown in the sign-in modal) — no email provider needed.
 
 Paid tier requires `ANTHROPIC_API_KEY` set before starting the backend — without

@@ -109,7 +109,7 @@ def _personalize_bedrock(plan: dict, member_first_name: str) -> PersonalizedPlan
     import boto3  # lazy import: only needed when LLM_BACKEND=bedrock
 
     region = os.environ.get("BEDROCK_REGION", "us-east-1")
-    model_id = os.environ.get("BEDROCK_MODEL_ID", "meta.llama3-1-8b-instruct-v1:0")
+    model_id = os.environ.get("BEDROCK_MODEL_ID", "us.meta.llama3-1-8b-instruct-v1:0")
     client = boto3.client("bedrock-runtime", region_name=region)
     user_content = build_grounding_context(plan, member_first_name)
 

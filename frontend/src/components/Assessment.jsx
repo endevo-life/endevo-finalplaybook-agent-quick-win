@@ -5,7 +5,7 @@ import {
 } from "../api/client";
 import ActionCard from "./ActionCard";
 import ChatWidget from "./ChatWidget";
-import { PRODUCT_NAME } from "../config/branding";
+import { PRODUCT_NAME, PLAYBOOK_NAME, firstName } from "../config/branding";
 
 // The chat backend grounds on a plan shape with actionItems/leadProfile. Adapt
 // the assessment result (basicsFirst + domainItems) into that shape so a paid
@@ -20,7 +20,7 @@ function toChatPlan(plan) {
   });
   const items = [...plan.basicsFirst.map(mapItem), ...plan.domainItems.map(mapItem)];
   return {
-    leadProfile: { id: "domain_assessment", name: "Your Final Playbook assessment" },
+    leadProfile: { id: "domain_assessment", name: "My Final Playbook assessment" },
     actionItems: items,
     businessActionItems: [],
     digitalActionItems: [],
@@ -141,7 +141,7 @@ export default function Assessment({ user, onBack, onUpgrade, isPaid }) {
     let totalSteps = 0;
     let doneSteps = 0;
     allItems.forEach((it) => {
-      const steps = it.resultType === "review" ? [] : (it.steps || []);
+      const steps = it.resultType === "review" ? (it.checklist || []) : (it.steps || []);
       steps.forEach((_, i) => {
         totalSteps += 1;
         if (tracked[stepKeyFor(it.id, i)]) doneSteps += 1;
@@ -167,7 +167,7 @@ export default function Assessment({ user, onBack, onUpgrade, isPaid }) {
       <div className="fp-page">
         <button onClick={onBack} className="fp-btn-back">← start over</button>
         <h2 className="fp-h2" style={{ marginTop: 12 }}>
-          {user?.name ? `${user.name}, here's` : "Here's"} your Final Playbook
+          {firstName(user?.name) ? `${firstName(user.name)}, here's ${PLAYBOOK_NAME}` : `Here's ${PLAYBOOK_NAME}`}
         </h2>
 
         {isPaid ? (
@@ -224,7 +224,7 @@ export default function Assessment({ user, onBack, onUpgrade, isPaid }) {
 
         {plan.domainItems.length > 0 && (
           <>
-            <p className="fp-question-topic" style={{ marginTop: 22 }}>Your Final Playbook</p>
+            <p className="fp-question-topic" style={{ marginTop: 22 }}>{PLAYBOOK_NAME}</p>
             {/* Free sees these blurred; Premium sees them interactive. */}
             {plan.domainItems.map((d) => renderCard(d, !isPaid))}
           </>
@@ -233,7 +233,7 @@ export default function Assessment({ user, onBack, onUpgrade, isPaid }) {
         {/* Free: single unlock CTA under the blurred playbook. */}
         {!isPaid && plan.domainItems.length > 0 && (
           <div className="fp-lock-card">
-            <p className="fp-lock-title">🔒 Your full playbook is ready</p>
+            <p className="fp-lock-title">🔒 {PLAYBOOK_NAME} is ready</p>
             <p className="fp-lock-body">
               Unlock every step across your financial, digital, and physical plan —
               check items off, track your progress, and get an AI guide that walks
