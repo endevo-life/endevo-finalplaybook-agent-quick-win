@@ -1,9 +1,27 @@
+import { useEffect, useState } from "react";
 import { PLAYBOOK_NAME, PRODUCT_NAME } from "../config/branding";
 import { downloadPlaybookPdf } from "../lib/playbookPdf";
 import { useTypewriter } from "../lib/useTypewriter";
 
-// The newest item's title types itself in — the "watch it write your playbook"
-// moment. Earlier items render instantly.
+// Reveal items ONE AT A TIME so the playbook looks like it's being authored
+// live: item 1 types in, then item 2, and so on. Returns how many items are
+// currently visible. Respects prefers-reduced-motion (all visible at once).
+function useStaggeredReveal(count, perItemMs = 520) {
+  const [visible, setVisible] = useState(() => {
+    const reduce = typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    return reduce ? count : 0;
+  });
+  useEffect(() => {
+    const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    if (reduce) { setVisible(count); return; }
+    if (visible >= count) return;
+    const t = setTimeout(() => setVisible((v) => Math.min(v + 1, count)), perItemMs);
+    return () => clearTimeout(t);
+  }, [visible, count, perItemMs]);
+  return visible;
+}
+
+// A playbook line whose title types itself in when it first appears.
 function ItemTitle({ text, animate }) {
   const { shown, typing } = useTypewriter(text, animate);
   return (
@@ -32,7 +50,14 @@ function ItemTitle({ text, animate }) {
 //   onUpgrade   — called when a free user clicks the disabled download.
 export default function PlaybookPanel({ name, items, doneKeys, isPaid, onUpgrade }) {
   const total = items.length;
-  const started = items.filter((it) => it.steps?.some((_, i) => doneKeys.has(`${it.id}::${i}`))).length;
+  const doneCount = items.filter(
+    (it) => it.steps?.length && it.steps.every((_, i) => doneKeys.has(`${it.id}::${i}`))
+  ).length;
+
+  // Items reveal one-by-one — the playbook authors itself line by line.
+  const visible = useStaggeredReveal(total);
+  const shownItems = items.slice(0, visible);
+  const writing = visible < total; // still authoring
 
   return (
     <aside className="fp-pb" aria-label={PLAYBOOK_NAME}>
@@ -40,22 +65,24 @@ export default function PlaybookPanel({ name, items, doneKeys, isPaid, onUpgrade
         <header className="fp-pb-head">
           <p className="fp-pb-kicker">{PRODUCT_NAME}</p>
           <h3 className="fp-pb-title">{name ? `${name}'s ${PLAYBOOK_NAME}` : PLAYBOOK_NAME}</h3>
-          <p className="fp-pb-sub">{started} of {total} started · building as you go</p>
+          <p className="fp-pb-sub">
+            {writing ? "writing your playbook…" : `${doneCount} of ${total} complete`}
+          </p>
         </header>
 
         <ol className="fp-pb-list">
-          {items.map((it, idx) => {
+          {shownItems.map((it, idx) => {
             const steps = it.steps || [];
             const done = steps.filter((_, i) => doneKeys.has(`${it.id}::${i}`)).length;
             const complete = steps.length > 0 && done === steps.length;
-            const isLast = idx === items.length - 1; // newest item types itself in
+            const isNewest = idx === shownItems.length - 1 && writing; // the line being written now
             return (
               <li key={it.id} className={`fp-pb-item ${it.locked ? "locked" : ""} ${complete ? "done" : ""}`}>
                 <span className="fp-pb-mark" aria-hidden="true">
                   {it.locked ? "🔒" : complete ? "✓" : "○"}
                 </span>
                 <span className="fp-pb-item-body">
-                  <ItemTitle text={it.title || it.action} animate={isLast && !it.locked} />
+                  <ItemTitle text={it.title || it.action} animate={isNewest && !it.locked} />
                   {it.domain && <span className="fp-pb-item-domain">{it.domain}</span>}
                   {!it.locked && steps.length > 0 && (
                     <span className="fp-pb-item-prog">{done}/{steps.length} steps</span>
@@ -64,6 +91,9 @@ export default function PlaybookPanel({ name, items, doneKeys, isPaid, onUpgrade
               </li>
             );
           })}
+          {writing && (
+            <li className="fp-pb-writing" aria-hidden="true"><span className="fp-pb-pen">✍️</span></li>
+          )}
         </ol>
 
         <footer className="fp-pb-foot">
