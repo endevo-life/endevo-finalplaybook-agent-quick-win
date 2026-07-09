@@ -40,9 +40,17 @@ export default function Landing({ onStart, onSignIn, onUpgrade, isPaid }) {
           <button className="fp-btn" style={{ padding: "14px 30px", fontSize: 15 }} onClick={onStart}>
             {PRIMARY_CTA} →
           </button>
-          <button className="fp-btn-secondary" onClick={onSignIn}>Sign in</button>
         </div>
-        <p className="fp-hero-note">Free to start · No account needed to try · Not legal, financial, or medical advice</p>
+        <p className="fp-hero-note">
+          New here? Start free — no account needed. Takes about 5 minutes.
+        </p>
+        <p className="fp-hero-signin">
+          Already made your playbook?{" "}
+          <button className="fp-linkbtn" onClick={onSignIn}>Sign in to pick up where you left off</button>
+        </p>
+        <p className="fp-hero-note" style={{ marginTop: 18 }}>
+          Not legal, financial, or medical advice.
+        </p>
       </div>
 
       {/* Explainer video — "What happens to your digital life when you die" */}
