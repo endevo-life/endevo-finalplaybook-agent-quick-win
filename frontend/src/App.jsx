@@ -22,6 +22,10 @@ export default function App() {
   // "Why now?" signals (flags) — set by the WhyNow picker, used to REORDER the
   // assessment plan so it leads with what moved this person to act.
   const [signals, setSignals] = useState([]);
+  // True when the member reached the assessment via "Sign in" (returning) → we
+  // restore their saved plan. False when they came through the new-assessment
+  // flow (Why now?) → we show the questions fresh, never the old plan.
+  const [resumeSaved, setResumeSaved] = useState(false);
   const [result, setResult] = useState(null);
   const [glossary, setGlossary] = useState([]);
   const [showLogin, setShowLogin] = useState(false);
@@ -133,14 +137,15 @@ export default function App() {
     }
     if (pendingStart) {
       // They clicked "Get My Final Playbook": run the full new-user flow
-      // (name → why now → questions).
+      // (name → why now → questions). Fresh assessment — do NOT restore an old plan.
       setPendingStart(false);
+      setResumeSaved(false);
       setRoute("identify");
       return;
     }
     // Plain "Sign in" — a returning member. Skip the intro; go straight to their
-    // playbook. Assessment restores their saved plan on mount, or shows the
-    // questions if they have none. We don't re-ask their name or plan.
+    // playbook. Restore their saved plan on mount (or show questions if none).
+    setResumeSaved(true);
     setRoute("assessment");
   }
 
@@ -181,7 +186,7 @@ export default function App() {
           user={user}
           picked={signals}
           setPicked={setSignals}
-          onNext={() => setRoute("assessment")}
+          onNext={() => { setResumeSaved(false); setRoute("assessment"); }}
           onBack={() => setRoute("identify")}
         />
       )}
@@ -190,6 +195,7 @@ export default function App() {
         <Assessment
           user={user}
           signals={signals}
+          resume={resumeSaved}
           isPaid={auth.isPaid}
           onUpgrade={handleUpgrade}
           onBack={() => setRoute("landing")}

@@ -43,7 +43,7 @@ function applySignals(plan, signals) {
   return { ...plan, domainItems: reorderBySignals(plan.domainItems || [], signals) };
 }
 
-export default function Assessment({ user, signals = [], onBack, onUpgrade, isPaid }) {
+export default function Assessment({ user, signals = [], resume = false, onBack, onUpgrade, isPaid }) {
   const [questions, setQuestions] = useState(null);
   const [idx, setIdx] = useState(0);
   const [answers, setAnswers] = useState({});
@@ -107,8 +107,12 @@ export default function Assessment({ user, signals = [], onBack, onUpgrade, isPa
 
   // On mount for a logged-in user: restore their saved answers, plan, progress,
   // and narrative from the server so they resume where they left off (any device).
+  //
+  // ONLY when `resume` is set (they arrived via "Sign in" as a returning member).
+  // When they came through the new-assessment flow (Why now?), we must NOT jump
+  // to an old saved plan — they intend to take the questions fresh.
   useEffect(() => {
-    if (!getToken()) return;
+    if (!getToken() || !resume) return;
     getMyPlan()
       .then((saved) => {
         if (saved.tracked && Object.keys(saved.tracked).length) setTracked(saved.tracked);
@@ -120,7 +124,7 @@ export default function Assessment({ user, signals = [], onBack, onUpgrade, isPa
         }
       })
       .catch(() => {});
-  }, []);
+  }, [resume]);
 
   // Auto-save the user's plan + progress + narrative to the server whenever it
   // changes (logged-in only). This is what makes "log in later, get it all back"
