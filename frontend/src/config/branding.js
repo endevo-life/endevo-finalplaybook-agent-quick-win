@@ -6,7 +6,7 @@
 // Product + company identity ------------------------------------------------
 export const PRODUCT_NAME = "MyFinalPlaybook";
 export const COMPANY_NAME = "MyFinalPlaybook";     // shown in the top-left nav
-export const TAGLINE = "Live Fully, Die Ready.";
+export const TAGLINE = "Live Fully ~ Die Ready.";
 
 // The member-facing name of the deliverable. ALWAYS "My Final Playbook" (never
 // "Your Final Playbook") -- it's the member's own document. Use this everywhere
