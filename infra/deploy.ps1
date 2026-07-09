@@ -20,6 +20,7 @@ param(
   [string]$CognitoClientId   = "2hsqh99bm3l6hqj9uskbtbgdgd",
   [string]$CognitoRegion     = "us-east-1",
   [string]$AdminEmails     = "hello@endevo.life,bluesproutagency@gmail.com",
+  [string]$AllowDevUpgrade = "true",   # demo: enables in-app upgrade/cancel. Set "false" for real prod.
   [string]$AllowedOrigins  = "http://localhost:3200",
   [string]$AppBaseUrl      = "http://localhost:3200"
 )
@@ -67,6 +68,7 @@ sam deploy `
     "CognitoRegion=$CognitoRegion" `
     "AdminToken=$adminToken" `
     "AdminEmails=$AdminEmails" `
+    "AllowDevUpgrade=$AllowDevUpgrade" `
     "AllowedOrigins=$AllowedOrigins" `
     "AppBaseUrl=$AppBaseUrl"
 if ($LASTEXITCODE -ne 0) { throw "sam deploy failed" }

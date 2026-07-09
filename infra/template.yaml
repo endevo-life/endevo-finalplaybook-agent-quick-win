@@ -98,6 +98,14 @@ Parameters:
     Type: String
     Default: "us-east-1"
     Description: Region the Cognito user pool lives in.
+  AllowDevUpgrade:
+    Type: String
+    Default: "false"
+    AllowedValues: ["true", "false"]
+    Description: >
+      "true" enables the no-Stripe upgrade/downgrade routes (for demos). MUST be
+      "false" in real production, where Stripe's webhook is the only way to
+      grant/revoke paid.
   AdminToken:
     Type: String
     NoEcho: true
@@ -145,7 +153,7 @@ Resources:
           COGNITO_REGION: !Ref CognitoRegion
           ADMIN_TOKEN: !Ref AdminToken
           ADMIN_EMAILS: !Ref AdminEmails
-          ALLOW_DEV_UPGRADE: "false"
+          ALLOW_DEV_UPGRADE: !Ref AllowDevUpgrade
           PRODUCT_NAME: "Final Playbook"
       Policies:
         # The 7 tables already exist (created outside this stack); grant CRUD on
