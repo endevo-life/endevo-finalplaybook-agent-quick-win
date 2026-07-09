@@ -1,6 +1,7 @@
 import { PRODUCT_NAME, TAGLINE, PRIMARY_CTA } from "../config/branding";
 import Pricing from "./Pricing";
 import landingVideo from "../assets/video_landing/MyFinalPlaybook Video (music).mp4";
+import landingCaptions from "../assets/video_landing/captions.en.vtt?url";
 
 // Public marketing page. Positioning (per growth strategy): we own DIGITAL death
 // — the questions nobody else answers. The product is fear reduction: turn "what
@@ -50,10 +51,20 @@ export default function Landing({ onStart, onSignIn, onUpgrade, isPaid }) {
           className="fp-video"
           src={landingVideo}
           controls
+          controlsList="nodownload noplaybackrate"
+          disablePictureInPicture
           preload="metadata"
           playsInline
+          onContextMenu={(e) => e.preventDefault()}
           aria-label="What happens to your digital life when you die (2 min)"
         >
+          <track
+            kind="subtitles"
+            src={landingCaptions}
+            srcLang="en"
+            label="English"
+            default
+          />
           Your browser doesn’t support embedded video.
         </video>
       </div>
