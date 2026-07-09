@@ -111,3 +111,7 @@ export function startCheckout() {
 export function devUpgrade() {
   return request("/api/billing/dev-upgrade", { method: "POST" });
 }
+// Cancel subscription -> back to free. Backend gates behind ALLOW_DEV_UPGRADE.
+export function cancelSubscription() {
+  return request("/api/billing/downgrade", { method: "POST" });
+}

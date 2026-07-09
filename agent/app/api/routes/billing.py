@@ -36,6 +36,19 @@ def billing_dev_upgrade(email: str = Depends(require_email)):
     return entitlement_for(email).snapshot()
 
 
+@router.post("/downgrade")
+def billing_downgrade(email: str = Depends(require_email)):
+    """Cancel the subscription -- flip the user back to the free tier. Guarded by
+    ALLOW_DEV_UPGRADE (same gate as dev-upgrade) so it can't be hit in a
+    production Stripe setup, where cancellation flows through the Stripe portal +
+    webhook instead. Idempotent: downgrading an already-free user is a no-op."""
+    if not ALLOW_DEV_UPGRADE:
+        raise HTTPException(403, "Manage your subscription through the billing portal.")
+    get_store().set_tier(email, "free")
+    analytics.emit(analytics.UPGRADE_BLOCKED, email=email, feature="downgrade", code=0)
+    return entitlement_for(email).snapshot()
+
+
 @router.post("/webhook")
 async def billing_webhook(request: Request, stripe_signature: Optional[str] = Header(None)):
     payload = await request.body()

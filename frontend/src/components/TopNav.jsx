@@ -1,7 +1,7 @@
 import { COMPANY_NAME, PRODUCT_NAME } from "../config/branding";
 import Logo from "./Logo";
 
-export default function TopNav({ route, user, account, onHome, onSignIn, onSignOut }) {
+export default function TopNav({ route, user, account, onHome, onSignIn, onSignOut, onSettings }) {
   return (
     <div className="fp-topnav">
       <div className="fp-topnav-brand" onClick={onHome}>
@@ -16,7 +16,10 @@ export default function TopNav({ route, user, account, onHome, onSignIn, onSignO
             <span className={`fp-tier-pill ${account.tier === "paid" ? "paid" : ""}`}>
               {account.tier === "paid" ? "Personalized" : "Free"}
             </span>
-            <div className="fp-avatar">{account.email.charAt(0).toUpperCase()}</div>
+            <button className="fp-btn-back" onClick={onSettings} title="Account settings">
+              <span className="fp-avatar" style={{ cursor: "pointer" }}>{account.email.charAt(0).toUpperCase()}</span>
+            </button>
+            <button className="fp-btn-back" onClick={onSettings}>settings</button>
             <button className="fp-btn-back" onClick={onSignOut}>sign out</button>
           </>
         ) : (

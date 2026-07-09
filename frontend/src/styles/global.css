@@ -599,6 +599,22 @@ button, input, textarea {
   .fp-pb { position: static; order: -1; margin-bottom: 8px; }
 }
 
+/* ── account / settings modal ────────────────────────────────────── */
+.fp-settings-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  padding: 12px 0; border-bottom: 1px solid var(--line);
+}
+.fp-settings-label { font-size: 13px; color: var(--dim); font-weight: 600; }
+.fp-settings-value { font-size: 14px; color: var(--ink); }
+.fp-settings-actions { margin-top: 20px; }
+.fp-settings-confirm { margin-top: 4px; }
+.fp-btn-danger {
+  background: #C0392B; color: #fff; border: none; border-radius: 10px;
+  padding: 12px 18px; font: inherit; font-weight: 600; font-size: 14px; cursor: pointer;
+}
+.fp-btn-danger:hover { filter: brightness(1.08); }
+.fp-btn-danger:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
 /* ── demo checkout modal ─────────────────────────────────────────── */
 .fp-checkout { max-width: 400px; }
 .fp-checkout-demo-tag {

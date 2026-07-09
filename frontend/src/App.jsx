@@ -11,6 +11,7 @@ import ResultsPanel from "./components/ResultsPanel";
 import Assessment from "./components/Assessment";
 import LoginModal from "./components/LoginModal";
 import DemoCheckout from "./components/DemoCheckout";
+import Settings from "./components/Settings";
 import { getGlossary, startCheckout, devUpgrade, getToken } from "./api/client";
 import { useAuth } from "./auth/useAuth";
 import { firstName } from "./config/branding";
@@ -31,6 +32,7 @@ export default function App() {
   const [glossary, setGlossary] = useState([]);
   const [showLogin, setShowLogin] = useState(false);
   const [showCheckout, setShowCheckout] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   // When true, a successful login should immediately resume the upgrade flow
   // (user clicked Upgrade while logged out).
   const [pendingUpgrade, setPendingUpgrade] = useState(false);
@@ -158,6 +160,7 @@ export default function App() {
         onHome={restart}
         onSignIn={() => setShowLogin(true)}
         onSignOut={auth.logout}
+        onSettings={() => setShowSettings(true)}
       />
       <Disclaimer />
 
@@ -246,6 +249,14 @@ export default function App() {
           price={25}
           onConfirm={confirmUpgrade}
           onClose={() => setShowCheckout(false)}
+        />
+      )}
+
+      {showSettings && (
+        <Settings
+          account={auth.account}
+          onChanged={auth.refresh}
+          onClose={() => setShowSettings(false)}
         />
       )}
     </div>
