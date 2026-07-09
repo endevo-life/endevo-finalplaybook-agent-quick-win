@@ -1,0 +1,93 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  My Final Playbook — frontend hosting. Private S3 bucket (the built Vite app)
+  behind a CloudFront distribution with HTTPS, SPA routing, and Origin Access
+  Control so the bucket is never public. Deployed as its OWN stack (separate
+  from the backend) so it can be created/updated without touching the live API.
+
+Parameters:
+  BucketName:
+    Type: String
+    Default: "mfp-dev-frontend"
+    Description: Globally-unique S3 bucket name for the built app.
+
+Resources:
+  # Private bucket — no public access; only CloudFront (via OAC) can read it.
+  SiteBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref BucketName
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  # Origin Access Control: the modern, secure way for CloudFront to read a
+  # private bucket (replaces the legacy Origin Access Identity).
+  OAC:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+      OriginAccessControlConfig:
+        Name: !Sub "${BucketName}-oac"
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
+
+  Distribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        DefaultRootObject: index.html
+        PriceClass: PriceClass_100   # cheapest: NA + EU edge locations
+        Origins:
+          - Id: s3origin
+            DomainName: !GetAtt SiteBucket.RegionalDomainName
+            OriginAccessControlId: !Ref OAC
+            S3OriginConfig:
+              OriginAccessIdentity: ""   # empty: OAC is used instead of legacy OAI
+        DefaultCacheBehavior:
+          TargetOriginId: s3origin
+          ViewerProtocolPolicy: redirect-to-https
+          Compress: true
+          # AWS managed "CachingOptimized" policy id (stable, well-known).
+          CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6
+        # SPA routing: S3 404/403 (deep links like /admin) → index.html, 200.
+        CustomErrorResponses:
+          - ErrorCode: 403
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+          - ErrorCode: 404
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+        ViewerCertificate:
+          CloudFrontDefaultCertificate: true   # *.cloudfront.net HTTPS, no custom domain
+
+  # Bucket policy: allow ONLY this CloudFront distribution to GetObject.
+  SiteBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref SiteBucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: cloudfront.amazonaws.com
+            Action: s3:GetObject
+            Resource: !Sub "${SiteBucket.Arn}/*"
+            Condition:
+              StringEquals:
+                AWS:SourceArn: !Sub "arn:aws:cloudfront::${AWS::AccountId}:distribution/${Distribution}"
+
+Outputs:
+  SiteBucketName:
+    Description: S3 bucket to upload the built app to.
+    Value: !Ref SiteBucket
+  DistributionId:
+    Description: CloudFront distribution id (for cache invalidation).
+    Value: !Ref Distribution
+  SiteUrl:
+    Description: The live HTTPS URL. Add this to the backend's ALLOWED_ORIGINS.
+    Value: !Sub "https://${Distribution.DomainName}"
