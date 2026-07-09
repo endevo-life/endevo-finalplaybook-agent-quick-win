@@ -218,13 +218,6 @@ export default function Assessment({ user, signals = [], resume = false, onBack,
 
     return (
       <div className="fp-page fp-results-layout">
-        <PlaybookPanel
-          name={firstName(user?.name)}
-          items={panelItems}
-          doneKeys={doneKeys}
-          isPaid={isPaid}
-          onUpgrade={onUpgrade}
-        />
       <div className="fp-results-main">
         <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
           <button onClick={onBack} className="fp-btn-back">← home</button>
@@ -313,6 +306,15 @@ export default function Assessment({ user, signals = [], resume = false, onBack,
         )}
 
       </div>{/* /fp-results-main */}
+
+        {/* The live playbook document — small panel on the RIGHT. */}
+        <PlaybookPanel
+          name={firstName(user?.name)}
+          items={panelItems}
+          doneKeys={doneKeys}
+          isPaid={isPaid}
+          onUpgrade={onUpgrade}
+        />
 
         {/* Chat: free users get a taste (limited queries), paid unlimited. */}
         <ChatWidget
