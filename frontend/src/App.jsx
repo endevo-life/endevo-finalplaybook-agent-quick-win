@@ -12,6 +12,7 @@ import Assessment from "./components/Assessment";
 import LoginModal from "./components/LoginModal";
 import { getGlossary, startCheckout, devUpgrade, getToken } from "./api/client";
 import { useAuth } from "./auth/useAuth";
+import { firstName } from "./config/branding";
 
 export default function App() {
   // landing | welcome | identify | scenarios | session | results
@@ -111,19 +112,36 @@ export default function App() {
     doUpgrade();
   }
 
-  // Called by the login modal on success. If the login was triggered by an
-  // Upgrade click, continue straight into the upgrade.
-  function handleLoggedIn() {
+  // Called by the login modal on success. Route based on WHY they signed in:
+  //   - pendingUpgrade → continue straight into checkout
+  //   - pendingStart   → they clicked "Get My Final Playbook": begin the flow
+  //   - plain "Sign in" (returning user) → go to their playbook. The Assessment
+  //     screen restores their saved plan on mount; if they have none, it shows
+  //     the questions. Either way we skip Identify — a signed-in user is known,
+  //     so we don't re-ask their name or make them "pick a plan" (tier comes
+  //     from their account, server-side).
+  function handleLoggedIn(loggedInUser) {
     setShowLogin(false);
+    // Seed the display name from their email so greetings work without Identify.
+    if (loggedInUser?.email && !user.name) {
+      setUser((u) => ({ ...u, name: firstName(loggedInUser.email) }));
+    }
     if (pendingUpgrade) {
       setPendingUpgrade(false);
       doUpgrade();
       return;
     }
     if (pendingStart) {
+      // They clicked "Get My Final Playbook": run the full new-user flow
+      // (name → why now → questions).
       setPendingStart(false);
       setRoute("identify");
+      return;
     }
+    // Plain "Sign in" — a returning member. Skip the intro; go straight to their
+    // playbook. Assessment restores their saved plan on mount, or shows the
+    // questions if they have none. We don't re-ask their name or plan.
+    setRoute("assessment");
   }
 
   return (
@@ -153,9 +171,6 @@ export default function App() {
         <Identify
           user={user}
           setUser={setUser}
-          account={auth.account}
-          isPaid={auth.isPaid}
-          onSignIn={() => setShowLogin(true)}
           onNext={() => setRoute("whyNow")}
           onBack={() => setRoute("landing")}
         />
