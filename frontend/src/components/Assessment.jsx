@@ -5,6 +5,7 @@ import {
 } from "../api/client";
 import ActionCard from "./ActionCard";
 import Momentum from "./Momentum";
+import PlaybookPanel from "./PlaybookPanel";
 import ChatWidget from "./ChatWidget";
 import { PRODUCT_NAME, PLAYBOOK_NAME, firstName } from "../config/branding";
 import { reorderBySignals, selectQuestions, buildIntro } from "../config/whyNowSignals";
@@ -206,8 +207,25 @@ export default function Assessment({ user, signals = [], resume = false, onBack,
       />
     );
 
+    // Flattened items for the live playbook panel (right side). Basics + the
+    // unlocked-for-free first domain item render normally; the rest are `locked`
+    // for free (shown crossed out) and open for paid.
+    const panelItems = [
+      ...plan.basicsFirst.map((it) => ({ ...it, locked: false, steps: it.resultType === "review" ? it.checklist : it.steps })),
+      ...plan.domainItems.map((it) => ({ ...it, locked: isLocked(it, true), steps: it.resultType === "review" ? it.checklist : it.steps })),
+    ];
+    const doneKeys = { has: (k) => !!tracked[k] };
+
     return (
-      <div className="fp-page">
+      <div className="fp-page fp-results-layout">
+        <PlaybookPanel
+          name={firstName(user?.name)}
+          items={panelItems}
+          doneKeys={doneKeys}
+          isPaid={isPaid}
+          onUpgrade={onUpgrade}
+        />
+      <div className="fp-results-main">
         <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
           <button onClick={onBack} className="fp-btn-back">← home</button>
           <button onClick={startOver} className="fp-btn-back">↻ retake assessment</button>
@@ -293,6 +311,8 @@ export default function Assessment({ user, signals = [], resume = false, onBack,
             <button className="fp-btn-upgrade" onClick={onUpgrade}>Unlock Premium — ${price}/mo →</button>
           </div>
         )}
+
+      </div>{/* /fp-results-main */}
 
         {/* Chat: free users get a taste (limited queries), paid unlimited. */}
         <ChatWidget
