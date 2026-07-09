@@ -7,7 +7,7 @@ import { PLAYBOOK_NAME, PRODUCT_NAME, TAGLINE } from "../config/branding";
 //
 // items: [{ id, title, action, domain, steps[], locked }]
 // doneKeys: Set-like with .has(`${id}::${stepIndex}`)
-export function downloadPlaybookPdf({ name, items, doneKeys }) {
+export function downloadPlaybookPdf({ name, items, doneKeys, fieldValues = {} }) {
   const title = name ? `${escapeHtml(name)}'s ${PLAYBOOK_NAME}` : PLAYBOOK_NAME;
 
   const sections = items
@@ -20,11 +20,19 @@ export function downloadPlaybookPdf({ name, items, doneKeys }) {
           return `<li class="${done ? "done" : ""}">${escapeHtml(s)}</li>`;
         })
         .join("");
+      // The member's entered details (trusted person, phone, dates, ...) — the
+      // actual usable content of the playbook.
+      const details = (it.fields || [])
+        .map((f) => ({ label: f.label, value: (fieldValues[`${it.id}::${f.key}`] || "").trim() }))
+        .filter((f) => f.value)
+        .map((f) => `<tr><th>${escapeHtml(f.label)}</th><td>${escapeHtml(f.value)}</td></tr>`)
+        .join("");
       return `
         <section class="item">
           <h2>${escapeHtml(it.title || it.action)}</h2>
           ${it.domain ? `<p class="domain">${escapeHtml(it.domain)}</p>` : ""}
           ${it.title && it.action ? `<p class="action">${escapeHtml(it.action)}</p>` : ""}
+          ${details ? `<table class="details">${details}</table>` : ""}
           ${rows ? `<ol class="steps">${rows}</ol>` : ""}
         </section>`;
     })
@@ -48,6 +56,10 @@ export function downloadPlaybookPdf({ name, items, doneKeys }) {
     ol.steps { margin: 4px 0 0; padding-left: 20px; }
     ol.steps li { margin: 3px 0; }
     ol.steps li.done { color: #2E7F7B; text-decoration: line-through; }
+    table.details { border-collapse: collapse; margin: 4px 0 8px; }
+    table.details th { text-align: left; font: 600 9.5pt/1.4 -apple-system, Segoe UI, sans-serif;
+      color: #45507A; padding: 2px 14px 2px 0; vertical-align: top; white-space: nowrap; }
+    table.details td { padding: 2px 0; font-weight: 600; }
     footer { margin-top: 26px; padding-top: 12px; border-top: 1px solid #D5D1C7;
              font: 9pt/1.4 -apple-system, Segoe UI, sans-serif; color: #9AA1B8; }
   </style></head>

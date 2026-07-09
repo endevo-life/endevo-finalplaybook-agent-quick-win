@@ -35,6 +35,7 @@ function toChatPlan(plan) {
 // questions (one per domain) → a light action plan (basics-first + one action
 // per answer, steps tucked behind an expander). Free and anonymous — no LLM.
 const TRACK_KEY = "fp_tracked_items";
+const FIELDS_KEY = "fp_field_values";
 
 // Apply the "why now?" signals: reorder the situational domainItems so the plan
 // LEADS with what moved this person to act (MOAT lever 1). basicsFirst is left
@@ -54,6 +55,12 @@ export default function Assessment({ user, signals = [], resume = false, onBack,
   // Premium item tracking, persisted locally so progress survives a refresh.
   const [tracked, setTracked] = useState(() => {
     try { return JSON.parse(localStorage.getItem(TRACK_KEY)) || {}; } catch { return {}; }
+  });
+  // The actual info the member types into item fields (trusted person's name,
+  // phone, dates, ...). Keyed `${itemId}::${fieldKey}`. This is what makes the
+  // playbook a real, usable document — persisted + shown on the playbook + in PDF.
+  const [fieldValues, setFieldValues] = useState(() => {
+    try { return JSON.parse(localStorage.getItem(FIELDS_KEY)) || {}; } catch { return {}; }
   });
   const [price, setPrice] = useState(25);
   // Paid: the personalized 7-day narrative (LLM) generated from the answers.
@@ -93,6 +100,16 @@ export default function Assessment({ user, signals = [], resume = false, onBack,
       const next = { ...prev, [key]: !wasDone };
       localStorage.setItem(TRACK_KEY, JSON.stringify(next));
       if (!wasDone) setCompletions((c) => c + 1); // ticking ON = a win
+      return next;
+    });
+  }
+
+  // Save a field value the member typed (keyed `${itemId}::${fieldKey}`). This
+  // is what the playbook document actually records and can download.
+  function setField(key, value) {
+    setFieldValues((prev) => {
+      const next = { ...prev, [key]: value };
+      localStorage.setItem(FIELDS_KEY, JSON.stringify(next));
       return next;
     });
   }
@@ -204,6 +221,8 @@ export default function Assessment({ user, signals = [], resume = false, onBack,
         isStepDone={isStepDone}
         onToggleStep={toggleStep}
         stepKey={(i) => stepKeyFor(item.id, i)}
+        fieldValues={fieldValues}
+        onFieldChange={setField}
       />
     );
 
@@ -307,11 +326,13 @@ export default function Assessment({ user, signals = [], resume = false, onBack,
 
       </div>{/* /fp-results-main */}
 
-        {/* The live playbook document — small panel on the RIGHT. */}
+        {/* The live playbook document — small panel on the RIGHT. Starts empty,
+            fills in as the member checks items or enters info. */}
         <PlaybookPanel
           name={firstName(user?.name)}
           items={panelItems}
           doneKeys={doneKeys}
+          fieldValues={fieldValues}
           isPaid={isPaid}
           onUpgrade={onUpgrade}
         />

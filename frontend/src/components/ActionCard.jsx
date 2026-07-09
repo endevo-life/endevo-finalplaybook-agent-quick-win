@@ -14,6 +14,8 @@ export default function ActionCard({
   isStepDone,
   onToggleStep,
   stepKey,
+  fieldValues = {},
+  onFieldChange,
 }) {
   const isReview = item.resultType === "review";
   const detail = isReview ? item.checklist : item.steps;
@@ -82,12 +84,21 @@ export default function ActionCard({
             )}
             {open && !locked && item.fields?.length > 0 && (
               <div style={{ marginTop: 10 }}>
-                {item.fields.map((f) => (
-                  <div key={f.key} className="fp-field-row">
-                    <label className="fp-label">{f.label}</label>
-                    <input className="fp-input" placeholder={f.label} />
-                  </div>
-                ))}
+                {item.fields.map((f) => {
+                  const fk = `${item.id}::${f.key}`;
+                  return (
+                    <div key={f.key} className="fp-field-row">
+                      <label className="fp-label" htmlFor={fk}>{f.label}</label>
+                      <input
+                        id={fk}
+                        className="fp-input"
+                        placeholder={f.label}
+                        value={fieldValues[fk] || ""}
+                        onChange={(e) => onFieldChange?.(fk, e.target.value)}
+                      />
+                    </div>
+                  );
+                })}
               </div>
             )}
           </>
