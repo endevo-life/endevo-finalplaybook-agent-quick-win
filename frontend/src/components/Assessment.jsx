@@ -4,6 +4,7 @@ import {
   getMyPlan, saveMyPlan, getToken,
 } from "../api/client";
 import ActionCard from "./ActionCard";
+import Momentum from "./Momentum";
 import ChatWidget from "./ChatWidget";
 import { PRODUCT_NAME, PLAYBOOK_NAME, firstName } from "../config/branding";
 import { reorderBySignals, selectQuestions } from "../config/whyNowSignals";
@@ -81,11 +82,16 @@ export default function Assessment({ user, signals = [], onBack, onUpgrade, isPa
       .catch(() => {});
   }, []);
 
+  // Bumped each time a step is newly checked, so Momentum can pulse/celebrate.
+  const [completions, setCompletions] = useState(0);
+
   // Step-level tracking: each key is `${itemId}::${stepIndex}`.
   function toggleStep(key) {
     setTracked((prev) => {
-      const next = { ...prev, [key]: !prev[key] };
+      const wasDone = !!prev[key];
+      const next = { ...prev, [key]: !wasDone };
       localStorage.setItem(TRACK_KEY, JSON.stringify(next));
+      if (!wasDone) setCompletions((c) => c + 1); // ticking ON = a win
       return next;
     });
   }
@@ -157,12 +163,23 @@ export default function Assessment({ user, signals = [], onBack, onUpgrade, isPa
 
   // --- results view ---
   if (plan) {
-    // Step-level progress (premium): count every step across every item.
     const stepKeyFor = (itemId, i) => `${itemId}::${i}`;
-    const allItems = [...plan.basicsFirst, ...plan.domainItems];
+
+    // Free users get a "taste": the basics PLUS the first domain item are fully
+    // unlocked and checkable; the rest of the domain plan stays blurred as the
+    // upgrade driver. Paid users have everything unlocked.
+    const freeUnlockedDomain = isPaid ? plan.domainItems : plan.domainItems.slice(0, 1);
+    const isLocked = (item, inDomain) =>
+      inDomain && !isPaid && !freeUnlockedDomain.includes(item);
+
+    // Momentum counts only what THIS tier can actually check off (never counts
+    // blurred items — so the meter reflects real, earned progress).
+    const countableItems = isPaid
+      ? [...plan.basicsFirst, ...plan.domainItems]
+      : [...plan.basicsFirst, ...freeUnlockedDomain];
     let totalSteps = 0;
     let doneSteps = 0;
-    allItems.forEach((it) => {
+    countableItems.forEach((it) => {
       const steps = it.resultType === "review" ? (it.checklist || []) : (it.steps || []);
       steps.forEach((_, i) => {
         totalSteps += 1;
@@ -244,25 +261,30 @@ export default function Assessment({ user, signals = [], onBack, onUpgrade, isPa
           </p>
         )}
 
+        {/* Gamified momentum — both tiers. Turns progress into felt relief. */}
+        {totalSteps > 0 && (
+          <Momentum done={doneSteps} total={totalSteps} tier={isPaid ? "paid" : "free"} justCompleted={completions} />
+        )}
+
         <p className="fp-question-topic">Do these first</p>
         {plan.basicsFirst.map((b) => renderCard(b, false))}
 
         {plan.domainItems.length > 0 && (
           <>
             <p className="fp-question-topic" style={{ marginTop: 22 }}>{PLAYBOOK_NAME}</p>
-            {/* Free sees these blurred; Premium sees them interactive. */}
-            {plan.domainItems.map((d) => renderCard(d, !isPaid))}
+            {/* Free: first item unlocked as a taste, the rest blurred. Paid: all. */}
+            {plan.domainItems.map((d) => renderCard(d, isLocked(d, true)))}
           </>
         )}
 
         {/* Free: single unlock CTA under the blurred playbook. */}
         {!isPaid && plan.domainItems.length > 0 && (
           <div className="fp-lock-card">
-            <p className="fp-lock-title">🔒 {PLAYBOOK_NAME} is ready</p>
+            <p className="fp-lock-title">🔒 The rest of {PLAYBOOK_NAME} is ready</p>
             <p className="fp-lock-body">
-              Unlock every step across your financial, digital, and physical plan —
-              check items off, track your progress, and get an AI guide that walks
-              you through your specific situation.
+              You've felt how the first step works. Unlock every remaining step across
+              your financial, digital, and physical plan — check them off, keep your
+              momentum, and get an AI guide that walks you through your situation.
             </p>
             <button className="fp-btn-upgrade" onClick={onUpgrade}>Unlock Premium — ${price}/mo →</button>
           </div>
