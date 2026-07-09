@@ -25,7 +25,7 @@ export function downloadPlaybookPdf({ name, items, doneKeys, fieldValues = {} })
       const details = (it.fields || [])
         .map((f) => ({ label: f.label, value: (fieldValues[`${it.id}::${f.key}`] || "").trim() }))
         .filter((f) => f.value)
-        .map((f) => `<tr><th>${escapeHtml(f.label)}</th><td>${escapeHtml(f.value)}</td></tr>`)
+        .map((f) => `<tr><th>${escapeHtml(f.label)}</th><td>${escapeHtml(prettyDate(f.value))}</td></tr>`)
         .join("");
       return `
         <section class="item">
@@ -90,6 +90,14 @@ export function downloadPlaybookPdf({ name, items, doneKeys, fieldValues = {} })
     w.focus();
     w.print();
   };
+}
+
+function prettyDate(v) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec((v || "").trim());
+  if (!m) return v;
+  const d = new Date(+m[1], +m[2] - 1, +m[3]);
+  if (isNaN(d)) return v;
+  return d.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
 }
 
 function escapeHtml(s) {

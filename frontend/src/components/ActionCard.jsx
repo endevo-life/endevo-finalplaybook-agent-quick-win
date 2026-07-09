@@ -1,5 +1,17 @@
 import { useState } from "react";
 
+// Infer the right input type from a field's key/label, so "Date set up" gets a
+// real date picker, phone fields get a tel keypad, emails an email keyboard,
+// etc. Content only carries {key, label}; this keeps the UX smart without
+// needing every field to declare a type.
+function fieldInputType(f) {
+  const s = `${f.key || ""} ${f.label || ""}`.toLowerCase();
+  if (/\bdate\b|when|on\b|deadline|expir|renew/.test(s)) return "date";
+  if (/phone|mobile|cell|tel\b/.test(s)) return "tel";
+  if (/email|e-mail/.test(s)) return "email";
+  return "text";
+}
+
 // Condensed action card.
 //
 // Free (locked=true): the card is rendered but BLURRED with a lock overlay --
@@ -86,13 +98,15 @@ export default function ActionCard({
               <div style={{ marginTop: 10 }}>
                 {item.fields.map((f) => {
                   const fk = `${item.id}::${f.key}`;
+                  const type = fieldInputType(f);
                   return (
                     <div key={f.key} className="fp-field-row">
                       <label className="fp-label" htmlFor={fk}>{f.label}</label>
                       <input
                         id={fk}
+                        type={type}
                         className="fp-input"
-                        placeholder={f.label}
+                        placeholder={type === "date" ? "" : f.label}
                         value={fieldValues[fk] || ""}
                         onChange={(e) => onFieldChange?.(fk, e.target.value)}
                       />

@@ -3,6 +3,16 @@ import { PLAYBOOK_NAME, PRODUCT_NAME } from "../config/branding";
 import { downloadPlaybookPdf } from "../lib/playbookPdf";
 import { useTypewriter } from "../lib/useTypewriter";
 
+// Show an ISO date (2026-07-09) as a friendly "Jul 9, 2026" on the playbook.
+// Leaves any non-date value untouched.
+export function prettyValue(v) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec((v || "").trim());
+  if (!m) return v;
+  const d = new Date(+m[1], +m[2] - 1, +m[3]);
+  if (isNaN(d)) return v;
+  return d.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
+}
+
 // A playbook line whose title types itself in the first time it appears (i.e.
 // when the member first touches that item). Later renders show it instantly.
 function ItemTitle({ text, animate }) {
@@ -102,7 +112,7 @@ export default function PlaybookPanel({ name, items, doneKeys, fieldValues = {},
                   {it.domain && <span className="fp-pb-item-domain">{it.domain}</span>}
                   {filled.map((f) => (
                     <span key={f.label} className="fp-pb-field">
-                      <span className="fp-pb-field-label">{f.label}:</span> {f.value}
+                      <span className="fp-pb-field-label">{f.label}:</span> {prettyValue(f.value)}
                     </span>
                   ))}
                   {!it.locked && steps.length > 0 && (
