@@ -93,6 +93,41 @@ export const WHY_NOW_SIGNALS = [
   },
 ];
 
+// Per-signal "we heard you" clause used to build the personalized intro shown
+// above the questions. Written to compound: e.g. picking "settled an estate" +
+// "worth protecting" reads "You've seen what settling an estate takes, and
+// you've built something worth protecting." validated:false — Niki's voice.
+const SIGNAL_CLAUSE = {
+  recentLossInCircle: "you've just felt what a loss leaves behind",
+  becameResponsible: "someone is counting on you now",
+  settledAnEstate: "you've seen up close what settling an estate takes",
+  recentNearMiss: "a scare made this suddenly real",
+  majorLifeChange: "your life looks different than it did",
+  thresholdAge: "you've hit a number that made you look up",
+  digitalOutweighs: "most of your life now lives online",
+  worthProtecting: "you've built something worth protecting",
+  publicCaseShook: "a story got under your skin",
+  tiredOfUnfinished: "you're done leaving this unfinished",
+};
+
+// Build a warm, compounding intro from the picked signals. One signal → one
+// clause; two → joined with "and"; three+ → the first two + "and a few other
+// things that brought you here." Empty when nothing's picked (caller hides it).
+export function buildIntro(pickedFlags, name) {
+  const clauses = (pickedFlags || [])
+    .map((f) => SIGNAL_CLAUSE[f])
+    .filter(Boolean);
+  if (clauses.length === 0) return "";
+  const who = name ? `${name}, ` : "";
+  let body;
+  if (clauses.length === 1) body = clauses[0];
+  else if (clauses.length === 2) body = `${clauses[0]}, and ${clauses[1]}`;
+  else body = `${clauses[0]}, ${clauses[1]}, and a few other things brought you here`;
+  // Capitalize the first clause for a clean sentence start.
+  const sentence = body.charAt(0).toUpperCase() + body.slice(1);
+  return `${who}${sentence}. Here are the questions that matter most for you — we'll lead with those.`;
+}
+
 // Base boost applied to any item whose domain a selected signal targets.
 const SIGNAL_BOOST = 100;
 

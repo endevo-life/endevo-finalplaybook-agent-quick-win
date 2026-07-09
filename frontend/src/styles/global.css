@@ -539,6 +539,13 @@ button, input, textarea {
   .fp-whynow-card:active { transform: none; }
 }
 
+/* ── personalized assessment intro (compounding "why now") ──────── */
+.fp-assess-intro {
+  background: var(--brand-lt); border-left: 3px solid var(--brand);
+  border-radius: 0 12px 12px 0; padding: 14px 16px;
+  font-size: 14.5px; line-height: 1.5; color: var(--ink);
+}
+
 /* ── momentum (gamified "feel lighter" progress, both tiers) ─────── */
 .fp-momentum {
   background: linear-gradient(135deg, var(--surf) 0%, var(--surf2) 100%);

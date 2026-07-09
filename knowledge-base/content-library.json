@@ -1346,6 +1346,294 @@
             ]
           }
         ]
+      },
+      {
+        "id": "LOSS_gaps",
+        "domain": "legal",
+        "validated": false,
+        "_note": "DRAFT (2026-07-09): Claude-authored scenario question, matches existing voice/format. Educational situation-surfacing only, not advice. Pending Niki sign-off.",
+        "triggerSignals": [
+          "recentLossInCircle"
+        ],
+        "question": "After losing someone close, was there something they didn't leave behind that made it harder — access, wishes, or documents?",
+        "options": [
+          {
+            "value": "yes",
+            "label": "Yes — and I don't want that for my people",
+            "resultType": "steps",
+            "action": "Capture the specific gaps you saw, so your own plan closes them first.",
+            "steps": [
+              "Write down what was missing when you settled or grieved (a password, a wish, a document).",
+              "Mark which of those you haven't handled for yourself yet.",
+              "Start with the one that caused the most friction.",
+              "Put it in your doc box so your people never hit that wall."
+            ]
+          },
+          {
+            "value": "unsure",
+            "label": "It was hard, but I'm not sure what was missing",
+            "resultType": "review",
+            "action": "Review the moments that were hardest, to surface what your own plan should include.",
+            "checklist": [
+              "What information did you or the family scramble to find?",
+              "Were their wishes clear, or did people have to guess?",
+              "Could you access what you needed (accounts, documents, the home)?",
+              "Which of those are unresolved in your own life?"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "ESTATE_executor",
+        "domain": "legal",
+        "validated": false,
+        "_note": "DRAFT (2026-07-09): Claude-authored scenario question, matches existing voice/format. Educational situation-surfacing only, not advice. Pending Niki sign-off.",
+        "triggerSignals": [
+          "settledAnEstate"
+        ],
+        "question": "Having settled an estate, do you have your own executor named — and have you spared them what you went through?",
+        "options": [
+          {
+            "value": "yes",
+            "label": "Yes — my executor is named and equipped",
+            "resultType": "review",
+            "action": "Review that your executor has what you wished you'd had.",
+            "checklist": [
+              "Is your executor named in a current, signed document?",
+              "Do they know where every account and document lives?",
+              "Have you left the instructions you wished the last estate had?",
+              "Is there a backup executor if they can't serve?"
+            ]
+          },
+          {
+            "value": "no",
+            "label": "No — I haven't set up my own",
+            "resultType": "steps",
+            "action": "Name your executor and give them the roadmap you didn't have.",
+            "steps": [
+              "Choose an executor (and a backup) and confirm they're willing.",
+              "Name them in your will.",
+              "Write down where accounts, documents, and passwords live.",
+              "Leave the one instruction you most wish the estate you settled had included."
+            ]
+          }
+        ]
+      },
+      {
+        "id": "CHANGE_beneficiaries",
+        "domain": "financial",
+        "validated": false,
+        "_note": "DRAFT (2026-07-09): Claude-authored scenario question, matches existing voice/format. Educational situation-surfacing only, not advice. Pending Niki sign-off.",
+        "triggerSignals": [
+          "majorLifeChange"
+        ],
+        "question": "After your recent life change, have you re-checked who inherits — beneficiaries, titles, and who's named on your documents?",
+        "options": [
+          {
+            "value": "yes",
+            "label": "Yes — I've updated everything to match",
+            "resultType": "review",
+            "action": "Review that every document reflects your life as it is now.",
+            "checklist": [
+              "Do your beneficiary designations name the right people today?",
+              "Are account and property titles current?",
+              "Do your POA and healthcare proxy still name who you'd want?",
+              "Does your will reflect the change?"
+            ]
+          },
+          {
+            "value": "no",
+            "label": "No — some things may still name the old situation",
+            "resultType": "steps",
+            "action": "Update your beneficiaries and named roles so nothing routes to the wrong person.",
+            "steps": [
+              "List accounts with beneficiary designations (retirement, insurance, bank).",
+              "Update each to name the right person after your change.",
+              "Re-check property titles and your POA/healthcare proxy.",
+              "Update your will if the change affects who inherits."
+            ]
+          }
+        ]
+      },
+      {
+        "id": "AGE_sweep",
+        "domain": "legal",
+        "validated": false,
+        "_note": "DRAFT (2026-07-09): Claude-authored scenario question, matches existing voice/format. Educational situation-surfacing only, not advice. Pending Niki sign-off.",
+        "triggerSignals": [
+          "thresholdAge"
+        ],
+        "question": "You've hit a milestone age. Do you have the three basics in place — a will, a healthcare proxy, and a financial POA?",
+        "options": [
+          {
+            "value": "all",
+            "label": "Yes — all three are current",
+            "resultType": "review",
+            "action": "Review the three basics so they still reflect your wishes.",
+            "checklist": [
+              "Is your will signed and up to date?",
+              "Is your healthcare proxy named and on file with your doctor?",
+              "Is your financial POA current?",
+              "Have any life changes happened since you last updated them?"
+            ]
+          },
+          {
+            "value": "some",
+            "label": "I have one or two, not all",
+            "resultType": "steps",
+            "action": "Complete the missing basics so all three are in place.",
+            "steps": [
+              "Note which of will / healthcare proxy / financial POA you have.",
+              "Complete the missing one(s) with the right forms for your state.",
+              "Store them in your doc box.",
+              "Tell your named people where to find them."
+            ]
+          },
+          {
+            "value": "none",
+            "label": "None yet",
+            "resultType": "steps",
+            "action": "Put the three foundational documents in place.",
+            "steps": [
+              "Start with a will (an estate attorney or a reputable service).",
+              "Name a healthcare proxy and complete the form for your state.",
+              "Set up a financial POA.",
+              "Store all three in your doc box and tell your people."
+            ]
+          }
+        ]
+      },
+      {
+        "id": "DIGITAL_inventory",
+        "domain": "digital",
+        "validated": false,
+        "_note": "DRAFT (2026-07-09): Claude-authored scenario question, matches existing voice/format. Educational situation-surfacing only, not advice. Pending Niki sign-off.",
+        "triggerSignals": [
+          "digitalOutweighs"
+        ],
+        "question": "Since most of your life is online, is there a single place your trusted person could find every important account and how to reach it?",
+        "options": [
+          {
+            "value": "yes",
+            "label": "Yes — I keep a maintained list / password manager",
+            "resultType": "review",
+            "action": "Review your digital inventory so it's complete and reachable.",
+            "checklist": [
+              "Does it cover email, banking, photos, social, subscriptions, crypto?",
+              "Does your trusted person know it exists and how to unlock it?",
+              "Is the recovery/legacy access set up where the platform offers it?",
+              "Is it current with accounts you've added recently?"
+            ]
+          },
+          {
+            "value": "no",
+            "label": "No — it's scattered across my devices and memory",
+            "resultType": "steps",
+            "action": "Build one digital inventory so nothing important is lost or locked away.",
+            "steps": [
+              "List your key accounts by category (email, money, photos, social, subscriptions).",
+              "Put them in one place — a password manager or a single secure document.",
+              "Set up legacy/recovery access where the platform offers it.",
+              "Tell your trusted person where it lives and how to reach it."
+            ]
+          }
+        ]
+      },
+      {
+        "id": "PUBLIC_worry",
+        "domain": "legal",
+        "validated": false,
+        "_note": "DRAFT (2026-07-09): Claude-authored scenario question, matches existing voice/format. Educational situation-surfacing only, not advice. Pending Niki sign-off.",
+        "triggerSignals": [
+          "publicCaseShook"
+        ],
+        "question": "A story that shook you usually points at a specific fear. Is the thing you worried could happen to your family actually covered in your plan?",
+        "options": [
+          {
+            "value": "no",
+            "label": "No — that exact gap is open for me",
+            "resultType": "steps",
+            "action": "Close the specific gap the story exposed, before anything else.",
+            "steps": [
+              "Name the exact thing you feared (guardianship, access, wishes, money).",
+              "Check whether your plan currently covers it.",
+              "Take the one step that would close it.",
+              "Put the result in your doc box."
+            ]
+          },
+          {
+            "value": "unsure",
+            "label": "I think so, but I want to be sure",
+            "resultType": "review",
+            "action": "Pressure-test the area the story worried you about.",
+            "checklist": [
+              "What specifically did the story make you afraid of?",
+              "Which document or step would prevent that outcome?",
+              "Is that document current and findable?",
+              "Does your trusted person know about it?"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "UNFINISHED_named",
+        "domain": "legal",
+        "validated": false,
+        "_note": "DRAFT (2026-07-09): Claude-authored scenario question, matches existing voice/format. Educational situation-surfacing only, not advice. Pending Niki sign-off.",
+        "triggerSignals": [
+          "tiredOfUnfinished"
+        ],
+        "question": "You're here because something's been unfinished too long. What's the one thing that's been nagging you?",
+        "options": [
+          {
+            "value": "will",
+            "label": "A will / who gets what",
+            "resultType": "steps",
+            "action": "Finish the will that's been waiting.",
+            "steps": [
+              "Decide who inherits and who's your executor.",
+              "Use an estate attorney or a reputable service to draft it.",
+              "Sign it properly for your state.",
+              "Store it in your doc box and tell your executor."
+            ]
+          },
+          {
+            "value": "medical",
+            "label": "Medical wishes / who decides for me",
+            "resultType": "steps",
+            "action": "Put your healthcare wishes and proxy in place.",
+            "steps": [
+              "Choose who'd make medical decisions if you couldn't.",
+              "Complete a healthcare proxy and advance directive for your state.",
+              "Talk with your proxy about what matters to you.",
+              "Give copies to them, your doctor, and your doc box."
+            ]
+          },
+          {
+            "value": "digital",
+            "label": "Access to my accounts / passwords",
+            "resultType": "steps",
+            "action": "Close the access gap that's been open.",
+            "steps": [
+              "Gather your key logins into one secure place.",
+              "Set up legacy/recovery access where offered.",
+              "Name the person who should have access.",
+              "Tell them where it lives."
+            ]
+          },
+          {
+            "value": "other",
+            "label": "Something else",
+            "resultType": "steps",
+            "action": "Name it and take the first concrete step.",
+            "steps": [
+              "Write down the one unfinished thing.",
+              "Break it into the very next action.",
+              "Do that one action today.",
+              "Put whatever results in your doc box."
+            ]
+          }
+        ]
       }
     ]
   }

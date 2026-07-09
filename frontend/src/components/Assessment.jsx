@@ -7,7 +7,7 @@ import ActionCard from "./ActionCard";
 import Momentum from "./Momentum";
 import ChatWidget from "./ChatWidget";
 import { PRODUCT_NAME, PLAYBOOK_NAME, firstName } from "../config/branding";
-import { reorderBySignals, selectQuestions } from "../config/whyNowSignals";
+import { reorderBySignals, selectQuestions, buildIntro } from "../config/whyNowSignals";
 
 // The chat backend grounds on a plan shape with actionItems/leadProfile. Adapt
 // the assessment result (basicsFirst + domainItems) into that shape so a paid
@@ -307,9 +307,16 @@ export default function Assessment({ user, signals = [], resume = false, onBack,
 
   // --- question view (one at a time) ---
   const q = questions[idx];
+  const intro = buildIntro(signals, firstName(user?.name));
   return (
     <div className="fp-page-narrow">
       <button onClick={idx === 0 ? onBack : () => setIdx(idx - 1)} className="fp-btn-back">← back</button>
+
+      {/* Personalized, compounding intro on the first question — makes the whole
+          assessment feel like it was built for THIS person's situation. */}
+      {idx === 0 && intro && (
+        <div className="fp-assess-intro" style={{ marginTop: 12 }}>{intro}</div>
+      )}
 
       <div className="fp-step-progress" style={{ marginTop: 12 }}>
         {questions.map((_, i) => (
