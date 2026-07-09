@@ -1,5 +1,6 @@
 import { PRODUCT_NAME, TAGLINE, PRIMARY_CTA } from "../config/branding";
 import Pricing from "./Pricing";
+import landingVideo from "../assets/video_landing/MyFinalPlaybook Video (music).mp4";
 
 // Public marketing page. Positioning (per growth strategy): we own DIGITAL death
 // — the questions nobody else answers. The product is fear reduction: turn "what
@@ -43,13 +44,18 @@ export default function Landing({ onStart, onSignIn, onUpgrade, isPaid }) {
         <p className="fp-hero-note">Free to start · No account needed to try · Not legal, financial, or medical advice</p>
       </div>
 
-      {/* Video placeholder — for Niki's short-form / explainer */}
+      {/* Explainer video — "What happens to your digital life when you die" */}
       <div className="fp-section" style={{ paddingTop: 8 }}>
-        <div className="fp-video-placeholder" role="button" tabIndex={0}>
-          <div className="fp-video-play">▶</div>
-          <p className="fp-video-label">Watch: What happens to your digital life when you die (2 min)</p>
-          <p className="fp-video-sub">Video coming soon</p>
-        </div>
+        <video
+          className="fp-video"
+          src={landingVideo}
+          controls
+          preload="metadata"
+          playsInline
+          aria-label="What happens to your digital life when you die (2 min)"
+        >
+          Your browser doesn’t support embedded video.
+        </video>
       </div>
 
       {/* The fears we answer */}
