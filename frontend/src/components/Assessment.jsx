@@ -134,6 +134,7 @@ export default function Assessment({ user, signals = [], resume = false, onBack,
     getMyPlan()
       .then((saved) => {
         if (saved.tracked && Object.keys(saved.tracked).length) setTracked(saved.tracked);
+        if (saved.fields && Object.keys(saved.fields).length) setFieldValues(saved.fields);
         if (saved.narrative) setNarrative(saved.narrative);
         // If they have a saved plan and answered questions, jump straight to it.
         if (saved.plan && saved.answers && Object.keys(saved.answers).length) {
@@ -144,13 +145,17 @@ export default function Assessment({ user, signals = [], resume = false, onBack,
       .catch(() => {});
   }, [resume]);
 
-  // Auto-save the user's plan + progress + narrative to the server whenever it
-  // changes (logged-in only). This is what makes "log in later, get it all back"
-  // actually work.
+  // Auto-save the user's plan + progress + fields + narrative to the server
+  // whenever any of them change (logged-in only). Debounced 600ms so typing into
+  // a field doesn't fire a request per keystroke. This is what makes "log in
+  // later on any device, get it all back" work.
   useEffect(() => {
     if (!getToken() || !plan) return;
-    saveMyPlan({ answers, plan, tracked, narrative }).catch(() => {});
-  }, [plan, tracked, narrative]);
+    const t = setTimeout(() => {
+      saveMyPlan({ answers, plan, tracked, narrative, fields: fieldValues }).catch(() => {});
+    }, 600);
+    return () => clearTimeout(t);
+  }, [plan, tracked, narrative, fieldValues]);
 
   if (error) return <div className="fp-page-narrow"><p className="fp-error">{error}</p></div>;
   if (!questions) return <div className="fp-page-narrow"><p className="fp-body">Loading…</p></div>;

@@ -66,7 +66,7 @@ class MemoryStore:
     def get_plan(self, email: str) -> Optional[dict]:
         return self.plans.get(email)
 
-    def save_plan(self, email: str, answers=None, plan=None, tracked=None, narrative=None) -> None:
+    def save_plan(self, email: str, answers=None, plan=None, tracked=None, narrative=None, fields=None) -> None:
         rec = self.plans.setdefault(email, {})
         if answers is not None:
             rec["answers"] = answers
@@ -76,6 +76,8 @@ class MemoryStore:
             rec["tracked"] = tracked
         if narrative is not None:
             rec["narrative"] = narrative
+        if fields is not None:
+            rec["fields"] = fields
         rec["updated_at"] = now()
 
     # --- chat history ---

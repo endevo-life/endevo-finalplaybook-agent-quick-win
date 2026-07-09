@@ -151,17 +151,19 @@ class DynamoStore:
             "plan": item.get("plan"),
             "tracked": item.get("tracked", {}),
             "narrative": item.get("narrative"),
+            "fields": item.get("fields", {}),
             "updated_at": int(item.get("updated_at", 0)),
         }
 
-    def save_plan(self, email: str, answers=None, plan=None, tracked=None, narrative=None) -> None:
+    def save_plan(self, email: str, answers=None, plan=None, tracked=None, narrative=None, fields=None) -> None:
         # Alias every attribute via #names -- "plan" (and others) are DynamoDB
         # reserved keywords. Sanitize values (float->Decimal, drop empties) first.
-        fields = {"answers": answers, "plan": plan, "tracked": tracked, "narrative": narrative}
+        attrs = {"answers": answers, "plan": plan, "tracked": tracked,
+                 "narrative": narrative, "fields": fields}
         sets = ["#updated_at = :updated_at"]
         names = {"#updated_at": "updated_at"}
         vals = {":updated_at": now()}
-        for key, value in fields.items():
+        for key, value in attrs.items():
             if value is not None:
                 sets.append(f"#{key} = :{key}")
                 names[f"#{key}"] = key

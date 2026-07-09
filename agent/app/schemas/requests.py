@@ -32,6 +32,7 @@ class SavePlanRequest(BaseModel):
     plan: Optional[dict] = None
     tracked: Optional[dict] = None
     narrative: Optional[dict] = None
+    fields: Optional[dict] = None  # itemId::fieldKey -> value the member typed
 
 
 class AuthStartRequest(BaseModel):

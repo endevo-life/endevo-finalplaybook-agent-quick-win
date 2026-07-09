@@ -41,6 +41,7 @@ class SqliteStore:
             CREATE TABLE IF NOT EXISTS plans (
                 email TEXT PRIMARY KEY,
                 answers TEXT, plan TEXT, tracked TEXT, narrative TEXT,
+                fields TEXT,
                 updated_at INTEGER
             );
             CREATE TABLE IF NOT EXISTS chat (
@@ -52,6 +53,11 @@ class SqliteStore:
             );
             """
         )
+        # Migration: add `fields` to plans tables created before it existed.
+        try:
+            c.execute("ALTER TABLE plans ADD COLUMN fields TEXT")
+        except Exception:
+            pass  # column already exists
         c.commit()
 
     # --- users / entitlements ---
@@ -152,7 +158,7 @@ class SqliteStore:
     def get_plan(self, email: str) -> Optional[dict]:
         import json as _json
         row = self._conn.execute(
-            "SELECT answers, plan, tracked, narrative, updated_at FROM plans WHERE email=?",
+            "SELECT answers, plan, tracked, narrative, fields, updated_at FROM plans WHERE email=?",
             (email,),
         ).fetchone()
         if not row:
@@ -162,10 +168,11 @@ class SqliteStore:
             "plan": _json.loads(row[1]) if row[1] else None,
             "tracked": _json.loads(row[2]) if row[2] else {},
             "narrative": _json.loads(row[3]) if row[3] else None,
-            "updated_at": row[4] or 0,
+            "fields": _json.loads(row[4]) if row[4] else {},
+            "updated_at": row[5] or 0,
         }
 
-    def save_plan(self, email: str, answers=None, plan=None, tracked=None, narrative=None) -> None:
+    def save_plan(self, email: str, answers=None, plan=None, tracked=None, narrative=None, fields=None) -> None:
         import json as _json
         cur = self.get_plan(email) or {}
         merged = {
@@ -173,12 +180,14 @@ class SqliteStore:
             "plan": plan if plan is not None else cur.get("plan"),
             "tracked": tracked if tracked is not None else cur.get("tracked", {}),
             "narrative": narrative if narrative is not None else cur.get("narrative"),
+            "fields": fields if fields is not None else cur.get("fields", {}),
         }
         self._conn.execute(
-            "INSERT OR REPLACE INTO plans (email, answers, plan, tracked, narrative, updated_at) "
-            "VALUES (?,?,?,?,?,?)",
+            "INSERT OR REPLACE INTO plans (email, answers, plan, tracked, narrative, fields, updated_at) "
+            "VALUES (?,?,?,?,?,?,?)",
             (email, _json.dumps(merged["answers"]), _json.dumps(merged["plan"]),
-             _json.dumps(merged["tracked"]), _json.dumps(merged["narrative"]), now()),
+             _json.dumps(merged["tracked"]), _json.dumps(merged["narrative"]),
+             _json.dumps(merged["fields"]), now()),
         )
         self._conn.commit()
 
