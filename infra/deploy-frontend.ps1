@@ -57,8 +57,9 @@ Write-Host "5/5  Done." -ForegroundColor Green
 Write-Host ""
 Write-Host "  LIVE URL:  $siteUrl" -ForegroundColor Green
 Write-Host ""
-Write-Host "  IMPORTANT — allow this URL on the backend (CORS), or API calls fail:" -ForegroundColor Yellow
-Write-Host "    cd $infra" -ForegroundColor Yellow
-Write-Host "    .\deploy.ps1 -AllowedOrigins `"http://localhost:3200,$siteUrl`" -AppBaseUrl `"$siteUrl`"" -ForegroundColor Yellow
+Write-Host "  IMPORTANT - allow this URL on the backend (CORS), or API calls fail." -ForegroundColor Yellow
+Write-Host "  Run this next (from the infra folder):" -ForegroundColor Yellow
+$corsCmd = '.\deploy.ps1 -AllowedOrigins "http://localhost:3200,' + $siteUrl + '" -AppBaseUrl "' + $siteUrl + '"'
+Write-Host "    $corsCmd" -ForegroundColor White
 Write-Host ""
 Write-Host "  (First CloudFront deploy can take ~15-20 min to fully propagate.)" -ForegroundColor Gray
