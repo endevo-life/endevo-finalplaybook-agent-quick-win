@@ -6,6 +6,7 @@ import {
 import ActionCard from "./ActionCard";
 import ChatWidget from "./ChatWidget";
 import { PRODUCT_NAME, PLAYBOOK_NAME, firstName } from "../config/branding";
+import { reorderBySignals } from "../config/whyNowSignals";
 
 // The chat backend grounds on a plan shape with actionItems/leadProfile. Adapt
 // the assessment result (basicsFirst + domainItems) into that shape so a paid
@@ -33,7 +34,15 @@ function toChatPlan(plan) {
 // per answer, steps tucked behind an expander). Free and anonymous — no LLM.
 const TRACK_KEY = "fp_tracked_items";
 
-export default function Assessment({ user, onBack, onUpgrade, isPaid }) {
+// Apply the "why now?" signals: reorder the situational domainItems so the plan
+// LEADS with what moved this person to act (MOAT lever 1). basicsFirst is left
+// untouched — those are deliberately always-first regardless of situation.
+function applySignals(plan, signals) {
+  if (!plan || !signals || signals.length === 0) return plan;
+  return { ...plan, domainItems: reorderBySignals(plan.domainItems || [], signals) };
+}
+
+export default function Assessment({ user, signals = [], onBack, onUpgrade, isPaid }) {
   const [questions, setQuestions] = useState(null);
   const [idx, setIdx] = useState(0);
   const [answers, setAnswers] = useState({});
@@ -124,7 +133,7 @@ export default function Assessment({ user, onBack, onUpgrade, isPaid }) {
     } else {
       setLoading(true);
       try {
-        setPlan(await postAssessmentPlan(next));
+        setPlan(applySignals(await postAssessmentPlan(next), signals));
       } catch (e) {
         setError(e.message || "Something went wrong.");
       } finally {

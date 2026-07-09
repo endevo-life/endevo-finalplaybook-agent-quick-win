@@ -4,6 +4,7 @@ import Disclaimer from "./components/Disclaimer";
 import Landing from "./components/Landing";
 import Welcome from "./components/Welcome";
 import Identify from "./components/Identify";
+import WhyNow from "./components/WhyNow";
 import ScenarioPicker from "./components/ScenarioPicker";
 import Session from "./components/Session";
 import ResultsPanel from "./components/ResultsPanel";
@@ -17,6 +18,9 @@ export default function App() {
   const [route, setRoute] = useState("landing");
   const [user, setUser] = useState({ name: "", tier: "free" });
   const [flags, setFlags] = useState({});
+  // "Why now?" signals (flags) — set by the WhyNow picker, used to REORDER the
+  // assessment plan so it leads with what moved this person to act.
+  const [signals, setSignals] = useState([]);
   const [result, setResult] = useState(null);
   const [glossary, setGlossary] = useState([]);
   const [showLogin, setShowLogin] = useState(false);
@@ -152,14 +156,25 @@ export default function App() {
           account={auth.account}
           isPaid={auth.isPaid}
           onSignIn={() => setShowLogin(true)}
-          onNext={() => setRoute("assessment")}
+          onNext={() => setRoute("whyNow")}
           onBack={() => setRoute("landing")}
+        />
+      )}
+
+      {route === "whyNow" && (
+        <WhyNow
+          user={user}
+          picked={signals}
+          setPicked={setSignals}
+          onNext={() => setRoute("assessment")}
+          onBack={() => setRoute("identify")}
         />
       )}
 
       {route === "assessment" && (
         <Assessment
           user={user}
+          signals={signals}
           isPaid={auth.isPaid}
           onUpgrade={handleUpgrade}
           onBack={() => setRoute("landing")}
