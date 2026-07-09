@@ -1178,6 +1178,174 @@
             ]
           }
         ]
+      },
+      {
+        "id": "GUARD_named",
+        "domain": "legal",
+        "validated": false,
+        "_note": "DRAFT (2026-07-08): Claude-authored scenario question, matches existing voice/format. Educational situation-surfacing only, not advice. Pending Niki sign-off.",
+        "triggerSignals": [
+          "becameResponsible"
+        ],
+        "question": "If both parents were gone tomorrow, is there a legally named guardian who would raise your children?",
+        "options": [
+          {
+            "value": "yes",
+            "label": "Yes -- a guardian is named in a signed document",
+            "resultType": "review",
+            "action": "Review your guardian choice so it still reflects who you'd want and their current willingness.",
+            "checklist": [
+              "Is the named guardian still the right person and still willing?",
+              "Have you named a backup guardian if the first can't serve?",
+              "Does the guardian know they're named, and where the document is?",
+              "Has anything changed (a move, a falling-out, a new child) since you named them?"
+            ]
+          },
+          {
+            "value": "informal",
+            "label": "We've talked about it, but nothing is written down",
+            "resultType": "steps",
+            "action": "Put your guardian choice in writing so a court would honor it, instead of deciding for your children.",
+            "steps": [
+              "Decide on a first-choice guardian and a backup, and confirm both are willing.",
+              "Have the choice documented in your will or a standalone guardian nomination (an estate attorney can do this).",
+              "Tell the guardians where the document is kept.",
+              "Revisit the choice after any major family change."
+            ]
+          },
+          {
+            "value": "no",
+            "label": "No -- no guardian has been named",
+            "resultType": "steps",
+            "action": "Name a guardian for your children so the choice is yours, not a court's.",
+            "steps": [
+              "Talk with your first-choice guardian (and a backup) to confirm they'd say yes.",
+              "Have the nomination documented in your will or a guardian designation.",
+              "Store it in your doc box and tell the guardian it exists.",
+              "Note any wishes about how you'd want the children raised."
+            ]
+          }
+        ]
+      },
+      {
+        "id": "GUARD_provision",
+        "domain": "financial",
+        "validated": false,
+        "_note": "DRAFT (2026-07-08): Claude-authored scenario question, matches existing voice/format. Educational situation-surfacing only, not advice. Pending Niki sign-off.",
+        "triggerSignals": [
+          "becameResponsible"
+        ],
+        "question": "If you were gone, is there money set aside so whoever raises your children isn't doing it out of pocket?",
+        "options": [
+          {
+            "value": "yes",
+            "label": "Yes -- life insurance and/or a trust is in place",
+            "resultType": "review",
+            "action": "Review that the provision for your children is current and points to the right people.",
+            "checklist": [
+              "Is the coverage amount still enough for their care and education?",
+              "Are the beneficiaries (or a trust) named so a minor doesn't inherit directly?",
+              "Does the guardian know how the funds are accessed?",
+              "Have you updated it after any new child or major change?"
+            ]
+          },
+          {
+            "value": "no",
+            "label": "No -- there's no plan for their financial care",
+            "resultType": "steps",
+            "action": "Set up a way for your children to be provided for if you're gone.",
+            "steps": [
+              "Estimate what raising them to adulthood would take (care, housing, education).",
+              "Explore term life insurance to cover that gap.",
+              "Ask an estate attorney whether a trust should receive the funds (so a minor doesn't inherit directly).",
+              "Make sure the guardian knows the plan and how to reach the funds."
+            ]
+          }
+        ]
+      },
+      {
+        "id": "BIZ_succession",
+        "domain": "financial",
+        "validated": false,
+        "_note": "DRAFT (2026-07-08): Claude-authored scenario question, matches existing voice/format. Educational situation-surfacing only, not advice. Pending Niki sign-off.",
+        "triggerSignals": [
+          "worthProtecting"
+        ],
+        "question": "If you couldn't run your business tomorrow, is there a written plan for who takes over and how?",
+        "options": [
+          {
+            "value": "yes",
+            "label": "Yes -- there's a documented succession plan",
+            "resultType": "review",
+            "action": "Review your succession plan so it matches how the business runs today.",
+            "checklist": [
+              "Is the named successor still willing and able?",
+              "Are ownership-transfer terms (buy-sell, valuation) still current?",
+              "Do key people know the plan exists and where to find it?",
+              "Has anything changed (partners, structure, value) since you wrote it?"
+            ]
+          },
+          {
+            "value": "partial",
+            "label": "There's an idea, but nothing formal",
+            "resultType": "steps",
+            "action": "Turn your succession idea into a written plan so the business survives a sudden gap.",
+            "steps": [
+              "Name who would take over day-to-day operations, and a backup.",
+              "Document how ownership transfers (a buy-sell agreement, if there are partners).",
+              "Write down the essentials only you know: key accounts, vendors, logins, passwords.",
+              "Tell your successor where the plan and the credentials live."
+            ]
+          },
+          {
+            "value": "no",
+            "label": "No -- the business depends entirely on me",
+            "resultType": "steps",
+            "action": "Create a basic continuity plan so your business isn't lost if you can't run it.",
+            "steps": [
+              "Write down the handful of things that would stop if you disappeared (accounts, contracts, access).",
+              "Name one person who could step in, even temporarily.",
+              "Put critical logins and documents in your doc box, reachable by that person.",
+              "Consult an attorney about ownership transfer and a buy-sell if you have partners."
+            ]
+          }
+        ]
+      },
+      {
+        "id": "PHYS_proxy",
+        "domain": "physical",
+        "validated": false,
+        "_note": "DRAFT (2026-07-08): Claude-authored scenario question, matches existing voice/format. Educational situation-surfacing only, not advice. Pending Niki sign-off.",
+        "triggerSignals": [
+          "recentNearMiss"
+        ],
+        "question": "If you couldn't speak for yourself in a medical crisis, does one specific person have the legal authority to decide for you?",
+        "options": [
+          {
+            "value": "yes",
+            "label": "Yes -- a healthcare proxy/agent is named in writing",
+            "resultType": "review",
+            "action": "Review your healthcare proxy so the right person can act without friction.",
+            "checklist": [
+              "Is the named agent still the right person and still willing?",
+              "Have you named a backup if they're unreachable?",
+              "Does your agent know your wishes about care, not just that they're named?",
+              "Do your doctor and hospital have a copy on file?"
+            ]
+          },
+          {
+            "value": "no",
+            "label": "No -- no one is formally authorized",
+            "resultType": "steps",
+            "action": "Name a healthcare agent so someone you trust can decide for you in a crisis.",
+            "steps": [
+              "Choose the person who'd make medical decisions the way you'd want, and a backup.",
+              "Complete a healthcare power of attorney / proxy form for your state.",
+              "Talk with your agent about what matters to you, so they're not guessing.",
+              "Give copies to your agent, your doctor, and your doc box."
+            ]
+          }
+        ]
       }
     ]
   }

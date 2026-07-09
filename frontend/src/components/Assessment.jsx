@@ -6,7 +6,7 @@ import {
 import ActionCard from "./ActionCard";
 import ChatWidget from "./ChatWidget";
 import { PRODUCT_NAME, PLAYBOOK_NAME, firstName } from "../config/branding";
-import { reorderBySignals } from "../config/whyNowSignals";
+import { reorderBySignals, selectQuestions } from "../config/whyNowSignals";
 
 // The chat backend grounds on a plan shape with actionItems/leadProfile. Adapt
 // the assessment result (basicsFirst + domainItems) into that shape so a paid
@@ -93,9 +93,11 @@ export default function Assessment({ user, signals = [], onBack, onUpgrade, isPa
 
   useEffect(() => {
     getAssessment()
-      .then((d) => setQuestions(d.questions || []))
+      // Gate + order the questions by the member's "why now?" signals: hide
+      // situational questions that don't apply, lead with what's urgent for them.
+      .then((d) => setQuestions(selectQuestions(d.questions || [], signals)))
       .catch(() => setError("Couldn't load the assessment. Is the server running?"));
-  }, []);
+  }, [signals]);
 
   // On mount for a logged-in user: restore their saved answers, plan, progress,
   // and narrative from the server so they resume where they left off (any device).
@@ -124,6 +126,17 @@ export default function Assessment({ user, signals = [], onBack, onUpgrade, isPa
 
   if (error) return <div className="fp-page-narrow"><p className="fp-error">{error}</p></div>;
   if (!questions) return <div className="fp-page-narrow"><p className="fp-body">Loading…</p></div>;
+
+  // Clear the current plan + answers and return to question #1, so the member
+  // can retake the assessment (e.g. after changing their "why now?" signals).
+  // Without this, a signed-in user with a saved plan is bounced straight back to
+  // that plan and can never re-answer.
+  function startOver() {
+    setPlan(null);
+    setAnswers({});
+    setNarrative(null);
+    setIdx(0);
+  }
 
   async function choose(qid, value) {
     const next = { ...answers, [qid]: value };
@@ -174,7 +187,10 @@ export default function Assessment({ user, signals = [], onBack, onUpgrade, isPa
 
     return (
       <div className="fp-page">
-        <button onClick={onBack} className="fp-btn-back">← start over</button>
+        <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
+          <button onClick={onBack} className="fp-btn-back">← home</button>
+          <button onClick={startOver} className="fp-btn-back">↻ retake assessment</button>
+        </div>
         <h2 className="fp-h2" style={{ marginTop: 12 }}>
           {firstName(user?.name) ? `${firstName(user.name)}, here's ${PLAYBOOK_NAME}` : `Here's ${PLAYBOOK_NAME}`}
         </h2>

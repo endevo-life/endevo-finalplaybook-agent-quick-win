@@ -104,6 +104,50 @@ const UNIVERSAL_LEAD = [
   { match: /legacy contact/i, boost: 38 },
 ];
 
+// GATE + REORDER the questions for this person (MOAT levers 2 + 1 applied to the
+// assessment itself). Two steps:
+//
+//   1. GATE — a question with `triggerSignals` is SITUATIONAL: it only appears
+//      when one of the member's picked signals matches (guardian Qs only for
+//      "became responsible", succession Qs only for "worth protecting", etc.).
+//      A question with no `triggerSignals` is UNIVERSAL — everyone sees it.
+//   2. REORDER — among the visible questions, the ones in a domain the member's
+//      signals target lead, so the assessment opens with what's urgent for them.
+//
+// Pure + deterministic. With no signals picked, situational questions are hidden
+// and the universal set keeps its library order (today's behavior).
+export function selectQuestions(questions, pickedFlags) {
+  const picked = new Set(pickedFlags || []);
+
+  // 1. GATE
+  const visible = questions.filter((q) => {
+    const trig = q.triggerSignals;
+    if (!trig || trig.length === 0) return true;      // universal
+    return trig.some((t) => picked.has(t));            // situational: needs a match
+  });
+
+  if (picked.size === 0) return visible;
+
+  // 2. REORDER by targeted domain
+  const targetedDomains = new Set();
+  for (const s of WHY_NOW_SIGNALS) {
+    if (picked.has(s.flag)) for (const d of s.reordersToward) targetedDomains.add(d);
+  }
+  const scored = visible.map((q, i) => ({
+    q,
+    i,
+    // Situational (signal-matched) questions lead; then targeted-domain; then base.
+    boost:
+      (q.triggerSignals && q.triggerSignals.some((t) => picked.has(t)) ? SIGNAL_BOOST * 2 : 0) +
+      (q.domain && targetedDomains.has(q.domain) ? SIGNAL_BOOST : 0),
+  }));
+  scored.sort((a, b) => b.boost - a.boost || a.i - b.i); // stable => deterministic
+  return scored.map((s) => s.q);
+}
+
+// Back-compat alias (older name): now delegates to the gate+reorder selector.
+export const orderQuestionsBySignals = selectQuestions;
+
 // Given the picked signal flags and a flat list of plan items (each with a
 // `domain` and `action`/`id`), return a NEW array sorted so the most urgent-for-
 // -this-person items lead. Pure + deterministic: same signals + same items =>
