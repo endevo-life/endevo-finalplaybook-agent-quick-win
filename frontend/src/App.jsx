@@ -10,6 +10,7 @@ import Session from "./components/Session";
 import ResultsPanel from "./components/ResultsPanel";
 import Assessment from "./components/Assessment";
 import LoginModal from "./components/LoginModal";
+import DemoCheckout from "./components/DemoCheckout";
 import { getGlossary, startCheckout, devUpgrade, getToken } from "./api/client";
 import { useAuth } from "./auth/useAuth";
 import { firstName } from "./config/branding";
@@ -29,6 +30,7 @@ export default function App() {
   const [result, setResult] = useState(null);
   const [glossary, setGlossary] = useState([]);
   const [showLogin, setShowLogin] = useState(false);
+  const [showCheckout, setShowCheckout] = useState(false);
   // When true, a successful login should immediately resume the upgrade flow
   // (user clicked Upgrade while logged out).
   const [pendingUpgrade, setPendingUpgrade] = useState(false);
@@ -66,30 +68,28 @@ export default function App() {
     setRoute("landing");
   }
 
-  // The actual upgrade action (assumes the user is logged in).
-  async function doUpgrade() {
+  // The actual upgrade action (assumes the user is logged in). For the demo we
+  // show a SIMULATED checkout (DemoCheckout modal) instead of real Stripe — the
+  // modal's onConfirm calls the real tier flip below. Swap for Stripe at launch.
+  function doUpgrade() {
+    setShowCheckout(true);
+  }
+
+  // Called by the demo checkout modal to actually grant paid. Tries dev-upgrade
+  // (server flips tier to paid); falls back to real Stripe if that path is off.
+  async function confirmUpgrade() {
     try {
-      // Preferred path: real Stripe Checkout when billing is configured.
-      const { url } = await startCheckout();
-      window.location.href = url;
+      await devUpgrade();
+      await auth.refresh(); // reflect paid tier immediately
       return;
     } catch (e) {
-      // 503 = billing not configured yet. Fall back to the dev unlock so the
-      // premium experience is still usable/demoable before Stripe is live.
-      if (e.status === 503) {
-        try {
-          await devUpgrade();
-          await auth.refresh(); // reflect paid tier in the UI immediately
-          return;
-        } catch (devErr) {
-          // Surface the real reason instead of silently opening a placeholder.
-          alert("Upgrade failed: " + (devErr.message || "unknown error") +
-                "\n(Dev upgrade may be disabled — set ALLOW_DEV_UPGRADE=true.)");
-          return;
-        }
+      if (e.status === 403) {
+        // Dev upgrade disabled on this backend — try real Stripe checkout.
+        const { url } = await startCheckout();
+        window.location.href = url;
+        return;
       }
-      // Any other error: tell the user rather than dead-ending.
-      alert("Couldn't start checkout: " + (e.message || "unknown error"));
+      throw e; // surfaced by the modal's error state
     }
   }
 
@@ -238,6 +238,14 @@ export default function App() {
           auth={auth}
           onClose={() => { setShowLogin(false); setPendingUpgrade(false); setPendingStart(false); }}
           onLoggedIn={handleLoggedIn}
+        />
+      )}
+
+      {showCheckout && (
+        <DemoCheckout
+          price={25}
+          onConfirm={confirmUpgrade}
+          onClose={() => setShowCheckout(false)}
         />
       )}
     </div>

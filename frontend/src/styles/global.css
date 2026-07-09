@@ -539,6 +539,32 @@ button, input, textarea {
   .fp-whynow-card:active { transform: none; }
 }
 
+/* ── demo checkout modal ─────────────────────────────────────────── */
+.fp-checkout { max-width: 400px; }
+.fp-checkout-demo-tag {
+  font-size: 11px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase;
+  color: var(--accent); background: var(--brand-lt); display: inline-block;
+  padding: 4px 10px; border-radius: 999px; margin: 0 0 4px;
+}
+.fp-checkout-status { text-align: center; padding: 28px 8px; }
+.fp-checkout-status-text { font-size: 17px; font-weight: 600; color: var(--ink); margin: 16px 0 4px; }
+.fp-spinner {
+  width: 44px; height: 44px; margin: 0 auto; border-radius: 50%;
+  border: 3px solid var(--line); border-top-color: var(--brand);
+  animation: fp-spin .8s linear infinite;
+}
+@keyframes fp-spin { to { transform: rotate(360deg); } }
+.fp-checkout-check {
+  width: 52px; height: 52px; margin: 0 auto; border-radius: 50%;
+  background: var(--brand); color: #fff; font-size: 26px; font-weight: 700;
+  display: grid; place-items: center; animation: fp-pop .4s cubic-bezier(.22,1.4,.4,1);
+}
+@keyframes fp-pop { from { transform: scale(0); } to { transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) {
+  .fp-spinner { animation-duration: 1.4s; }
+  .fp-checkout-check { animation: none; }
+}
+
 /* ── personalized assessment intro (compounding "why now") ──────── */
 .fp-assess-intro {
   background: var(--brand-lt); border-left: 3px solid var(--brand);
