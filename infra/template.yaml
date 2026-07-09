@@ -18,11 +18,33 @@ Parameters:
       {prefix}users, sessions, usage, plans, chat, events, config. The tables
       are NOT created here -- they already exist; this only grants the Lambda
       access to them by name.
+  LlmBackend:
+    Type: String
+    Default: "bedrock"
+    AllowedValues: ["anthropic", "bedrock"]
+    Description: >
+      "bedrock" -- open-weight/Claude models via AWS Bedrock, auth by the
+      Lambda's IAM role (no API key). "anthropic" -- direct Claude API, needs
+      AnthropicApiKey.
+  BedrockRegion:
+    Type: String
+    Default: "us-east-1"
+    Description: Region for the Bedrock runtime (only used when LlmBackend=bedrock).
+  BedrockModelId:
+    Type: String
+    Default: "us.meta.llama3-1-8b-instruct-v1:0"
+    Description: >
+      Bedrock inference-profile id (only used when LlmBackend=bedrock). Must be
+      enabled in your Bedrock console. Default is Llama 3 8B -- note
+      docs/guardrails.md flags open-weight models as weaker-grounded for this
+      sensitive content.
   AnthropicApiKey:
     Type: String
     NoEcho: true
     Default: ""
-    Description: Anthropic API key for the paid-tier personalization/chat calls.
+    Description: >
+      Anthropic API key for the paid-tier calls. ONLY needed when
+      LlmBackend=anthropic; leave blank for Bedrock.
   StripeSecretKey:
     Type: String
     NoEcho: true
@@ -107,7 +129,9 @@ Resources:
         Variables:
           STORE_BACKEND: dynamodb
           DDB_TABLE_PREFIX: !Ref TablePrefix
-          LLM_BACKEND: anthropic
+          LLM_BACKEND: !Ref LlmBackend
+          BEDROCK_REGION: !Ref BedrockRegion
+          BEDROCK_MODEL_ID: !Ref BedrockModelId
           ANTHROPIC_API_KEY: !Ref AnthropicApiKey
           STRIPE_SECRET_KEY: !Ref StripeSecretKey
           STRIPE_PRICE_ID: !Ref StripePriceId
@@ -149,6 +173,14 @@ Resources:
                 - cognito-idp:InitiateAuth
                 - cognito-idp:RespondToAuthChallenge
               Resource: !Sub "arn:aws:cognito-idp:${CognitoRegion}:${AWS::AccountId}:userpool/${CognitoUserPoolId}"
+        # Bedrock: invoke the paid-tier model (used when LlmBackend=bedrock).
+        # Foundation models + inference profiles are cross-region, so "*" is the
+        # practical scope; tighten to specific model ARNs if your policy requires.
+        - Statement:
+            - Effect: Allow
+              Action:
+                - bedrock:InvokeModel
+              Resource: "*"
       Events:
         ApiRoot:
           Type: HttpApi
