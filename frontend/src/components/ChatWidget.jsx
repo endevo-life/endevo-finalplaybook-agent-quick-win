@@ -7,7 +7,7 @@ import { LOGO_URL } from "../config/branding";
 const FREE_QUERY_LIMIT = 3;
 const STORAGE_KEY = "fp_chat_query_count";
 
-export default function ChatWidget({ plan, memberFirstName, tier, onUpgrade }) {
+export default function ChatWidget({ plan, memberFirstName, tier, signals, onUpgrade }) {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState([]); // [{role, content}]
   const [input, setInput] = useState("");
@@ -32,7 +32,7 @@ export default function ChatWidget({ plan, memberFirstName, tier, onUpgrade }) {
     setLoading(true);
     setError(null);
     try {
-      const { reply } = await postChat({ plan, memberFirstName, history: nextHistory });
+      const { reply } = await postChat({ plan, memberFirstName, history: nextHistory, signals });
       setMessages([...nextHistory, { role: "assistant", content: reply }]);
       if (!isPaid) {
         const next = queryCount + 1;

@@ -28,7 +28,7 @@ def create_chat_reply(req: ChatRequest, email: str = Depends(require_email)):
         raise HTTPException(e.code, str(e))
 
     try:
-        reply = run_chat(req.plan, req.memberFirstName, req.history).model_dump()
+        reply = run_chat(req.plan, req.memberFirstName, req.history, signals=req.signals).model_dump()
     except Exception as e:
         raise HTTPException(502, f"Chat error: {e}")
 

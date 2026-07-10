@@ -657,6 +657,12 @@ button, input, textarea {
   .fp-checkout-check { animation: none; }
 }
 
+/* per-scenario question preamble (the personal doorway into a question) */
+.fp-question-preamble {
+  font-size: 14px; font-weight: 600; color: var(--accent); margin: 0 0 4px;
+  letter-spacing: -0.005em;
+}
+
 /* ── personalized assessment intro (compounding "why now") ──────── */
 .fp-assess-intro {
   background: var(--brand-lt); border-left: 3px solid var(--brand);

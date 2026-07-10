@@ -128,6 +128,55 @@ export function buildIntro(pickedFlags, name) {
   return `${who}${sentence}. Here are the questions that matter most for you — we'll lead with those.`;
 }
 
+// Per-scenario question PREAMBLE (MOAT lever 3: same question, personal doorway).
+// A short lead-in shown above a question when a picked signal makes it especially
+// relevant — "Since a scare brought you here, ..." — so the SAME question reads
+// as written for this person. Keyed by signal, then by question domain (the most
+// relevant pairing wins). validated:false — Niki's voice, one place to correct.
+const QUESTION_PREAMBLE = {
+  recentNearMiss: {
+    physical: "Since a health scare brought you here —",
+    legal: "After a scare like that, this one matters —",
+  },
+  recentLossInCircle: {
+    legal: "Having just been through a loss —",
+    digital: "You saw what was hard to find. So —",
+    financial: "So your people aren't left searching —",
+  },
+  becameResponsible: {
+    legal: "With someone depending on you now —",
+    financial: "For the people counting on you —",
+  },
+  settledAnEstate: {
+    legal: "Knowing what an executor needs —",
+    digital: "You know how hard access can be, so —",
+  },
+  majorLifeChange: {
+    financial: "After your recent change —",
+    legal: "Now that things have changed —",
+  },
+  worthProtecting: {
+    financial: "To protect what you've built —",
+    legal: "So what you've built passes cleanly —",
+  },
+  digitalOutweighs: {
+    digital: "Since most of your life is online —",
+  },
+};
+
+// Return a preamble string for a question given the picked signals, or "" if
+// none applies. First matching (signal, domain) pair wins — deterministic by
+// the order signals were picked.
+export function questionPreamble(question, pickedFlags) {
+  if (!question || !pickedFlags) return "";
+  const domain = question.domain;
+  for (const flag of pickedFlags) {
+    const byDomain = QUESTION_PREAMBLE[flag];
+    if (byDomain && byDomain[domain]) return byDomain[domain];
+  }
+  return "";
+}
+
 // Base boost applied to any item whose domain a selected signal targets.
 const SIGNAL_BOOST = 100;
 

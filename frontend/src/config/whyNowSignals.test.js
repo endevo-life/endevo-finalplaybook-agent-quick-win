@@ -4,6 +4,7 @@ import {
   buildIntro,
   selectQuestions,
   reorderBySignals,
+  questionPreamble,
 } from "./whyNowSignals";
 
 describe("WHY_NOW_SIGNALS", () => {
@@ -66,6 +67,22 @@ describe("selectQuestions (gate + reorder)", () => {
     const a = selectQuestions(bank, ["worthProtecting"]).map((q) => q.id).join(",");
     const b = selectQuestions(bank, ["worthProtecting"]).map((q) => q.id).join(",");
     expect(a).toBe(b);
+  });
+});
+
+describe("questionPreamble (per-scenario wording)", () => {
+  it("returns a scenario preamble for a matching signal+domain", () => {
+    const q = { id: "PHYS_directive", domain: "physical" };
+    expect(questionPreamble(q, ["recentNearMiss"])).toMatch(/scare/i);
+  });
+
+  it("returns empty when no signal matches the question's domain", () => {
+    const q = { id: "DIG_pw", domain: "digital" };
+    expect(questionPreamble(q, ["recentNearMiss"])).toBe("");
+  });
+
+  it("returns empty with no signals", () => {
+    expect(questionPreamble({ domain: "legal" }, [])).toBe("");
   });
 });
 

@@ -8,7 +8,7 @@ import Momentum from "./Momentum";
 import PlaybookPanel from "./PlaybookPanel";
 import ChatWidget from "./ChatWidget";
 import { PRODUCT_NAME, PLAYBOOK_NAME, firstName } from "../config/branding";
-import { reorderBySignals, selectQuestions, buildIntro } from "../config/whyNowSignals";
+import { reorderBySignals, selectQuestions, buildIntro, questionPreamble } from "../config/whyNowSignals";
 
 // The chat backend grounds on a plan shape with actionItems/leadProfile. Adapt
 // the assessment result (basicsFirst + domainItems) into that shape so a paid
@@ -72,7 +72,7 @@ export default function Assessment({ user, signals = [], resume = false, onBack,
     setNarrativeLoading(true);
     setNarrativeError("");
     try {
-      const res = await postAssessmentPersonalize(answers, user?.name || "there");
+      const res = await postAssessmentPersonalize(answers, user?.name || "there", signals);
       setNarrative(res.personalized);
     } catch (e) {
       setNarrativeError(e.message || "Couldn't generate your personalized plan.");
@@ -347,6 +347,7 @@ export default function Assessment({ user, signals = [], resume = false, onBack,
           plan={toChatPlan(plan)}
           memberFirstName={user?.name || "there"}
           tier={isPaid ? "paid" : "free"}
+          signals={signals}
           onUpgrade={onUpgrade}
         />
       </div>
@@ -374,6 +375,9 @@ export default function Assessment({ user, signals = [], resume = false, onBack,
 
       <div className="fp-card">
         <span className="fp-domain-tag">{q.domain}</span>
+        {questionPreamble(q, signals) && (
+          <p className="fp-question-preamble">{questionPreamble(q, signals)}</p>
+        )}
         <p className="fp-question-text fp-assess-q">{q.question}</p>
         <div className="fp-choice-group">
           {q.options.map((o) => (

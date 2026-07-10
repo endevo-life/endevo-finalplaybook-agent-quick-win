@@ -59,7 +59,7 @@ def personalize_assessment(
         "quotes": [],
     }
     try:
-        result = run_personalize(adapted, req.memberFirstName)
+        result = run_personalize(adapted, req.memberFirstName, signals=req.signals)
     except Exception as e:
         raise HTTPException(502, f"Agent error: {e}")
 

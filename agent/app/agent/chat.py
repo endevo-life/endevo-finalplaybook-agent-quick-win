@@ -47,12 +47,14 @@ class ChatReply(BaseModel):
     reply: str
 
 
-def _system_with_grounding(plan: dict, member_first_name: str) -> str:
-    grounding = build_grounding_context(plan, member_first_name)
-    return f"{CHAT_SYSTEM_PROMPT}\n\nThe member's matched plan (use ONLY this):\n\n{grounding}"
+def _chat_system(signals=None) -> str:
+    """CHAT_SYSTEM_PROMPT + the why-now framing so Jesse leads by scenario."""
+    from app.agent.signals import framing_for
+    framing = framing_for(signals)
+    return CHAT_SYSTEM_PROMPT if not framing else f"{CHAT_SYSTEM_PROMPT}\n\n{framing}"
 
 
-def _chat_anthropic(plan: dict, member_first_name: str, history: list[ChatMessage]) -> ChatReply:
+def _chat_anthropic(plan: dict, member_first_name: str, history: list[ChatMessage], signals=None) -> ChatReply:
     import anthropic  # lazy import: keeps the trial (zero-LLM) path dependency-free
 
     client = anthropic.Anthropic()
@@ -64,7 +66,7 @@ def _chat_anthropic(plan: dict, member_first_name: str, history: list[ChatMessag
         max_tokens=1024,
         system=[{
             "type": "text",
-            "text": CHAT_SYSTEM_PROMPT,
+            "text": _chat_system(signals),
             "cache_control": {"type": "ephemeral"},
         }, {
             "type": "text",
@@ -76,7 +78,7 @@ def _chat_anthropic(plan: dict, member_first_name: str, history: list[ChatMessag
     return response.parsed_output
 
 
-def _chat_bedrock(plan: dict, member_first_name: str, history: list[ChatMessage]) -> ChatReply:
+def _chat_bedrock(plan: dict, member_first_name: str, history: list[ChatMessage], signals=None) -> ChatReply:
     import boto3  # lazy import: only needed when LLM_BACKEND=bedrock
 
     region = os.environ.get("BEDROCK_REGION", "us-east-1")
@@ -87,10 +89,15 @@ def _chat_bedrock(plan: dict, member_first_name: str, history: list[ChatMessage]
         "Respond with ONLY a single valid JSON object, no markdown, no code "
         'fences, no extra commentary, matching exactly this shape: {"reply": string}'
     )
+    grounding = build_grounding_context(plan, member_first_name)
+    system_text = (
+        f"{_chat_system(signals)}\n\nThe member's matched plan (use ONLY this):"
+        f"\n\n{grounding}\n\n{schema_instruction}"
+    )
 
     response = client.converse(
         modelId=model_id,
-        system=[{"text": _system_with_grounding(plan, member_first_name) + "\n\n" + schema_instruction}],
+        system=[{"text": system_text}],
         messages=[{"role": m.role, "content": [{"text": m.content}]} for m in history],
     )
     raw_text = response["output"]["message"]["content"][0]["text"]
@@ -121,13 +128,14 @@ def _chat_bedrock(plan: dict, member_first_name: str, history: list[ChatMessage]
     return ChatReply(reply=fallback_reply)
 
 
-def chat(plan: dict, member_first_name: str, history: list[ChatMessage]) -> ChatReply:
+def chat(plan: dict, member_first_name: str, history: list[ChatMessage], signals=None) -> ChatReply:
     """plan is the same dict shape rules_engine.build_plan() returns. history
-    must be non-empty and end with a role="user" message. Backend is
-    selected via LLM_BACKEND env var ("anthropic" default, or "bedrock")."""
+    must be non-empty and end with a role="user" message. `signals` are the
+    member's why-now flags so Jesse leads by scenario. Backend is selected via
+    LLM_BACKEND env var ("anthropic" default, or "bedrock")."""
     backend = os.environ.get("LLM_BACKEND", "anthropic")
     if backend == "bedrock":
-        return _chat_bedrock(plan, member_first_name, history)
+        return _chat_bedrock(plan, member_first_name, history, signals)
     if backend == "anthropic":
-        return _chat_anthropic(plan, member_first_name, history)
+        return _chat_anthropic(plan, member_first_name, history, signals)
     raise ValueError(f"Unknown LLM_BACKEND: {backend!r} (expected 'anthropic' or 'bedrock')")

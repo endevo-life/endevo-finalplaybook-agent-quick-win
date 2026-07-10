@@ -54,8 +54,8 @@ export async function getGlossary() {
   }
 }
 
-export function postChat({ plan, memberFirstName, history }) {
-  return request("/api/chat", { method: "POST", body: { plan, memberFirstName, history } });
+export function postChat({ plan, memberFirstName, history, signals }) {
+  return request("/api/chat", { method: "POST", body: { plan, memberFirstName, history, signals } });
 }
 
 // --- pricing / marketing -----------------------------------------------------
@@ -71,10 +71,11 @@ export function postAssessmentPlan(answers) {
   return request("/api/assessment/plan", { method: "POST", body: { answers } });
 }
 // Paid: turn the assessment into a personalized 7-day narrative (one LLM call).
-export function postAssessmentPersonalize(answers, memberFirstName) {
+// `signals` = the member's why-now flags, so the narrative leads by scenario.
+export function postAssessmentPersonalize(answers, memberFirstName, signals) {
   return request("/api/assessment/personalize", {
     method: "POST",
-    body: { answers, memberFirstName },
+    body: { answers, memberFirstName, signals },
   });
 }
 

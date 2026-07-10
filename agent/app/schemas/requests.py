@@ -16,6 +16,7 @@ class ChatRequest(BaseModel):
     plan: dict
     memberFirstName: str
     history: list[ChatMessage]
+    signals: Optional[list[str]] = None  # why-now flags — Jesse leads by scenario
 
 
 class AssessmentRequest(BaseModel):
@@ -25,6 +26,7 @@ class AssessmentRequest(BaseModel):
 class AssessmentPersonalizeRequest(BaseModel):
     answers: dict[str, str]
     memberFirstName: str
+    signals: Optional[list[str]] = None  # why-now flags the member picked
 
 
 class SavePlanRequest(BaseModel):
@@ -33,6 +35,7 @@ class SavePlanRequest(BaseModel):
     tracked: Optional[dict] = None
     narrative: Optional[dict] = None
     fields: Optional[dict] = None  # itemId::fieldKey -> value the member typed
+    signals: Optional[list[str]] = None  # why-now flags, persisted with the plan
 
 
 class AuthStartRequest(BaseModel):

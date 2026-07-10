@@ -78,7 +78,14 @@ def build_grounding_context(plan: dict, member_first_name: str) -> str:
     }, indent=2)
 
 
-def _personalize_anthropic(plan: dict, member_first_name: str) -> PersonalizedPlan:
+def _system_with_framing(signals) -> str:
+    """SYSTEM_PROMPT + the why-now framing for THIS person (leads by scenario)."""
+    from app.agent.signals import framing_for
+    framing = framing_for(signals)
+    return SYSTEM_PROMPT if not framing else f"{SYSTEM_PROMPT}\n\n{framing}"
+
+
+def _personalize_anthropic(plan: dict, member_first_name: str, signals=None) -> PersonalizedPlan:
     import anthropic  # lazy import: keeps the trial (zero-LLM) path dependency-free
 
     client = anthropic.Anthropic()
@@ -93,7 +100,7 @@ def _personalize_anthropic(plan: dict, member_first_name: str) -> PersonalizedPl
         max_tokens=3072,
         system=[{
             "type": "text",
-            "text": SYSTEM_PROMPT,
+            "text": _system_with_framing(signals),
             "cache_control": {"type": "ephemeral"},
         }],
         messages=[{
@@ -105,7 +112,7 @@ def _personalize_anthropic(plan: dict, member_first_name: str) -> PersonalizedPl
     return response.parsed_output
 
 
-def _personalize_bedrock(plan: dict, member_first_name: str) -> PersonalizedPlan:
+def _personalize_bedrock(plan: dict, member_first_name: str, signals=None) -> PersonalizedPlan:
     import boto3  # lazy import: only needed when LLM_BACKEND=bedrock
 
     region = os.environ.get("BEDROCK_REGION", "us-east-1")
@@ -123,7 +130,7 @@ def _personalize_bedrock(plan: dict, member_first_name: str) -> PersonalizedPlan
 
     response = client.converse(
         modelId=model_id,
-        system=[{"text": SYSTEM_PROMPT + "\n\n" + schema_instruction}],
+        system=[{"text": _system_with_framing(signals) + "\n\n" + schema_instruction}],
         messages=[{
             "role": "user",
             "content": [{"text": f"Build this member's next-7-days plan from ONLY this data:\n\n{user_content}"}],
@@ -143,12 +150,13 @@ def _personalize_bedrock(plan: dict, member_first_name: str) -> PersonalizedPlan
     return PersonalizedPlan(**data)
 
 
-def personalize(plan: dict, member_first_name: str) -> PersonalizedPlan:
-    """plan is the dict returned by rules_engine.build_plan(). Backend is
-    selected via LLM_BACKEND env var ("anthropic" default, or "bedrock")."""
+def personalize(plan: dict, member_first_name: str, signals=None) -> PersonalizedPlan:
+    """plan is the dict returned by rules_engine.build_plan(). `signals` are the
+    member's why-now flags; when present, the guide LEADS by that scenario.
+    Backend is selected via LLM_BACKEND env var ("anthropic" default, or "bedrock")."""
     backend = os.environ.get("LLM_BACKEND", "anthropic")
     if backend == "bedrock":
-        return _personalize_bedrock(plan, member_first_name)
+        return _personalize_bedrock(plan, member_first_name, signals)
     if backend == "anthropic":
-        return _personalize_anthropic(plan, member_first_name)
+        return _personalize_anthropic(plan, member_first_name, signals)
     raise ValueError(f"Unknown LLM_BACKEND: {backend!r} (expected 'anthropic' or 'bedrock')")
