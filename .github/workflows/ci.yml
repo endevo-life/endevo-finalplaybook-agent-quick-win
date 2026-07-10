@@ -74,6 +74,8 @@ jobs:
         run: npm ci
       - name: Lint (oxlint)
         run: npm run lint
+      - name: Unit tests (vitest)
+        run: npm test
       - name: Build
         run: npm run build
 
