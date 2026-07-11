@@ -24,7 +24,9 @@ class SqliteStore:
                 email TEXT PRIMARY KEY,
                 tier TEXT NOT NULL DEFAULT 'free',
                 created_at INTEGER NOT NULL,
-                stripe_customer_id TEXT
+                stripe_customer_id TEXT,
+                paid_until INTEGER,
+                canceled INTEGER DEFAULT 0
             );
             CREATE TABLE IF NOT EXISTS sessions (
                 token TEXT PRIMARY KEY,
@@ -53,22 +55,29 @@ class SqliteStore:
             );
             """
         )
-        # Migration: add `fields` to plans tables created before it existed.
-        try:
-            c.execute("ALTER TABLE plans ADD COLUMN fields TEXT")
-        except Exception:
-            pass  # column already exists
+        # Migrations: add columns to tables created before they existed.
+        for stmt in (
+            "ALTER TABLE plans ADD COLUMN fields TEXT",
+            "ALTER TABLE users ADD COLUMN paid_until INTEGER",
+            "ALTER TABLE users ADD COLUMN canceled INTEGER DEFAULT 0",
+        ):
+            try:
+                c.execute(stmt)
+            except Exception:
+                pass  # column already exists
         c.commit()
 
     # --- users / entitlements ---
     def get_user(self, email: str) -> Optional[dict]:
         row = self._conn.execute(
-            "SELECT email, tier, created_at, stripe_customer_id FROM users WHERE email=?",
+            "SELECT email, tier, created_at, stripe_customer_id, paid_until, canceled FROM users WHERE email=?",
             (email,),
         ).fetchone()
         if not row:
             return None
-        return {"email": row[0], "tier": row[1], "created_at": row[2], "stripe_customer_id": row[3]}
+        return {"email": row[0], "tier": row[1], "created_at": row[2],
+                "stripe_customer_id": row[3],
+                "paid_until": row[4], "canceled": bool(row[5])}
 
     def upsert_user(self, email: str, tier: str = "free", stripe_customer_id: str = None) -> dict:
         existing = self.get_user(email)
@@ -85,14 +94,19 @@ class SqliteStore:
         self._conn.commit()
         return self.get_user(email)
 
-    def set_tier(self, email: str, tier: str) -> None:
-        if self.get_user(email):
-            self._conn.execute("UPDATE users SET tier=? WHERE email=?", (tier, email))
-        else:
+    def set_tier(self, email: str, tier: str, paid_until: int = None, canceled: bool = None) -> None:
+        if not self.get_user(email):
             self._conn.execute(
                 "INSERT INTO users (email, tier, created_at) VALUES (?,?,?)",
                 (email, tier, now()),
             )
+        sets, vals = ["tier=?"], [tier]
+        if paid_until is not None:
+            sets.append("paid_until=?"); vals.append(paid_until)
+        if canceled is not None:
+            sets.append("canceled=?"); vals.append(1 if canceled else 0)
+        vals.append(email)
+        self._conn.execute(f"UPDATE users SET {', '.join(sets)} WHERE email=?", vals)
         self._conn.commit()
 
     def email_for_stripe_customer(self, stripe_customer_id: str) -> Optional[str]:

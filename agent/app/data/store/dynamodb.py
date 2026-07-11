@@ -72,6 +72,8 @@ class DynamoStore:
             "tier": item.get("tier", "free"),
             "created_at": int(item.get("created_at", 0)),
             "stripe_customer_id": item.get("stripe_customer_id"),
+            "paid_until": int(item["paid_until"]) if item.get("paid_until") is not None else None,
+            "canceled": bool(item.get("canceled", False)),
         }
 
     def upsert_user(self, email: str, tier: str = "free", stripe_customer_id: str = None) -> dict:
@@ -85,11 +87,17 @@ class DynamoStore:
         )
         return self.get_user(email)
 
-    def set_tier(self, email: str, tier: str) -> None:
+    def set_tier(self, email: str, tier: str, paid_until: int = None, canceled: bool = None) -> None:
+        expr = "SET tier = :t, created_at = if_not_exists(created_at, :c)"
+        vals = {":t": tier, ":c": now()}
+        if paid_until is not None:
+            expr += ", paid_until = :pu"
+            vals[":pu"] = paid_until
+        if canceled is not None:
+            expr += ", canceled = :cx"
+            vals[":cx"] = canceled
         self.t_users.update_item(
-            Key={"email": email},
-            UpdateExpression="SET tier = :t, created_at = if_not_exists(created_at, :c)",
-            ExpressionAttributeValues={":t": tier, ":c": now()},
+            Key={"email": email}, UpdateExpression=expr, ExpressionAttributeValues=vals,
         )
 
     def email_for_stripe_customer(self, stripe_customer_id: str) -> Optional[str]:

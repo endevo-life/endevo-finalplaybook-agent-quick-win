@@ -6,16 +6,27 @@ import { PRODUCT_NAME } from "../config/branding";
 // a paid member cancel (downgrade to free). Fool-proof: a confirm step, a busy
 // state, clear success/error, and it refreshes the app's entitlement so the UI
 // reflects the change immediately.
+function fmtDate(epochSeconds) {
+  if (!epochSeconds) return "";
+  return new Date(epochSeconds * 1000).toLocaleDateString(undefined, {
+    year: "numeric", month: "short", day: "numeric",
+  });
+}
+
 export default function Settings({ account, onClose, onChanged }) {
   const isPaid = account?.tier === "paid";
+  const alreadyCanceled = isPaid && account?.canceled;
+  const untilDate = fmtDate(account?.paidUntil);
   const [phase, setPhase] = useState("main"); // main | confirm | working | done | error
   const [err, setErr] = useState("");
+  const [doneUntil, setDoneUntil] = useState("");
 
   async function doCancel() {
     setPhase("working");
     setErr("");
     try {
-      await cancelSubscription();
+      const snap = await cancelSubscription();
+      setDoneUntil(fmtDate(snap?.paidUntil));
       await onChanged?.(); // refresh entitlement in the app
       setPhase("done");
     } catch (e) {
@@ -49,7 +60,15 @@ export default function Settings({ account, onClose, onChanged }) {
             </p>
           )}
 
-          {isPaid && phase === "main" && (
+          {alreadyCanceled && phase === "main" && (
+            <p className="fp-dim" style={{ fontSize: 13 }}>
+              Your subscription is canceled. You keep full access
+              {untilDate ? ` until ${untilDate}` : " until your period ends"}, then
+              you'll move to the free plan.
+            </p>
+          )}
+
+          {isPaid && !alreadyCanceled && phase === "main" && (
             <button className="fp-btn-secondary" style={{ width: "100%" }} onClick={() => setPhase("confirm")}>
               Cancel subscription
             </button>
@@ -58,8 +77,8 @@ export default function Settings({ account, onClose, onChanged }) {
           {isPaid && phase === "confirm" && (
             <div className="fp-settings-confirm">
               <p className="fp-body" style={{ marginTop: 0 }}>
-                Cancel and switch back to free? You'll keep your playbook, but premium
-                items and the AI guide will lock again.
+                Cancel your subscription? You'll keep full access until the end of
+                your current period, then move to the free plan — no further charges.
               </p>
               <button className="fp-btn-danger" style={{ width: "100%" }} onClick={doCancel}>
                 Yes, cancel my subscription
@@ -74,7 +93,8 @@ export default function Settings({ account, onClose, onChanged }) {
 
           {phase === "done" && (
             <p className="fp-body" style={{ color: "var(--teal-deep, #2E7F7B)" }}>
-              ✓ Your subscription was cancelled. You're on the free plan now.
+              ✓ Canceled. You keep full access{doneUntil ? ` until ${doneUntil}` : " until your period ends"},
+              then you'll move to the free plan.
             </p>
           )}
 

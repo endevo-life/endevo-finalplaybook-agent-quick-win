@@ -27,9 +27,13 @@ class MemoryStore:
         self.users[email] = user
         return user
 
-    def set_tier(self, email: str, tier: str) -> None:
+    def set_tier(self, email: str, tier: str, paid_until: int = None, canceled: bool = None) -> None:
         user = self.users.get(email) or {"email": email, "created_at": now()}
         user["tier"] = tier
+        if paid_until is not None:
+            user["paid_until"] = paid_until
+        if canceled is not None:
+            user["canceled"] = canceled
         self.users[email] = user
 
     def email_for_stripe_customer(self, stripe_customer_id: str) -> Optional[str]:

@@ -38,13 +38,22 @@ def billing_dev_upgrade(email: str = Depends(require_email)):
 
 @router.post("/downgrade")
 def billing_downgrade(email: str = Depends(require_email)):
-    """Cancel the subscription -- flip the user back to the free tier. Guarded by
-    ALLOW_DEV_UPGRADE (same gate as dev-upgrade) so it can't be hit in a
-    production Stripe setup, where cancellation flows through the Stripe portal +
-    webhook instead. Idempotent: downgrading an already-free user is a no-op."""
+    """Cancel the subscription. The member KEEPS paid access until the end of the
+    period they've paid for (paid_until), then auto-resolves to free -- the same
+    'cancel now, access until renewal' behavior real subscriptions have. Guarded
+    by ALLOW_DEV_UPGRADE (prod cancellation flows through the Stripe portal +
+    webhook). Idempotent for an already-free user."""
+    from app.data.store.base import now
     if not ALLOW_DEV_UPGRADE:
         raise HTTPException(403, "Manage your subscription through the billing portal.")
-    get_store().set_tier(email, "free")
+    store = get_store()
+    user = store.get_user(email)
+    if not user or user.get("tier") != "paid":
+        return entitlement_for(email).snapshot()  # nothing to cancel
+    # Access continues to the end of the current 30-day period. If a real
+    # subscription set paid_until, keep it; otherwise grant 30 days from now.
+    paid_until = user.get("paid_until") or (now() + 30 * 24 * 3600)
+    store.set_tier(email, "paid", paid_until=paid_until, canceled=True)
     analytics.emit(analytics.UPGRADE_BLOCKED, email=email, feature="downgrade", code=0)
     return entitlement_for(email).snapshot()
 

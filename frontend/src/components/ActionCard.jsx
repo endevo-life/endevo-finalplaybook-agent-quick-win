@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { fieldInputType } from "../lib/fieldType";
 
 // Condensed action card.
@@ -27,6 +27,12 @@ export default function ActionCard({
   const trackable = !locked && typeof onToggleStep === "function";
   // Paid: show the checklist expanded by default so it's immediately workable.
   const [open, setOpen] = useState(trackable);
+  // BUG FIX: when a card unlocks (free -> upgrade), `trackable` flips true but
+  // useState's initial value doesn't re-run, so the steps stayed collapsed and
+  // the card looked empty ("0/4 steps", no checklist). Auto-open on unlock.
+  useEffect(() => {
+    if (trackable) setOpen(true);
+  }, [trackable]);
 
   // How many of this card's steps are done (for the little per-card badge).
   const doneCount = trackable && isStepDone
