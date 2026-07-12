@@ -21,6 +21,18 @@ export default function Settings({ account, onClose, onChanged }) {
   const [err, setErr] = useState("");
   const [doneUntil, setDoneUntil] = useState("");
 
+  // Theme switch. Classic (B2C, gold/navy/off-white) is the default; ENDevo
+  // (B2B navy/orange) is optional. Applies instantly + remembers the choice.
+  const [theme, setThemeState] = useState(
+    () => localStorage.getItem("fp_theme") === "b2b" ? "b2b" : "b2c"
+  );
+  function setTheme(next) {
+    setThemeState(next);
+    localStorage.setItem("fp_theme", next);
+    if (next === "b2b") document.documentElement.setAttribute("data-theme", "b2b");
+    else document.documentElement.removeAttribute("data-theme");
+  }
+
   async function doCancel() {
     setPhase("working");
     setErr("");
@@ -43,13 +55,30 @@ export default function Settings({ account, onClose, onChanged }) {
 
         <div className="fp-settings-row">
           <span className="fp-settings-label">Email</span>
-          <span className="fp-settings-value">{account?.email || ", "}</span>
+          <span className="fp-settings-value">{account?.email || "not set"}</span>
         </div>
         <div className="fp-settings-row">
           <span className="fp-settings-label">Plan</span>
           <span className={`fp-tier-pill ${isPaid ? "paid" : ""}`}>
             {isPaid ? "Personalized" : "Free"}
           </span>
+        </div>
+        <div className="fp-settings-row">
+          <span className="fp-settings-label">Theme</span>
+          <div className="fp-theme-switch" role="group" aria-label="Theme">
+            <button
+              className={`fp-theme-opt ${theme === "b2c" ? "on" : ""}`}
+              onClick={() => setTheme("b2c")}
+            >
+              Classic
+            </button>
+            <button
+              className={`fp-theme-opt ${theme === "b2b" ? "on" : ""}`}
+              onClick={() => setTheme("b2b")}
+            >
+              ENDevo
+            </button>
+          </div>
         </div>
 
         <div className="fp-settings-actions">

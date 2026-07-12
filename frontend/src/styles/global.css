@@ -666,6 +666,10 @@ button, input, textarea {
 }
 .fp-settings-label { font-size: 13px; color: var(--dim); font-weight: 600; }
 .fp-settings-value { font-size: 14px; color: var(--ink); }
+.fp-theme-switch { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
+.fp-theme-opt { background: var(--surf); border: none; padding: 6px 14px; font: inherit; font-size: 13px; font-weight: 600; color: var(--dim); cursor: pointer; }
+.fp-theme-opt.on { background: var(--brand); color: #fff; }
+.fp-theme-opt:not(.on):hover { color: var(--ink); }
 .fp-settings-actions { margin-top: 20px; }
 .fp-settings-confirm { margin-top: 4px; }
 .fp-btn-danger {
