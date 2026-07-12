@@ -749,6 +749,134 @@
       "shortDefinition": "The person legally named to raise your minor children if you (and your partner) are no longer able to.",
       "sourceRef": "situationProfiles.profile_young_children",
       "validated": false
+    },
+    {
+      "term": "Trust",
+      "domain": "legal",
+      "shortDefinition": "A legal arrangement where a trustee holds and manages assets for your beneficiaries. Unlike a will, a living trust can let assets pass to your people WITHOUT going through probate court, and can take effect while you're alive if you become unable to manage things yourself.",
+      "sourceRef": "claude-authored",
+      "_note": "DRAFT 2026-07-12: plain-language term for Jesse, educational only, not advice. Pending Niki review.",
+      "validated": false
+    },
+    {
+      "term": "Will vs. trust",
+      "domain": "legal",
+      "shortDefinition": "A will takes effect only after you die and usually goes through probate (a public court process) before assets are distributed. A living trust can avoid probate, works if you're incapacitated (not just at death), and stays private. Many people have BOTH: a will as a backstop, and a trust for the main assets. Which fits you depends on your situation. An estate attorney can advise.",
+      "sourceRef": "claude-authored",
+      "_note": "DRAFT 2026-07-12: plain-language term for Jesse, educational only, not advice. Pending Niki review.",
+      "validated": false
+    },
+    {
+      "term": "Living will",
+      "domain": "legal",
+      "shortDefinition": "A document that states the medical care you do or don't want if you can't speak for yourself (for example, life support). Different from a regular will, which is about your assets after death.",
+      "sourceRef": "claude-authored",
+      "_note": "DRAFT 2026-07-12: plain-language term for Jesse, educational only, not advice. Pending Niki review.",
+      "validated": false
+    },
+    {
+      "term": "Estate",
+      "domain": "legal",
+      "shortDefinition": "Everything you own at death: property, accounts, belongings, and digital assets. Your estate is what gets distributed by your will, trust, or, if you have neither, by state law.",
+      "sourceRef": "claude-authored",
+      "_note": "DRAFT 2026-07-12: plain-language term for Jesse, educational only, not advice. Pending Niki review.",
+      "validated": false
+    },
+    {
+      "term": "Intestate",
+      "domain": "legal",
+      "shortDefinition": "Dying without a valid will. When that happens, your state's laws decide who inherits your assets, which may not match what you would have wanted.",
+      "sourceRef": "claude-authored",
+      "_note": "DRAFT 2026-07-12: plain-language term for Jesse, educational only, not advice. Pending Niki review.",
+      "validated": false
+    },
+    {
+      "term": "Beneficiary",
+      "domain": "financial",
+      "shortDefinition": "The person or organization you name to receive an asset (like a retirement account or life insurance) when you die. Beneficiary designations usually override what your will says, so keeping them current matters.",
+      "sourceRef": "claude-authored",
+      "_note": "DRAFT 2026-07-12: plain-language term for Jesse, educational only, not advice. Pending Niki review.",
+      "validated": false
+    },
+    {
+      "term": "Life insurance",
+      "domain": "financial",
+      "shortDefinition": "A policy that pays a chosen beneficiary a sum of money when you die. It can help your family cover costs and replace lost income. Confirm the named beneficiary is still who you intend.",
+      "sourceRef": "claude-authored",
+      "_note": "DRAFT 2026-07-12: plain-language term for Jesse, educational only, not advice. Pending Niki review.",
+      "validated": false
+    },
+    {
+      "term": "Financial inventory",
+      "domain": "financial",
+      "shortDefinition": "A single organized list of your accounts, policies, debts, and where to find them, so the person handling your affairs isn't searching blind.",
+      "sourceRef": "claude-authored",
+      "_note": "DRAFT 2026-07-12: plain-language term for Jesse, educational only, not advice. Pending Niki review.",
+      "validated": false
+    },
+    {
+      "term": "Healthcare proxy / agent",
+      "domain": "physical",
+      "shortDefinition": "The person you legally name to make medical decisions for you if you can't make them yourself. Also called a healthcare power of attorney.",
+      "sourceRef": "claude-authored",
+      "_note": "DRAFT 2026-07-12: plain-language term for Jesse, educational only, not advice. Pending Niki review.",
+      "validated": false
+    },
+    {
+      "term": "Advance directive",
+      "domain": "physical",
+      "shortDefinition": "A general term for the documents that spell out your medical wishes and who decides for you: typically a living will plus a healthcare proxy.",
+      "sourceRef": "claude-authored",
+      "_note": "DRAFT 2026-07-12: plain-language term for Jesse, educational only, not advice. Pending Niki review.",
+      "validated": false
+    },
+    {
+      "term": "Five Wishes",
+      "domain": "physical",
+      "shortDefinition": "A widely used, plain-language advance directive that covers medical, personal, emotional, and spiritual wishes, not just legal ones.",
+      "sourceRef": "claude-authored",
+      "_note": "DRAFT 2026-07-12: plain-language term for Jesse, educational only, not advice. Pending Niki review.",
+      "validated": false
+    },
+    {
+      "term": "Legacy contact",
+      "domain": "digital",
+      "shortDefinition": "A person you designate with Apple, Google, or Facebook who can access or manage your account after you die. Setting one up is one of the simplest, highest-impact digital steps.",
+      "sourceRef": "claude-authored",
+      "_note": "DRAFT 2026-07-12: plain-language term for Jesse, educational only, not advice. Pending Niki review.",
+      "validated": false
+    },
+    {
+      "term": "Password manager",
+      "domain": "digital",
+      "shortDefinition": "A secure app that stores your logins in one place. It lets a trusted person reach your accounts (with the right access) instead of being locked out.",
+      "sourceRef": "claude-authored",
+      "_note": "DRAFT 2026-07-12: plain-language term for Jesse, educational only, not advice. Pending Niki review.",
+      "validated": false
+    },
+    {
+      "term": "Digital assets",
+      "domain": "digital",
+      "shortDefinition": "Anything you own or control online: accounts, photos, email, social media, crypto, domains, and files. Without a plan, much of it can be lost or inaccessible to your family.",
+      "sourceRef": "claude-authored",
+      "_note": "DRAFT 2026-07-12: plain-language term for Jesse, educational only, not advice. Pending Niki review.",
+      "validated": false
+    },
+    {
+      "term": "Inactive Account Manager",
+      "domain": "digital",
+      "shortDefinition": "Google's tool to decide what happens to your account and data if you stop using it, including who can be notified or given access.",
+      "sourceRef": "claude-authored",
+      "_note": "DRAFT 2026-07-12: plain-language term for Jesse, educational only, not advice. Pending Niki review.",
+      "validated": false
+    },
+    {
+      "term": "Ethical will / legacy letter",
+      "domain": "beliefs",
+      "shortDefinition": "A personal (non-legal) letter sharing your values, stories, and wishes for your loved ones. Not legally binding, but often the most treasured thing you leave behind.",
+      "sourceRef": "claude-authored",
+      "_note": "DRAFT 2026-07-12: plain-language term for Jesse, educational only, not advice. Pending Niki review.",
+      "validated": false
     }
   ],
   "domainAssessment": {
