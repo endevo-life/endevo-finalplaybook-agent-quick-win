@@ -3,7 +3,7 @@
     "title": "Final Playbook content library - Q&A, action items, scenario-based education",
     "purpose": "Grounding data for the low-token AI agent: deterministic routing/rules only, no engineering/DDB/worksheet-validation content included by design (scoped to the clinical/educational routing logic per 2026-07-01 direction).",
     "source": "Extracted from niki_routing_rules_v1.html (6 Otter session transcripts: Peter Chmiel Sprint 1+2, Jayne Lammers, Ellen Feinberg, Sue, Billie), cross-checked against Elisa Seeherman meet-and-greet transcript for tone/glossary.",
-    "status": "DRAFT — content and priority ordering pending expert sign-off. Use as working content-library seed; do not present as clinically final. Domain tags (added 2026-07-02) on actionItems and the definitionsGlossary array (added 2026-07-02) are engineering-authored classifications/definitions derived from this content for UI organization — not independently reviewed. Treat as a working scaffold, not clinically final; each glossary entry carries its own 'validated': false flag for tracking. Digital assessment questions D1-D3 (added 2026-07-02) are drafted from client-provided source questions, converted to fit this app's format -- captured as MemberContext flags (noLegacyContact, noSocialMediaPlan, noPasswordManager) but NOT YET wired into lead-profile routing or action items, since no digital-gap action items have been authored yet. Unvalidated. profile_digital_gap (added 2026-07-02) is drafted, unvalidated content -- practical digital-access how-tos matching the established voice/format, written to answer the digital-assessment gap (D1-D3). Always parallel/additive like profile_business_owner, never a lead profile. Each actionItem carries a `flag` field -- rules_engine.build_plan() includes an item only if that specific MemberContext flag is true, not the whole profile at once.",
+    "status": "DRAFT — content and priority ordering pending expert sign-off. Use as working content-library seed; do not present as clinically final. Domain tags (added 2026-07-02) on actionItems and the definitionsGlossary array (added 2026-07-02) are engineering-authored classifications/definitions derived from this content for UI organization — not independently reviewed. Treat as a working scaffold, not clinically final; each glossary entry carries its own 'validated': false flag for tracking. Digital assessment questions D1-D3 (added 2026-07-02) are drafted from client-provided source questions, converted to fit this app's format, captured as MemberContext flags (noLegacyContact, noSocialMediaPlan, noPasswordManager) but NOT YET wired into lead-profile routing or action items, since no digital-gap action items have been authored yet. Unvalidated. profile_digital_gap (added 2026-07-02) is drafted, unvalidated content, practical digital-access how-tos matching the established voice/format, written to answer the digital-assessment gap (D1-D3). Always parallel/additive like profile_business_owner, never a lead profile. Each actionItem carries a `flag` field, rules_engine.build_plan() includes an item only if that specific MemberContext flag is true, not the whole profile at once.",
     "extractedOn": "2026-07-01"
   },
   "coreFraming": {
@@ -566,7 +566,7 @@
     {
       "id": "profile_digital_gap",
       "name": "Digital access gaps",
-      "urgency": "parallel -- always additive, like profile_business_owner",
+      "urgency": "parallel, always additive, like profile_business_owner",
       "triggerConditions": [
         "noLegacyContact",
         "noSocialMediaPlan",
@@ -574,11 +574,11 @@
       ],
       "questions": [
         "If you died tomorrow and your phone went with you, is there a Legacy Contact set up on your account so someone could actually get in?",
-        "Have you named someone to handle your social media if you couldn't do it yourself -- and do they actually know what to do?",
+        "Have you named someone to handle your social media if you couldn't do it yourself, and do they actually know what to do?",
         "Are your passwords and logins somewhere a trusted person could actually find and use?"
       ],
       "priorityOrder": [
-        "Legacy Contact on phone/device accounts -- the gateway to everything else digital",
+        "Legacy Contact on phone/device accounts, the gateway to everything else digital",
         "Named social media executor with real instructions, not just a name",
         "Password manager or written access list a trusted person can actually use"
       ],
@@ -589,8 +589,8 @@
           "flag": "noLegacyContact"
         },
         {
-          "text": "Name someone to handle your social media if you couldn't -- and write down exactly what you want done (memorialize, delete, or keep active).",
-          "script": "If something happened to me, here's what I'd want you to do with my accounts -- can I walk you through it?",
+          "text": "Name someone to handle your social media if you couldn't, and write down exactly what you want done (memorialize, delete, or keep active).",
+          "script": "If something happened to me, here's what I'd want you to do with my accounts, can I walk you through it?",
           "domain": "digital",
           "flag": "noSocialMediaPlan"
         },
@@ -887,7 +887,7 @@
         "id": "basics_docbox",
         "domain": "digital",
         "title": "Set up your doc box",
-        "action": "Create one central, secure place ('doc box') where all your important documents live -- so everything else can actually be found.",
+        "action": "Create one central, secure place ('doc box') where all your important documents live, so everything else can actually be found.",
         "steps": [
           "Pick one secure location (a fireproof/waterproof box, or a single encrypted cloud folder). One place, not five.",
           "Put your key documents there as you complete each step below.",
@@ -898,7 +898,7 @@
         "id": "basics_legacy_contact",
         "domain": "digital",
         "title": "Set up a Legacy Contact on your phone (iPhone & Android)",
-        "action": "Add a Legacy Contact so your trusted person can reach your device and accounts. It's free and takes 2 minutes -- on whichever phone you use.",
+        "action": "Add a Legacy Contact so your trusted person can reach your device and accounts. It's free and takes 2 minutes, on whichever phone you use.",
         "steps": [
           "iPhone: Settings > tap your name > Sign-In & Security > Legacy Contact > Add Legacy Contact.",
           "Android / Google: myaccount.google.com > Data & privacy > 'Make a plan for your account' (Inactive Account Manager).",
@@ -929,7 +929,7 @@
         "options": [
           {
             "value": "yes",
-            "label": "Yes -- they have the names and contacts in writing",
+            "label": "Yes, they have the names and contacts in writing",
             "resultType": "review",
             "action": "Review your financial contact list so it still reflects your current accounts and institutions.",
             "checklist": [
@@ -968,11 +968,11 @@
       {
         "id": "FIN_beneficiaries",
         "domain": "financial",
-        "question": "Have you named -- and recently checked -- the beneficiaries on your 401(k), IRA, and bank/investment accounts?",
+        "question": "Have you named, and recently checked, the beneficiaries on your 401(k), IRA, and bank/investment accounts?",
         "options": [
           {
             "value": "yes",
-            "label": "Yes -- all named and reviewed in the last year or two",
+            "label": "Yes, all named and reviewed in the last year or two",
             "resultType": "review",
             "action": "Review your beneficiary designations. These override your will, so a stale one sends money to the wrong person.",
             "checklist": [
@@ -986,7 +986,7 @@
             "value": "partial",
             "label": "Some are named, but I haven't checked them in years",
             "resultType": "steps",
-            "action": "Review and update your beneficiary designations -- they override your will, so out-of-date ones cause the biggest, most avoidable mistakes.",
+            "action": "Review and update your beneficiary designations, they override your will, so out-of-date ones cause the biggest, most avoidable mistakes.",
             "steps": [
               "List every account that names a beneficiary (401k, IRA, pension, bank, brokerage, life insurance).",
               "Log in or call each institution and confirm who's named.",
@@ -998,7 +998,7 @@
             "value": "no",
             "label": "No, or I'm not sure",
             "resultType": "steps",
-            "action": "Name beneficiaries on your accounts. This is one of the highest-impact steps -- beneficiary designations pass money directly, skipping probate.",
+            "action": "Name beneficiaries on your accounts. This is one of the highest-impact steps, beneficiary designations pass money directly, skipping probate.",
             "steps": [
               "List your 401k, IRA, bank, and investment accounts.",
               "For each, ask the institution how to add a beneficiary (often called TOD/POD on bank/brokerage accounts).",
@@ -1011,11 +1011,11 @@
       {
         "id": "PHYS_directive",
         "domain": "physical",
-        "question": "If you were unconscious in an ICU tomorrow, do you have a Medical Advance Directive telling doctors what care you want?",
+        "question": "If you were unconscious in the hospital tomorrow, do you have a Medical Advance Directive telling doctors what care you want?",
         "options": [
           {
             "value": "yes",
-            "label": "Yes -- signed and on file with my doctor and Healthcare POA",
+            "label": "Yes, signed and on file with my doctor and Healthcare POA",
             "resultType": "review",
             "action": "Review your Advance Directive so it still reflects your current wishes.",
             "checklist": [
@@ -1031,7 +1031,7 @@
             "resultType": "steps",
             "action": "Finish and distribute your Advance Directive so it can actually guide your care.",
             "steps": [
-              "Finish writing it -- what treatments you do and don't want (ventilation, resuscitation, feeding tubes, comfort-only care).",
+              "Finish writing it, what treatments you do and don't want (ventilation, resuscitation, feeding tubes, comfort-only care).",
               "Sign it per your state's requirements (witnesses or notary).",
               "Give copies to your doctor, hospital system, and Healthcare POA.",
               "Store the original securely and tell your POA where it is."
@@ -1054,11 +1054,11 @@
       {
         "id": "DIG_password_manager",
         "domain": "digital",
-        "question": "If something happened tomorrow, could your trusted person get into your accounts -- do you use a password manager they can reach?",
+        "question": "If something happened tomorrow, could your trusted person get into your accounts, do you use a password manager they can reach?",
         "options": [
           {
             "value": "yes",
-            "label": "Yes -- I use one and emergency access is set up",
+            "label": "Yes, I use one and emergency access is set up",
             "resultType": "review",
             "action": "Review your password manager so your critical accounts and emergency access are current.",
             "checklist": [
@@ -1082,7 +1082,7 @@
           },
           {
             "value": "no",
-            "label": "No -- I don't use a password manager",
+            "label": "No, I don't use a password manager",
             "resultType": "steps",
             "action": "Start using a password manager so your logins are secure and reachable if someone needs to step in.",
             "steps": [
@@ -1097,11 +1097,11 @@
       {
         "id": "DIG_online_banking",
         "domain": "digital",
-        "question": "Could your trusted person actually get into your online banking and bill-pay if they had to -- not just know the bank's name, but log in?",
+        "question": "Could your trusted person actually get into your online banking and bill-pay if they had to, not just know the bank's name, but log in?",
         "options": [
           {
             "value": "yes",
-            "label": "Yes -- logins and 2FA access are documented for them",
+            "label": "Yes, logins and 2FA access are documented for them",
             "resultType": "review",
             "action": "Review your online-banking access so logins and two-factor methods are still current.",
             "checklist": [
@@ -1118,14 +1118,14 @@
             "action": "Document real login access to your online banking, including the two-factor step that usually blocks people.",
             "steps": [
               "List each bank's online login (username + where the password lives).",
-              "Note the 2FA method for each -- and how your person would receive the code (this is the part that traps families).",
+              "Note the 2FA method for each, and how your person would receive the code (this is the part that traps families).",
               "List autopay / scheduled payments so bills don't lapse.",
               "Store this in your password manager and tell your person where it is."
             ]
           },
           {
             "value": "no",
-            "label": "No -- they'd be locked out",
+            "label": "No, they'd be locked out",
             "resultType": "steps",
             "action": "Set up a way for your trusted person to reach your online banking so bills and accounts don't freeze up in an emergency.",
             "steps": [
@@ -1140,11 +1140,11 @@
       {
         "id": "DIG_photos",
         "domain": "digital",
-        "question": "Are your photos, videos, and personal files backed up -- AND does your family know how to get to them?",
+        "question": "Are your photos, videos, and personal files backed up, AND does your family know how to get to them?",
         "options": [
           {
             "value": "yes",
-            "label": "Yes -- backed up and access is documented",
+            "label": "Yes, backed up and access is documented",
             "resultType": "review",
             "action": "Review your backups so they're current and your family can reach them.",
             "checklist": [
@@ -1158,7 +1158,7 @@
             "value": "partial",
             "label": "Backed up, but no one knows how to access them",
             "resultType": "steps",
-            "action": "Make sure someone can actually find and open your photos and files -- a backup no one can reach is lost with you.",
+            "action": "Make sure someone can actually find and open your photos and files, a backup no one can reach is lost with you.",
             "steps": [
               "Confirm photos/videos/files are backed up (cloud and/or external drive).",
               "Write down how to access each backup (logins, physical drive location, any app needed).",
@@ -1168,7 +1168,7 @@
           },
           {
             "value": "no",
-            "label": "No -- not really backed up",
+            "label": "No, not really backed up",
             "resultType": "steps",
             "action": "Back up your photos and files and leave a way in, so a lifetime of memories isn't lost.",
             "steps": [
@@ -1183,11 +1183,11 @@
       {
         "id": "DIG_crypto",
         "domain": "digital",
-        "question": "Do you own crypto or other digital assets (wallets, NFTs, domains, online business, loyalty points) -- and could anyone actually inherit them?",
+        "question": "Do you own crypto or other digital assets (wallets, NFTs, domains, online business, loyalty points), and could anyone actually inherit them?",
         "options": [
           {
             "value": "yes",
-            "label": "Yes -- documented with a secure access plan",
+            "label": "Yes, documented with a secure access plan",
             "resultType": "review",
             "action": "Review your digital-asset access so wallet keys and logins are current and reachable.",
             "checklist": [
@@ -1201,10 +1201,10 @@
             "value": "partial",
             "label": "I own some, but no one could access them",
             "resultType": "steps",
-            "action": "Document access to your digital assets -- crypto especially is gone forever without the keys, no bank can recover it.",
+            "action": "Document access to your digital assets, crypto especially is gone forever without the keys, no bank can recover it.",
             "steps": [
               "List every digital asset (crypto wallets, NFTs, domains, online business, loyalty points).",
-              "Document access per asset -- wallet keys, recovery phrases, logins, transfer steps.",
+              "Document access per asset, wallet keys, recovery phrases, logins, transfer steps.",
               "Store this in a password manager or a secure physical location.",
               "Tell your trusted person where it is and how to use it."
             ]
@@ -1213,7 +1213,7 @@
             "value": "no",
             "label": "I don't own any",
             "resultType": "review",
-            "action": "No action needed now -- but re-check yearly. Digital assets accumulate quietly (a wallet, domains, loyalty points).",
+            "action": "No action needed now, but re-check yearly. Digital assets accumulate quietly (a wallet, domains, loyalty points).",
             "checklist": [
               "Do a yearly check: any new wallet, domain, or online asset?",
               "If yes, document access the same way as other accounts."
@@ -1224,11 +1224,11 @@
       {
         "id": "DIG_social",
         "domain": "digital",
-        "question": "Have you decided what happens to your social media accounts (Facebook, Instagram, LinkedIn, etc.) -- memorialize, delete, or transfer?",
+        "question": "Have you decided what happens to your social media accounts (Facebook, Instagram, LinkedIn, etc.), memorialize, delete, or transfer?",
         "options": [
           {
             "value": "yes",
-            "label": "Yes -- accounts listed and decisions documented",
+            "label": "Yes, accounts listed and decisions documented",
             "resultType": "review",
             "action": "Review your social-media plan so accounts and decisions are still current.",
             "checklist": [
@@ -1271,7 +1271,7 @@
         "options": [
           {
             "value": "yes",
-            "label": "Yes -- named in writing and authorized in my will",
+            "label": "Yes, named in writing and authorized in my will",
             "resultType": "review",
             "action": "Review your Digital Asset Manager designation so it still matches your digital life and your wishes.",
             "checklist": [
@@ -1285,7 +1285,7 @@
             "value": "partial",
             "label": "I've picked someone but nothing's in writing",
             "resultType": "steps",
-            "action": "Give your chosen person written, legal authority -- without it, platforms and courts can block them from your accounts.",
+            "action": "Give your chosen person written, legal authority, without it, platforms and courts can block them from your accounts.",
             "steps": [
               "Add a Digital Asset Manager designation to your will or estate plan.",
               "Write clear instructions for accessing your digital accounts.",
@@ -1319,7 +1319,7 @@
         "options": [
           {
             "value": "yes",
-            "label": "Yes -- a guardian is named in a signed document",
+            "label": "Yes, a guardian is named in a signed document",
             "resultType": "review",
             "action": "Review your guardian choice so it still reflects who you'd want and their current willingness.",
             "checklist": [
@@ -1343,7 +1343,7 @@
           },
           {
             "value": "no",
-            "label": "No -- no guardian has been named",
+            "label": "No, no guardian has been named",
             "resultType": "steps",
             "action": "Name a guardian for your children so the choice is yours, not a court's.",
             "steps": [
@@ -1367,7 +1367,7 @@
         "options": [
           {
             "value": "yes",
-            "label": "Yes -- life insurance and/or a trust is in place",
+            "label": "Yes, life insurance and/or a trust is in place",
             "resultType": "review",
             "action": "Review that the provision for your children is current and points to the right people.",
             "checklist": [
@@ -1379,7 +1379,7 @@
           },
           {
             "value": "no",
-            "label": "No -- there's no plan for their financial care",
+            "label": "No, there's no plan for their financial care",
             "resultType": "steps",
             "action": "Set up a way for your children to be provided for if you're gone.",
             "steps": [
@@ -1403,7 +1403,7 @@
         "options": [
           {
             "value": "yes",
-            "label": "Yes -- there's a documented succession plan",
+            "label": "Yes, there's a documented succession plan",
             "resultType": "review",
             "action": "Review your succession plan so it matches how the business runs today.",
             "checklist": [
@@ -1427,7 +1427,7 @@
           },
           {
             "value": "no",
-            "label": "No -- the business depends entirely on me",
+            "label": "No, the business depends entirely on me",
             "resultType": "steps",
             "action": "Create a basic continuity plan so your business isn't lost if you can't run it.",
             "steps": [
@@ -1451,7 +1451,7 @@
         "options": [
           {
             "value": "yes",
-            "label": "Yes -- a healthcare proxy/agent is named in writing",
+            "label": "Yes, a healthcare proxy/agent is named in writing",
             "resultType": "review",
             "action": "Review your healthcare proxy so the right person can act without friction.",
             "checklist": [
@@ -1463,7 +1463,7 @@
           },
           {
             "value": "no",
-            "label": "No -- no one is formally authorized",
+            "label": "No, no one is formally authorized",
             "resultType": "steps",
             "action": "Name a healthcare agent so someone you trust can decide for you in a crisis.",
             "steps": [
