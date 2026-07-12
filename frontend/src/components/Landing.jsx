@@ -100,6 +100,24 @@ export default function Landing({ onStart, onSignIn, onUpgrade, isPaid }) {
         </p>
       </div>
 
+      {/* Program results / proof (from ENDevo program outcomes) */}
+      <div className="fp-section">
+        <h2 className="fp-section-title">People who plan, feel it.</h2>
+        <div className="fp-proof-row">
+          {[
+            ["92%", "reached planning clarity"],
+            ["9.9/10", "participant satisfaction"],
+            ["75%", "completed critical documents they'd been putting off"],
+          ].map(([stat, label]) => (
+            <div key={stat} className="fp-proof-item">
+              <span className="fp-proof-num">{stat}</span>
+              <span className="fp-proof-label">{label}</span>
+            </div>
+          ))}
+        </div>
+        <p className="fp-stats-source">From ENDevo's guided program outcomes.</p>
+      </div>
+
       {/* The fears we answer */}
       <div className="fp-section">
         <h2 className="fp-section-title">The questions no one else answers</h2>

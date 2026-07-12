@@ -357,6 +357,12 @@ button, input, textarea {
 }
 .fp-stat-label { font-size: 13.5px; line-height: 1.5; color: var(--body); margin: 0; }
 .fp-stats-source { text-align: center; font-size: 13px; color: var(--dim); max-width: 620px; margin: 8px auto 0; line-height: 1.55; }
+
+/* program-results proof row */
+.fp-proof-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 40px; margin: 26px 0 14px; }
+.fp-proof-item { display: flex; flex-direction: column; align-items: center; gap: 6px; max-width: 200px; text-align: center; }
+.fp-proof-num { font-size: 34px; font-weight: 700; color: var(--accent); letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.fp-proof-label { font-size: 13.5px; color: var(--body); line-height: 1.45; }
 @media (max-width: 720px) {
   .fp-stats-grid { grid-template-columns: repeat(2, 1fr); }
   .fp-stat-num { font-size: 38px; }
