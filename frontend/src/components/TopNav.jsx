@@ -1,5 +1,6 @@
 import { COMPANY_NAME, PRODUCT_NAME } from "../config/branding";
 import Logo from "./Logo";
+import ThemeToggle from "./ThemeToggle";
 
 export default function TopNav({ route, user, account, onHome, onSignIn, onSignOut, onSettings }) {
   return (
@@ -11,6 +12,7 @@ export default function TopNav({ route, user, account, onHome, onSignIn, onSignO
       </div>
 
       <div className="fp-topnav-user">
+        <ThemeToggle />
         {account ? (
           <>
             <span className={`fp-tier-pill ${account.tier === "paid" ? "paid" : ""}`}>
