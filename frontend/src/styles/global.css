@@ -14,6 +14,23 @@
   --danger: #A6423A;
 }
 
+/* B2B (ENDevo employer) theme. Activate with:
+   document.documentElement.setAttribute("data-theme","b2b")
+   or add ?theme=b2b to the URL. See docs/THEME-handoff.md. */
+:root[data-theme="b2b"] {
+  --bg: #F7F9FC;
+  --surf: #FFFFFF;
+  --surf2: #EEF2F8;
+  --ink: #0A1B3D;
+  --body: #33415C;
+  --dim: #5A667E;
+  --line: #DDE3ED;
+  --brand: #0A1B3D;
+  --brand-lt: #DCE6F5;
+  --accent: #F26A21;
+  --danger: #D0492B;
+}
+
 * { box-sizing: border-box; }
 
 html, body, #root { height: 100%; }
