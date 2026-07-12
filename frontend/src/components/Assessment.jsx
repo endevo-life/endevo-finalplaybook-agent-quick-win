@@ -192,10 +192,20 @@ export default function Assessment({ user, signals = [], resume = false, onBack,
   if (plan) {
     const stepKeyFor = (itemId, i) => `${itemId}::${i}`;
 
-    // Free users get a "taste": the basics PLUS the first domain item are fully
-    // unlocked and checkable; the rest of the domain plan stays blurred as the
-    // upgrade driver. Paid users have everything unlocked.
-    const freeUnlockedDomain = isPaid ? plan.domainItems : plan.domainItems.slice(0, 1);
+    // Free users get a "taste": the basics PLUS the first 2 items PER DOMAIN are
+    // fully unlocked and checkable; the rest of the domain plan stays blurred as
+    // the upgrade driver. Keeps the free experience light (a few per area, not
+    // the full 40+ step plan) per Niki's review. Paid users have everything.
+    const FREE_PER_DOMAIN = 2;
+    const freeUnlockedDomain = (() => {
+      if (isPaid) return plan.domainItems;
+      const perDomainCount = {};
+      return plan.domainItems.filter((it) => {
+        const d = it.domain || "other";
+        perDomainCount[d] = (perDomainCount[d] || 0) + 1;
+        return perDomainCount[d] <= FREE_PER_DOMAIN;
+      });
+    })();
     const isLocked = (item, inDomain) =>
       inDomain && !isPaid && !freeUnlockedDomain.includes(item);
 
@@ -321,8 +331,8 @@ export default function Assessment({ user, signals = [], resume = false, onBack,
           <div className="fp-lock-card">
             <p className="fp-lock-title">🔒 The rest of {PLAYBOOK_NAME} is ready</p>
             <p className="fp-lock-body">
-              You've felt how the first step works. Unlock every remaining step across
-              your financial, digital, and physical plan, check them off, keep your
+              You've made a start. Unlock every remaining step across your legal,
+              financial, digital, and physical plan, check them off, keep your
               momentum, and get an AI guide that walks you through your situation.
             </p>
             <button className="fp-btn-upgrade" onClick={onUpgrade}>Unlock Premium, ${price}/mo →</button>
