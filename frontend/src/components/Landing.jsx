@@ -76,6 +76,30 @@ export default function Landing({ onStart, onSignIn, onUpgrade, isPaid }) {
         </video>
       </div>
 
+      {/* ROI / "why prepare" stats (from ENDevo: endevo.life) */}
+      <div className="fp-section">
+        <h2 className="fp-section-title">
+          If you don't prepare, this is what happens.
+        </h2>
+        <div className="fp-stats-grid">
+          {[
+            ["67%", "of adults have no plan in place, leaving families to make painful decisions alone."],
+            ["420+", "hours families spend sorting affairs when information isn't organized."],
+            ["30%", "of loved ones never access digital accounts, losing photos, messages, and records forever."],
+            ["$58B", "in assets goes unclaimed because families didn't know accounts or policies existed."],
+          ].map(([stat, label]) => (
+            <div key={stat} className="fp-stat-card">
+              <div className="fp-stat-num">{stat}</div>
+              <p className="fp-stat-label">{label}</p>
+            </div>
+          ))}
+        </div>
+        <p className="fp-stats-source">
+          Source: ENDevo legacy-readiness research. The good news: every one of
+          these is preventable, and you can start in minutes.
+        </p>
+      </div>
+
       {/* The fears we answer */}
       <div className="fp-section">
         <h2 className="fp-section-title">The questions no one else answers</h2>
