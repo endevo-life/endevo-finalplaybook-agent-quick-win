@@ -10,7 +10,7 @@ export default function Identify({ user, setUser, isPaid, onNext, onBack }) {
       <button onClick={onBack} className="fp-btn-back">← back</button>
       <h2 className="fp-h2" style={{ marginTop: 12 }}>What should we call you?</h2>
       <p className="fp-body">
-        We'll use your first name to keep things personal. That's it — no account
+        We'll use your first name to keep things personal. That's it, no account
         setup, and you're already signed in.
       </p>
       <div className="fp-card">

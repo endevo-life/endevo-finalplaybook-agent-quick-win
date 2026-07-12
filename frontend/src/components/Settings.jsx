@@ -43,7 +43,7 @@ export default function Settings({ account, onClose, onChanged }) {
 
         <div className="fp-settings-row">
           <span className="fp-settings-label">Email</span>
-          <span className="fp-settings-value">{account?.email || "—"}</span>
+          <span className="fp-settings-value">{account?.email || ", "}</span>
         </div>
         <div className="fp-settings-row">
           <span className="fp-settings-label">Plan</span>
@@ -78,7 +78,7 @@ export default function Settings({ account, onClose, onChanged }) {
             <div className="fp-settings-confirm">
               <p className="fp-body" style={{ marginTop: 0 }}>
                 Cancel your subscription? You'll keep full access until the end of
-                your current period, then move to the free plan — no further charges.
+                your current period, then move to the free plan, no further charges.
               </p>
               <button className="fp-btn-danger" style={{ width: "100%" }} onClick={doCancel}>
                 Yes, cancel my subscription

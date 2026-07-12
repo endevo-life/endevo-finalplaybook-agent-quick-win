@@ -10,7 +10,7 @@ import landingCaptions from "../assets/video_landing/captions.en.vtt?url";
 // High-anxiety questions — the exact hooks that convert (from the content model).
 const FEARS = [
   "Who can unlock your phone if you're gone?",
-  "Can your family reach your online banking — past the 2FA?",
+  "Can your family reach your online banking, past the 2FA?",
   "What happens to your photos and a lifetime of memories?",
   "Could anyone actually access your crypto or digital wallet?",
   "Who handles your Instagram, email, and work accounts?",
@@ -18,22 +18,21 @@ const FEARS = [
 ];
 
 const PREMIUM = [
-  ["Track every item", "Check off progress and watch your playbook come together — your plan, saved."],
+  ["Track every item", "Check off progress and watch your playbook come together, your plan, saved."],
   ["Build side by side", "Work through each action with the exact steps, scripts, and fields as you go."],
-  ["AI assistant", "Ask anything about your situation. Grounded in your plan — never guesses, never invents."],
+  ["AI assistant", "Ask anything about your situation. Grounded in your plan, never guesses, never invents."],
   ["Your full plan", "Every personalized action across all domains, prioritized for you."],
 ];
 
 export default function Landing({ onStart, onSignIn, onUpgrade, isPaid }) {
   return (
     <div>
-      {/* Hero — fear reduction, not feature list */}
+      {/* Hero: fear reduction, not feature list */}
       <div className="fp-hero">
-        <p className="fp-hero-eyebrow">{PRODUCT_NAME} · Digital + Legacy Planning</p>
         <h1>When you're gone, will your family be locked out of everything?</h1>
         <p className="fp-hero-sub">
-          Your phone, your accounts, your money, your memories — all behind passwords no
-          one else has. {PRODUCT_NAME} turns that fear into a clear, calm plan you can
+          Your phone, your accounts, your money, your memories. All behind passwords no
+          one else has. {PRODUCT_NAME} turns that worry into a clear, calm plan you can
           start in minutes. <strong>{TAGLINE}</strong>
         </p>
         <div className="fp-hero-cta-row">
@@ -42,7 +41,7 @@ export default function Landing({ onStart, onSignIn, onUpgrade, isPaid }) {
           </button>
         </div>
         <p className="fp-hero-note">
-          New here? Start free — no account needed. Takes about 5 minutes.
+          New here? Start free, no account needed. Takes about 5 minutes.
         </p>
         <p className="fp-hero-signin">
           Already made your playbook?{" "}
@@ -53,7 +52,7 @@ export default function Landing({ onStart, onSignIn, onUpgrade, isPaid }) {
         </p>
       </div>
 
-      {/* Explainer video — "What happens to your digital life when you die" */}
+      {/* Explainer video, "What happens to your digital life when you die" */}
       <div className="fp-section" style={{ paddingTop: 8 }}>
         <video
           className="fp-video"
@@ -91,7 +90,7 @@ export default function Landing({ onStart, onSignIn, onUpgrade, isPaid }) {
         </div>
         <div style={{ textAlign: "center", marginTop: 28 }}>
           <button className="fp-btn" style={{ padding: "13px 28px" }} onClick={onStart}>
-            Find your gaps — free →
+            Find your gaps, free →
           </button>
         </div>
       </div>
@@ -103,7 +102,7 @@ export default function Landing({ onStart, onSignIn, onUpgrade, isPaid }) {
         <div className="fp-steps">
           {[
             ["1", "Answer a few questions", "Quick, plain-language questions about your digital, legal, financial, and health readiness. No jargon."],
-            ["2", "Get your gaps + first steps", "We show you exactly where you're exposed and the two things to do first — free."],
+            ["2", "Get your gaps + first steps", "We show you exactly where you're exposed and the two things to do first, free."],
             ["3", "Go Premium to finish it", "Unlock your full plan, track every item, build it side by side, and get an AI assistant for your situation."],
           ].map(([num, title, body]) => (
             <div key={num} className="fp-step-card">
@@ -136,7 +135,7 @@ export default function Landing({ onStart, onSignIn, onUpgrade, isPaid }) {
       <div className="fp-section" style={{ textAlign: "center", paddingTop: 8 }}>
         <h2 className="fp-section-title" style={{ marginBottom: 18 }}>{TAGLINE}</h2>
         <button className="fp-btn" style={{ padding: "14px 30px", fontSize: 15 }} onClick={onStart}>
-          {PRIMARY_CTA} — it's free →
+          {PRIMARY_CTA}, it's free →
         </button>
       </div>
     </div>

@@ -38,7 +38,7 @@ export default function WhyNow({ user, picked, setPicked, onNext, onBack }) {
         {name ? `What brought you here, ${name}?` : "What brought you here?"}
       </h2>
       <p className="fp-body">
-        Something moved you to start today. Tap whatever fits — we’ll lead with
+        Something moved you to start today. Tap whatever fits, we’ll lead with
         what matters most to you. There are no wrong answers, and you can pick
         more than one.
       </p>
@@ -69,7 +69,7 @@ export default function WhyNow({ user, picked, setPicked, onNext, onBack }) {
       <div className="fp-whynow-actions">
         <button className="fp-btn" onClick={go} style={{ minWidth: 220 }}>
           {count === 0
-            ? "Skip — just show me my plan →"
+            ? "Skip, just show me my plan →"
             : count === 1
             ? "Continue →"
             : `Continue with ${count} →`}

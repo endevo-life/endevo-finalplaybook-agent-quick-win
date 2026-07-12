@@ -17,7 +17,7 @@ const LINES_INPROGRESS = [
   "Every step here is one less thing your family has to figure out alone.",
   "You're doing the thing most people avoid. That counts.",
   "Small and done beats perfect and someday.",
-  "This is weight coming off — yours and theirs.",
+  "This is weight coming off, yours and theirs.",
 ];
 const LINE_START = "Start with one. The hardest part is beginning, and you already did.";
 const LINE_DONE_FREE = "You've done the basics most people never do. That's real protection in place.";

@@ -23,7 +23,7 @@ export const WHY_NOW_VALIDATED = false;
 export const WHY_NOW_SIGNALS = [
   {
     flag: "recentLossInCircle",
-    label: "A loss in your circle",
+    label: "Losing someone close",
     sub: "Someone close to you died, and it made this real.",
     reordersToward: ["legal", "financial", "digital", "physical", "communication"],
     soft: false,
@@ -37,7 +37,7 @@ export const WHY_NOW_SIGNALS = [
   },
   {
     flag: "settledAnEstate",
-    label: "You carried someone through their ending",
+    label: "You lost someone and handled their affairs",
     sub: "You settled an estate, and saw what was missing.",
     reordersToward: ["legal", "digital"],
     soft: false,
@@ -45,7 +45,7 @@ export const WHY_NOW_SIGNALS = [
   {
     flag: "recentNearMiss",
     label: "A near miss",
-    sub: "A scare, a diagnosis, a hospital stay — a wake-up.",
+    sub: "A scare, a diagnosis, a hospital stay, a wake-up.",
     reordersToward: ["physical", "legal"],
     soft: false,
   },
@@ -59,14 +59,14 @@ export const WHY_NOW_SIGNALS = [
   {
     flag: "thresholdAge",
     label: "A new decade",
-    sub: "You hit a number — 40, 50, 60, 65 — and it landed.",
+    sub: "You hit a number, 40, 50, 60, 65, and it landed.",
     reordersToward: [],
     soft: true,
   },
   {
     flag: "digitalOutweighs",
     label: "Your digital life outweighs the paper one",
-    sub: "Accounts, photos, logins — most of your life is online.",
+    sub: "Accounts, photos, logins, most of your life is online.",
     reordersToward: ["digital"],
     soft: false,
   },
@@ -98,7 +98,7 @@ export const WHY_NOW_SIGNALS = [
 // "worth protecting" reads "You've seen what settling an estate takes, and
 // you've built something worth protecting." validated:false — Niki's voice.
 const SIGNAL_CLAUSE = {
-  recentLossInCircle: "you've just felt what a loss leaves behind",
+  recentLossInCircle: "you know what a loss leaves behind",
   becameResponsible: "someone is counting on you now",
   settledAnEstate: "you've seen up close what settling an estate takes",
   recentNearMiss: "a scare made this suddenly real",
@@ -125,7 +125,7 @@ export function buildIntro(pickedFlags, name) {
   else body = `${clauses[0]}, ${clauses[1]}, and a few other things brought you here`;
   // Capitalize the first clause for a clean sentence start.
   const sentence = body.charAt(0).toUpperCase() + body.slice(1);
-  return `${who}${sentence}. Here are the questions that matter most for you — we'll lead with those.`;
+  return `${who}${sentence}. Here are the questions that matter most for you, we'll lead with those.`;
 }
 
 // Per-scenario question PREAMBLE (MOAT lever 3: same question, personal doorway).
@@ -135,32 +135,32 @@ export function buildIntro(pickedFlags, name) {
 // relevant pairing wins). validated:false — Niki's voice, one place to correct.
 const QUESTION_PREAMBLE = {
   recentNearMiss: {
-    physical: "Since a health scare brought you here —",
-    legal: "After a scare like that, this one matters —",
+    physical: "Since a health scare brought you here: ",
+    legal: "After a scare like that, this one matters: ",
   },
   recentLossInCircle: {
-    legal: "Having just been through a loss —",
-    digital: "You saw what was hard to find. So —",
-    financial: "So your people aren't left searching —",
+    legal: "Having just been through a loss: ",
+    digital: "You saw what was hard to find. So: ",
+    financial: "So your people aren't left searching: ",
   },
   becameResponsible: {
-    legal: "With someone depending on you now —",
-    financial: "For the people counting on you —",
+    legal: "With someone depending on you now: ",
+    financial: "For the people counting on you: ",
   },
   settledAnEstate: {
-    legal: "Knowing what an executor needs —",
-    digital: "You know how hard access can be, so —",
+    legal: "Knowing what an executor needs: ",
+    digital: "You know how hard access can be, so: ",
   },
   majorLifeChange: {
-    financial: "After your recent change —",
-    legal: "Now that things have changed —",
+    financial: "After your recent change: ",
+    legal: "Now that things have changed: ",
   },
   worthProtecting: {
-    financial: "To protect what you've built —",
-    legal: "So what you've built passes cleanly —",
+    financial: "To protect what you've built: ",
+    legal: "So what you've built passes cleanly: ",
   },
   digitalOutweighs: {
-    digital: "Since most of your life is online —",
+    digital: "Since most of your life is online: ",
   },
 };
 

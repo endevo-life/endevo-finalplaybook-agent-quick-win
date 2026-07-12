@@ -120,7 +120,7 @@ export default function ResultsPanel({ user, account, result, onUpgrade, onResta
     return (
       <div className="fp-page">
         <p className="fp-body">
-          Based on what you shared, nothing specific matched yet — that can happen with a light answer set.
+          Based on what you shared, nothing specific matched yet, that can happen with a light answer set.
           Try going back and adding a bit more detail.
         </p>
         <button onClick={onRestart} className="fp-btn">Start over</button>

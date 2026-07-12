@@ -1,7 +1,8 @@
 export default function Disclaimer() {
   return (
     <div className="fp-disclaimer">
-      We are educators — we are not legal, financial, or medical advisors.
+      <strong>Educate &amp; Empower.</strong> We help you understand and take action.
+      We are not legal, financial, or medical advisors.
     </div>
   );
 }

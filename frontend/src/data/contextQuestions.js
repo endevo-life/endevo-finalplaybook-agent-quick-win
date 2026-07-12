@@ -24,7 +24,7 @@ export const STEPS = [
   {
     id: "C2",
     topic: "Parent status",
-    promptText: "Is your parent living independently? Do they have the three core documents — a will, power of attorney, and medical directive?",
+    promptText: "Is your parent living independently? Do they have the three core documents, a will, power of attorney, and medical directive?",
     askIf: "hasAgingParent",
     type: "multi",
     options: [
@@ -78,17 +78,17 @@ export const STEPS = [
     type: "single",
     options: [
       { label: "Yes, it's set up", flags: { noLegacyContact: false } },
-      { label: "Maybe — not sure", flags: { noLegacyContact: true } },
+      { label: "Maybe, not sure", flags: { noLegacyContact: true } },
       { label: "No", flags: { noLegacyContact: true } },
     ],
   },
   {
     id: "D2",
     topic: "Digital assessment",
-    promptText: "Have you named someone to handle your social media if you couldn't do it yourself — and do they actually know what to do?",
+    promptText: "Have you named someone to handle your social media if you couldn't do it yourself, and do they actually know what to do?",
     type: "single",
     options: [
-      { label: "Yes — named, and they have instructions", flags: { noSocialMediaPlan: false } },
+      { label: "Yes, named, and they have instructions", flags: { noSocialMediaPlan: false } },
       { label: "Named, but no instructions yet", flags: { noSocialMediaPlan: true } },
       { label: "No", flags: { noSocialMediaPlan: true } },
     ],
@@ -96,7 +96,7 @@ export const STEPS = [
   {
     id: "D3",
     topic: "Digital assessment",
-    promptText: "Are your passwords and logins somewhere a trusted person could actually find and use — a password manager, anything real?",
+    promptText: "Are your passwords and logins somewhere a trusted person could actually find and use, a password manager, anything real?",
     type: "single",
     options: [
       { label: "Yes", flags: { noPasswordManager: false } },

@@ -254,7 +254,7 @@ export default function Assessment({ user, signals = [], resume = false, onBack,
         {isPaid ? (
           <>
             <p className="fp-body">
-              Work through it step by step — check each off as you go. Ask the
+              Work through it step by step, check each off as you go. Ask the
               assistant (bottom-right) anything about a step.
             </p>
             <div className="fp-progress-bar-wrap">
@@ -294,13 +294,13 @@ export default function Assessment({ user, signals = [], resume = false, onBack,
           </>
         ) : (
           <p className="fp-body">
-            These first two make everything else findable — do them today. Below is
+            These first two make everything else findable, do them today. Below is
             your full playbook. Unlock {PRODUCT_NAME} Premium to work through every
             step, track your progress, and get your AI guide.
           </p>
         )}
 
-        {/* Gamified momentum — both tiers. Turns progress into felt relief. */}
+        {/* Gamified momentum, both tiers. Turns progress into felt relief. */}
         {totalSteps > 0 && (
           <Momentum done={doneSteps} total={totalSteps} tier={isPaid ? "paid" : "free"} justCompleted={completions} />
         )}
@@ -322,16 +322,16 @@ export default function Assessment({ user, signals = [], resume = false, onBack,
             <p className="fp-lock-title">🔒 The rest of {PLAYBOOK_NAME} is ready</p>
             <p className="fp-lock-body">
               You've felt how the first step works. Unlock every remaining step across
-              your financial, digital, and physical plan — check them off, keep your
+              your financial, digital, and physical plan, check them off, keep your
               momentum, and get an AI guide that walks you through your situation.
             </p>
-            <button className="fp-btn-upgrade" onClick={onUpgrade}>Unlock Premium — ${price}/mo →</button>
+            <button className="fp-btn-upgrade" onClick={onUpgrade}>Unlock Premium, ${price}/mo →</button>
           </div>
         )}
 
       </div>{/* /fp-results-main */}
 
-        {/* The live playbook document — small panel on the RIGHT. Starts empty,
+        {/* The live playbook document, small panel on the RIGHT. Starts empty,
             fills in as the member checks items or enters info. */}
         <PlaybookPanel
           name={firstName(user?.name)}
@@ -361,7 +361,7 @@ export default function Assessment({ user, signals = [], resume = false, onBack,
     <div className="fp-page-narrow">
       <button onClick={idx === 0 ? onBack : () => setIdx(idx - 1)} className="fp-btn-back">← back</button>
 
-      {/* Personalized, compounding intro on the first question — makes the whole
+      {/* Personalized, compounding intro on the first question, makes the whole
           assessment feel like it was built for THIS person's situation. */}
       {idx === 0 && intro && (
         <div className="fp-assess-intro" style={{ marginTop: 12 }}>{intro}</div>

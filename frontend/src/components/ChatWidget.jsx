@@ -47,7 +47,7 @@ export default function ChatWidget({ plan, memberFirstName, tier, signals, onUpg
         setQueryCount(FREE_QUERY_LIMIT); // flip to the upgrade state
         localStorage.setItem(STORAGE_KEY, String(FREE_QUERY_LIMIT));
       } else {
-        setError(e.message || "Something went wrong — try again.");
+        setError(e.message || "Something went wrong, try again.");
       }
       // roll back the optimistic user message on error
       setMessages(messages);
@@ -75,8 +75,8 @@ export default function ChatWidget({ plan, memberFirstName, tier, signals, onUpg
             {messages.length === 0 && (
               <p className="fp-chat-empty">
                 {isPaid
-                  ? "Hi, I'm Jesse. Ask me anything about your plan — I'll walk you through any step, grounded only in what's here."
-                  : "Hi, I'm Jesse. Ask me a question about your plan — free includes 3, upgrade for unlimited."}
+                  ? "Hi, I'm Jesse. Ask me anything about your plan, I'll walk you through any step, grounded only in what's here."
+                  : "Hi, I'm Jesse. Ask me a question about your plan, free includes 3, upgrade for unlimited."}
                 {" "}We're educators, not legal, financial, or medical advisors.
               </p>
             )}

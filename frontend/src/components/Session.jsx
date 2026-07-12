@@ -48,7 +48,7 @@ export default function Session({ user, flags, setFlags, glossary, onBack, onCom
       const result = await postPlan({ flags, memberFirstName: user.name, tier: user.tier });
       onComplete(result);
     } catch (e) {
-      setError(e.message || "Something went wrong — try again.");
+      setError(e.message || "Something went wrong, try again.");
     } finally {
       setLoading(false);
     }

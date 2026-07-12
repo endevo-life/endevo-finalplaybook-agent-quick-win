@@ -80,7 +80,7 @@ export default function PlaybookPanel({ name, items, doneKeys, fieldValues = {},
           <h3 className="fp-pb-title">{name ? `${name}'s ${PLAYBOOK_NAME}` : PLAYBOOK_NAME}</h3>
           <p className="fp-pb-sub">
             {shownItems.length === 0
-              ? "your blank page — start checking things off"
+              ? "your blank page, start checking things off"
               : `${doneCount} of ${shownItems.length} complete`}
           </p>
         </header>
@@ -89,7 +89,7 @@ export default function PlaybookPanel({ name, items, doneKeys, fieldValues = {},
           <div className="fp-pb-empty">
             <span className="fp-pb-empty-pen" aria-hidden="true">✍️</span>
             <p>As you check items and fill in details on the left, they’ll appear
-              here — building your playbook, line by line.</p>
+              here, building your playbook, line by line.</p>
           </div>
         ) : (
         <ol className="fp-pb-list">

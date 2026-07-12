@@ -29,7 +29,7 @@ export const SCENARIOS = [
     id: "solo",
     icon: faCompass,
     title: "It's just me",
-    sub: "No partner or children — I need my own plan",
+    sub: "No partner or children, I need my own plan",
     baseFlags: { isSoloAger: true },
   },
   {
