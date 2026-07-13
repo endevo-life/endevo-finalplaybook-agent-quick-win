@@ -1011,7 +1011,7 @@
       {
         "id": "PHYS_directive",
         "domain": "physical",
-        "question": "If you were unconscious in the hospital tomorrow, do you have a Medical Advance Directive telling doctors what care you want?",
+        "question": "If you couldn't speak for yourself in a medical emergency, have you written down the care you would and wouldn't want, so doctors and your family aren't left guessing?",
         "options": [
           {
             "value": "yes",
@@ -1183,7 +1183,7 @@
       {
         "id": "DIG_crypto",
         "domain": "digital",
-        "question": "Do you own crypto or other digital assets (wallets, NFTs, domains, online business, loyalty points), and could anyone actually inherit them?",
+        "question": "Do you own valuable digital assets, like an online business, domain names, creative work, cryptocurrency, or online accounts worth money, and could the right person actually access and inherit them?",
         "options": [
           {
             "value": "yes",

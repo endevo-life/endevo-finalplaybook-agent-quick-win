@@ -287,17 +287,28 @@ export default function Assessment({ user, signals = [], resume = false, onBack,
                 </button>
               </div>
             ) : (
-              <div className="fp-personalized">
-                <p className="fp-question-topic">Your next 7 days, personalized</p>
-                <h3 style={{ margin: "0 0 12px" }}>{narrative.headline}</h3>
-                {narrative.steps.map((s, i) => (
-                  <div key={i} style={{ marginBottom: 12 }}>
-                    <p className="fp-item-text" style={{ fontWeight: 600 }}>{s.step}</p>
-                    <p className="fp-dim">{s.why_it_matters}</p>
-                    {s.script && <p className="fp-item-script">"{s.script}"</p>}
-                  </div>
-                ))}
-                <p className="fp-body" style={{ marginTop: 12, marginBottom: 0 }}>{narrative.closing_note}</p>
+              <div className="fp-plan7">
+                <p className="fp-plan7-eyebrow">Your next 7 days, personalized</p>
+                <h3 className="fp-plan7-headline">{narrative.headline}</h3>
+                <ol className="fp-plan7-list">
+                  {narrative.steps.map((s, i) => (
+                    <li key={i} className="fp-plan7-step">
+                      <span className="fp-plan7-num" aria-hidden="true">{i + 1}</span>
+                      <div className="fp-plan7-body">
+                        <p className="fp-plan7-action">{s.step}</p>
+                        {s.why_it_matters && <p className="fp-plan7-why">{s.why_it_matters}</p>}
+                        {s.script && (
+                          <p className="fp-plan7-script">
+                            <span className="fp-plan7-script-label">Try saying:</span> “{s.script}”
+                          </p>
+                        )}
+                      </div>
+                    </li>
+                  ))}
+                </ol>
+                {narrative.closing_note && (
+                  <p className="fp-plan7-close">{narrative.closing_note}</p>
+                )}
               </div>
             )}
             {narrativeError && <p className="fp-error">{narrativeError}</p>}

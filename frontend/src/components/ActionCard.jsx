@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { fieldInputType } from "../lib/fieldType";
 
 // Condensed action card.
@@ -25,14 +25,10 @@ export default function ActionCard({
   // users on their "do these first" basics, so the plan never LOOKS pre-done:
   // every step is a visibly-empty checkbox the member ticks themselves.
   const trackable = !locked && typeof onToggleStep === "function";
-  // Paid: show the checklist expanded by default so it's immediately workable.
-  const [open, setOpen] = useState(trackable);
-  // BUG FIX: when a card unlocks (free -> upgrade), `trackable` flips true but
-  // useState's initial value doesn't re-run, so the steps stayed collapsed and
-  // the card looked empty ("0/4 steps", no checklist). Auto-open on unlock.
-  useEffect(() => {
-    if (trackable) setOpen(true);
-  }, [trackable]);
+  // Steps are COLLAPSED by default so the plan reads as a short list of clear
+  // ACTIONS, not an overwhelming wall of 50+ sub-steps. The member expands
+  // "Show me how" on the one they're working on. (Feedback: too many steps.)
+  const [open, setOpen] = useState(false);
 
   // How many of this card's steps are done (for the little per-card badge).
   const doneCount = trackable && isStepDone
@@ -49,16 +45,20 @@ export default function ActionCard({
         <p className="fp-action-text">{item.action}</p>
 
         {trackable && detail.length > 0 && (
-          <span className="fp-card-progress">{doneCount}/{detail.length} steps</span>
+          <span className="fp-card-progress">{doneCount}/{detail.length} done</span>
         )}
 
         {hasDetail && (
           <>
-            {!trackable && (
-              <button className="fp-showhow" onClick={() => setOpen((o) => !o)}>
-                {open ? "Hide" : isReview ? "Show checklist" : "Show me how"} {open ? "▲" : "▼"}
-              </button>
-            )}
+            {/* Expander shown for BOTH tiers: steps stay collapsed by default so
+                the plan reads as clear actions, not a wall of sub-steps. */}
+            <button className="fp-showhow" onClick={() => setOpen((o) => !o)}>
+              {open
+                ? "Hide steps"
+                : trackable
+                ? `Show the ${detail.length} steps`
+                : isReview ? "Show checklist" : "Show me how"} {open ? "▲" : "▼"}
+            </button>
             {open && (
               trackable ? (
                 // Every unlocked step is its own checkable row (empty box until
