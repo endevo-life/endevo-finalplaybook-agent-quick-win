@@ -1,14 +1,43 @@
 import { PLAYBOOK_NAME, PRODUCT_NAME, TAGLINE } from "../config/branding";
+import endevoLogo from "../assets/logo/footer-logo-light.png";
+
+// Fetch the ENDevo logo as a base64 data URI so it embeds INLINE in the print
+// window (which can't reliably load bundled asset URLs). Cached after first use.
+let _logoDataUri = null;
+async function endevoLogoDataUri() {
+  if (_logoDataUri) return _logoDataUri;
+  try {
+    const res = await fetch(endevoLogo);
+    const blob = await res.blob();
+    _logoDataUri = await new Promise((resolve) => {
+      const r = new FileReader();
+      r.onloadend = () => resolve(r.result);
+      r.readAsDataURL(blob);
+    });
+  } catch {
+    _logoDataUri = ""; // fall back to no image if it can't load
+  }
+  return _logoDataUri;
+}
 
 // Generate a downloadable PDF of the member's playbook WITHOUT a heavy library:
 // open a print-optimized document and invoke the browser's native
 // print-to-PDF. Works in every browser, adds zero dependencies, and the output
-// is a clean, family-usable document.
+// is a clean, family-usable document, branded "My Final Playbook, Powered by
+// ENDevo" with a tiled ENDevo watermark so it can't be cleanly repurposed.
 //
 // items: [{ id, title, action, domain, steps[], locked }]
 // doneKeys: Set-like with .has(`${id}::${stepIndex}`)
-export function downloadPlaybookPdf({ name, items, doneKeys, fieldValues = {} }) {
+export async function downloadPlaybookPdf({ name, items, doneKeys, fieldValues = {} }) {
   const title = name ? `${escapeHtml(name)}'s ${PLAYBOOK_NAME}` : PLAYBOOK_NAME;
+  // Open the print window NOW, in the click handler, so the popup blocker allows
+  // it (must happen before any await). Fill it once the logo has loaded.
+  const w = window.open("", "_blank");
+  if (!w) {
+    alert("Please allow pop-ups to download your playbook.");
+    return;
+  }
+  const logo = await endevoLogoDataUri();
 
   const sections = items
     .filter((it) => !it.locked) // only the unlocked (owned) items go in the PDF
@@ -42,7 +71,19 @@ export function downloadPlaybookPdf({ name, items, doneKeys, fieldValues = {} })
   <style>
     @page { margin: 22mm 18mm; }
     * { box-sizing: border-box; }
-    body { font: 12pt/1.55 Georgia, "Times New Roman", serif; color: #08123A; margin: 0; }
+    html { position: relative; }
+    body { font: 12pt/1.55 Georgia, "Times New Roman", serif; color: #08123A; margin: 0;
+           position: relative; z-index: 1; }
+    /* Tiled ENDevo watermark behind everything, faint, so the PDF can't be
+       cleanly repurposed. Fixed so it repeats on every printed page. */
+    ${logo ? `
+    body::before {
+      content: ""; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background-image: url("${logo}");
+      background-repeat: repeat; background-size: 150px auto; opacity: 0.05;
+      -webkit-print-color-adjust: exact; print-color-adjust: exact;
+    }
+    ` : ""}
     .cover { border-bottom: 3px solid #FF5D00; padding-bottom: 14px; margin-bottom: 22px; }
     .kicker { font: 600 10pt/1 -apple-system, Segoe UI, sans-serif; letter-spacing: .12em;
               text-transform: uppercase; color: #2E7F7B; margin: 0 0 6px; }
@@ -62,6 +103,11 @@ export function downloadPlaybookPdf({ name, items, doneKeys, fieldValues = {} })
     table.details td { padding: 2px 0; font-weight: 600; }
     footer { margin-top: 26px; padding-top: 12px; border-top: 1px solid #D5D1C7;
              font: 9pt/1.4 -apple-system, Segoe UI, sans-serif; color: #9AA1B8; }
+    .footer-brand { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+    .footer-brand img { height: 22px; width: auto; }
+    .footer-brand span { font: 700 10pt/1 Georgia, serif; color: #08123A; }
+    .footer-brand small { font: 600 8pt/1 -apple-system, Segoe UI, sans-serif;
+      letter-spacing: .06em; text-transform: uppercase; color: #7C86A8; }
   </style></head>
   <body>
     <div class="cover">
@@ -71,16 +117,17 @@ export function downloadPlaybookPdf({ name, items, doneKeys, fieldValues = {} })
     </div>
     ${sections}
     <footer>
-      ${escapeHtml(PRODUCT_NAME)} · Educational only. Not legal, financial, or medical advice.<br>
-      Keep this document with your important papers and tell your trusted person where it lives.
+      <div class="footer-brand">
+        ${logo ? `<img src="${logo}" alt="ENDevo">` : ""}
+        <span>${escapeHtml(PLAYBOOK_NAME)}</span>
+        <small>Powered by ENDevo</small>
+      </div>
+      Educational only. Not legal, financial, or medical advice.<br>
+      Keep this document with your important papers and tell your trusted person where it lives.<br>
+      &copy; ENDevo · endevo.life · This document is personal to its owner and not for redistribution.
     </footer>
   </body></html>`;
 
-  const w = window.open("", "_blank");
-  if (!w) {
-    alert("Please allow pop-ups to download your playbook.");
-    return;
-  }
   w.document.open();
   w.document.write(html);
   w.document.close();
