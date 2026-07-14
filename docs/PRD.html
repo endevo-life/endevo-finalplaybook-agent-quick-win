@@ -1,0 +1,541 @@
+<title>Final Playbook — Product Requirements &amp; Specification</title>
+<style>
+  :root{
+    --ink:#17223a; --body:#3b4763; --dim:#77809a; --faint:#9aa2b6;
+    --line:#e4e0d6; --line-strong:#d3cdbe;
+    --bg:#faf8f3; --surf:#ffffff; --surf-2:#f3efe6;
+    --brand:#1b2a4a; --brand-soft:#e9e3d3; --accent:#a8894e; --accent-ink:#6f5a2e;
+    --gap:#9a5a2a; --gap-bg:#fbf1e6; --gap-line:#e6c9a3;
+    --ok:#2f6d45; --ok-bg:#eaf3ec; --ok-line:#bcd9c3;
+    --maxw:70ch;
+    --serif:"Charter","Iowan Old Style","Palatino Linotype","Georgia",serif;
+    --sans:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    --mono:"SFMono-Regular","JetBrains Mono","Menlo",Consolas,monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --ink:#eef1f7; --body:#c3cadb; --dim:#8b93a8; --faint:#6b7387;
+      --line:#2a3350; --line-strong:#39415f;
+      --bg:#0f1626; --surf:#161f33; --surf-2:#1b2540;
+      --brand:#aebbd6; --brand-soft:#243052; --accent:#cba75f; --accent-ink:#e2c589;
+      --gap:#e0a869; --gap-bg:#2a2013; --gap-line:#5a4526;
+      --ok:#7dc496; --ok-bg:#15271b; --ok-line:#2f4a37;
+    }
+  }
+  :root[data-theme="light"]{
+    --ink:#17223a;--body:#3b4763;--dim:#77809a;--faint:#9aa2b6;--line:#e4e0d6;--line-strong:#d3cdbe;
+    --bg:#faf8f3;--surf:#fff;--surf-2:#f3efe6;--brand:#1b2a4a;--brand-soft:#e9e3d3;--accent:#a8894e;--accent-ink:#6f5a2e;
+    --gap:#9a5a2a;--gap-bg:#fbf1e6;--gap-line:#e6c9a3;--ok:#2f6d45;--ok-bg:#eaf3ec;--ok-line:#bcd9c3;
+  }
+  :root[data-theme="dark"]{
+    --ink:#eef1f7;--body:#c3cadb;--dim:#8b93a8;--faint:#6b7387;--line:#2a3350;--line-strong:#39415f;
+    --bg:#0f1626;--surf:#161f33;--surf-2:#1b2540;--brand:#aebbd6;--brand-soft:#243052;--accent:#cba75f;--accent-ink:#e2c589;
+    --gap:#e0a869;--gap-bg:#2a2013;--gap-line:#5a4526;--ok:#7dc496;--ok-bg:#15271b;--ok-line:#2f4a37;
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--body);
+    font-family:var(--sans);font-size:16px;line-height:1.65;-webkit-font-smoothing:antialiased}
+
+  .wrap{max-width:calc(var(--maxw) + 260px);margin:0 auto;padding:0 24px;
+    display:grid;grid-template-columns:220px minmax(0,1fr);gap:48px}
+  @media(max-width:900px){.wrap{grid-template-columns:1fr;gap:0}}
+
+  /* ── masthead ── */
+  header.mast{grid-column:1/-1;border-bottom:2px solid var(--brand);
+    padding:44px 0 24px;margin-bottom:8px}
+  .eyebrow{font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--accent-ink)}
+  header.mast h1{font-family:var(--serif);color:var(--ink);font-weight:700;
+    font-size:clamp(28px,4.5vw,40px);line-height:1.12;margin:10px 0 6px;text-wrap:balance;letter-spacing:-.01em}
+  header.mast .sub{color:var(--dim);font-size:15px;max-width:62ch}
+  .metabar{display:flex;flex-wrap:wrap;gap:8px 22px;margin-top:16px;font-size:13px;color:var(--dim)}
+  .metabar b{color:var(--body);font-weight:600}
+
+  /* ── TOC rail ── */
+  nav.toc{position:sticky;top:24px;align-self:start;font-size:13.5px;line-height:1.5;
+    max-height:calc(100vh - 48px);overflow:auto}
+  @media(max-width:900px){nav.toc{position:static;border-bottom:1px solid var(--line);
+    padding-bottom:16px;margin-bottom:24px;max-height:none}}
+  nav.toc .lbl{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--faint);margin:0 0 10px}
+  nav.toc a{display:block;color:var(--body);text-decoration:none;padding:4px 0 4px 12px;
+    border-left:2px solid var(--line);transition:border-color .15s,color .15s}
+  nav.toc a:hover{color:var(--accent-ink);border-left-color:var(--accent)}
+  nav.toc a .n{color:var(--faint);font-variant-numeric:tabular-nums;margin-right:7px}
+
+  main{min-width:0;padding-bottom:80px}
+  section{padding:30px 0;border-top:1px solid var(--line)}
+  section:first-of-type{border-top:0}
+  section > .body{max-width:var(--maxw)}
+
+  h2{font-family:var(--serif);color:var(--ink);font-size:24px;font-weight:700;
+    margin:0 0 4px;letter-spacing:-.01em;text-wrap:balance;line-height:1.2}
+  h2 .h2n{color:var(--accent);font-size:15px;font-weight:700;font-family:var(--sans);
+    margin-right:12px;font-variant-numeric:tabular-nums}
+  h3{font-family:var(--sans);color:var(--ink);font-size:16px;font-weight:700;margin:26px 0 6px}
+  p{margin:12px 0}
+  a{color:var(--accent-ink)}
+  strong{color:var(--ink);font-weight:650}
+  code{font-family:var(--mono);font-size:.86em;background:var(--surf-2);
+    border:1px solid var(--line);border-radius:5px;padding:1px 5px;color:var(--body)}
+  ul,ol{margin:12px 0;padding-left:22px}
+  li{margin:7px 0}
+
+  /* legal flag chip */
+  .legal-flag{display:inline-flex;align-items:center;gap:6px;vertical-align:middle;
+    font-family:var(--sans);font-size:10.5px;font-weight:800;letter-spacing:.08em;
+    text-transform:uppercase;color:#fff;background:var(--accent);
+    border-radius:4px;padding:3px 8px;margin-left:10px}
+  .legal-flag::before{content:"§";font-weight:700}
+
+  /* callout boxes */
+  .note{border:1px solid var(--line-strong);background:var(--surf);border-left:4px solid var(--accent);
+    border-radius:8px;padding:14px 18px;margin:20px 0;font-size:14.5px}
+  .note .k{font-weight:700;color:var(--accent-ink);font-size:12px;letter-spacing:.06em;
+    text-transform:uppercase;display:block;margin-bottom:4px}
+  .gap{border:1px solid var(--gap-line);background:var(--gap-bg);border-left:4px solid var(--gap)}
+  .gap .k{color:var(--gap)}
+  .ok{border:1px solid var(--ok-line);background:var(--ok-bg);border-left:4px solid var(--ok)}
+  .ok .k{color:var(--ok)}
+
+  /* tables */
+  .tablewrap{overflow-x:auto;margin:20px 0;border:1px solid var(--line);border-radius:10px}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+  thead th{background:var(--surf-2);color:var(--dim);font-size:11px;font-weight:700;
+    letter-spacing:.05em;text-transform:uppercase;white-space:nowrap}
+  tbody tr:last-child td{border-bottom:0}
+  td.c,th.c{text-align:center}
+  .yes{color:var(--ok);font-weight:700} .no{color:var(--faint)}
+  .price{font-variant-numeric:tabular-nums;font-weight:600;color:var(--ink)}
+
+  /* code / ascii blocks */
+  pre{font-family:var(--mono);font-size:12.5px;line-height:1.5;background:var(--surf);
+    color:var(--body);border:1px solid var(--line);border-radius:10px;
+    padding:16px 18px;overflow-x:auto;margin:18px 0}
+  pre.diagram{background:var(--brand);color:#e9ecf3;border-color:transparent}
+  :root[data-theme="dark"] pre.diagram, @media(prefers-color-scheme:dark){pre.diagram{color:#c8d0e2}}
+
+  footer{grid-column:1/-1;border-top:2px solid var(--brand);margin-top:20px;
+    padding:22px 0 60px;color:var(--dim);font-size:13px;max-width:var(--maxw)}
+
+  a:focus-visible,nav.toc a:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
+
+  @media print{
+    nav.toc{display:none} .wrap{grid-template-columns:1fr;max-width:100%}
+    body{background:#fff;font-size:12px} section{page-break-inside:avoid}
+  }
+</style>
+
+<div class="wrap">
+
+  <header class="mast">
+    <div class="eyebrow">Product Requirements &amp; Specification · Draft for Review</div>
+    <h1>Final Playbook</h1>
+    <p class="sub">An educational end-of-life planning app — deterministic rules engine for everyone,
+      one grounded AI call for paid members, and an operator console for the team behind it.</p>
+    <div class="metabar">
+      <span><b>Audience:</b> Founders · Legal counsel · Advisors · Engineering</span>
+      <span><b>Owner:</b> ENDevo</span>
+      <span><b>As built:</b> 2026-07-14</span>
+    </div>
+  </header>
+
+  <nav class="toc" aria-label="Contents">
+    <p class="lbl">Contents</p>
+    <a href="#s1"><span class="n">1</span>What it is</a>
+    <a href="#s2"><span class="n">2</span>Who it's for</a>
+    <a href="#s3"><span class="n">3</span>Tiers &amp; terms</a>
+    <a href="#s4"><span class="n">4</span>User flows</a>
+    <a href="#s5"><span class="n">5</span>Architecture</a>
+    <a href="#s6"><span class="n">6</span>AI guardrails</a>
+    <a href="#s7"><span class="n">7</span>Data &amp; privacy</a>
+    <a href="#s8"><span class="n">8</span>Admin console</a>
+    <a href="#s9"><span class="n">9</span>IP &amp; ownership</a>
+    <a href="#s10"><span class="n">10</span>Testing</a>
+    <a href="#s11"><span class="n">11</span>Deployment</a>
+    <a href="#s12"><span class="n">12</span>Run it locally</a>
+    <a href="#s13"><span class="n">13</span>Before launch</a>
+  </nav>
+
+  <main>
+    <div class="note">
+      <span class="k">Note for legal counsel</span>
+      Sections flagged <span class="legal-flag">Legal</span> are written for counsel: the
+      not-legal-advice positioning, the data we collect and store, content ownership, and billing
+      terms — described <strong>as the system is actually built today</strong>, not as aspiration.
+      Where a control is partial or deferred, it says so. Every claim is cited inline by file path so
+      it can be verified against the code. This document is not a substitute for counsel's own review
+      of the running product and its published Terms and Privacy Policy.
+    </div>
+
+    <section id="s1">
+      <h2><span class="h2n">01</span>What Final Playbook is</h2>
+      <div class="body">
+        <p>A member answers a short situational assessment. A <strong>deterministic rules engine</strong>
+          — no AI — matches their answers to proven, human-authored routing logic and returns a
+          prioritized action plan with word-for-word conversation scripts and plain-English definitions.
+          A <strong>paid tier</strong> adds one grounded AI call that rephrases that already-matched plan
+          into a warm "next 7 days" narrative, plus a grounded follow-up chat assistant.</p>
+        <p><strong>The free tier never touches an AI model.</strong> It is a pure rules engine and costs
+          $0 to run.</p>
+
+        <h3>The core promise, and its boundary <span class="legal-flag">Legal</span></h3>
+        <ul>
+          <li><strong>We educate; we do not advise.</strong> The position shown to users in-product:
+            <em>"Educate &amp; Empower. We help you understand and take action. We are not legal,
+            financial, or medical advisors."</em> <span style="color:var(--dim)">(<code>Disclaimer.jsx</code>)</span></li>
+          <li>The AI is <strong>never</strong> permitted to invent advice, documents, laws, or dollar
+            figures. It may only rephrase pre-written, human-authored content — enforced structurally,
+            not by wording alone (§6).</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="s2">
+      <h2><span class="h2n">02</span>Who it's for</h2>
+      <div class="body">
+        <ul>
+          <li><strong>Primary:</strong> individuals organizing their own end-of-life affairs — legal,
+            financial, physical, and digital.</li>
+          <li><strong>Secondary:</strong> an ENDevo operator who monitors usage, cost, and conversion,
+            and can grant or revoke access for support.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="s3">
+      <h2><span class="h2n">03</span>Product tiers &amp; terms <span class="legal-flag">Legal</span></h2>
+      <div class="body">
+        <p>Source of truth for every number: <code>plans.py</code>, served to the UI via
+          <code>/api/pricing</code> so marketing, docs, and code cannot drift.</p>
+        <div class="tablewrap">
+          <table>
+            <thead><tr><th>Capability</th><th class="c">Free</th><th class="c">Personalized (Paid)</th></tr></thead>
+            <tbody>
+              <tr><td>Price</td><td class="c price">$0, forever</td><td class="c price">$25 / month</td></tr>
+              <tr><td>Situation assessment</td><td class="c yes">✓</td><td class="c yes">✓</td></tr>
+              <tr><td>Prioritized action plan (rules engine)</td><td class="c yes">✓</td><td class="c yes">✓</td></tr>
+              <tr><td>Conversation scripts + definitions</td><td class="c yes">✓</td><td class="c yes">✓</td></tr>
+              <tr><td>Download plan (PDF)</td><td class="c yes">✓</td><td class="c yes">✓</td></tr>
+              <tr><td>See gaps + first 2 steps</td><td class="c yes">✓</td><td class="c yes">✓</td></tr>
+              <tr><td>Full plan (all actions / domains)</td><td class="c no">preview only</td><td class="c yes">✓</td></tr>
+              <tr><td>Track items / saved progress</td><td class="c no">—</td><td class="c yes">✓</td></tr>
+              <tr><td>Side-by-side playbook builder</td><td class="c no">—</td><td class="c yes">✓</td></tr>
+              <tr><td>AI assistant (grounded chat)</td><td class="c no">—</td><td class="c yes">✓</td></tr>
+              <tr><td>AI "next 7 days" narrative</td><td class="c no">—</td><td class="c yes">✓</td></tr>
+              <tr><td>Account required</td><td class="c">No (anonymous)</td><td class="c">Yes</td></tr>
+              <tr><td>Monthly AI plan regenerations</td><td class="c no">n/a</td><td class="c">30</td></tr>
+              <tr><td>Monthly AI chat replies</td><td class="c no">n/a</td><td class="c">200</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Billing terms as built</h3>
+        <ul>
+          <li>A <strong>$25/month subscription</strong>, charged via <strong>Stripe</strong>. The real
+            charge amount lives in the Stripe Price object; the app never stores card data.</li>
+          <li>Entitlement is granted <strong>only</strong> by a successful Stripe payment (via webhook)
+            writing <code>tier == "paid"</code> to our store (§7.3).</li>
+          <li>Monthly quotas cap worst-case cost per account, so a single subscriber cannot run up an
+            unbounded AI bill — over-quota requests are refused (HTTP 429).</li>
+        </ul>
+        <div class="note gap">
+          <span class="k">Pre-launch flag — must be off in production</span>
+          <code>ALLOW_DEV_UPGRADE</code> lets a logged-in user unlock paid <strong>without payment</strong>
+          for demos. It <strong>must be <code>false</code> in production</strong>. Relevant to any
+          "free trial" or promotional-access representations.
+        </div>
+      </div>
+    </section>
+
+    <section id="s4">
+      <h2><span class="h2n">04</span>User experience &amp; flows</h2>
+      <div class="body">
+        <h3>Free flow (anonymous)</h3>
+        <ol>
+          <li>Land → take the situational assessment.</li>
+          <li>Rules engine returns the plan; the user sees basics-first steps and their single
+            highest-impact action fully, with the rest previewed but <strong>locked</strong>.</li>
+          <li>Download the plan as a branded PDF.</li>
+        </ol>
+        <h3>Paid flow (account required)</h3>
+        <ol>
+          <li>Sign in (passwordless email code) → upgrade via Stripe.</li>
+          <li>Full plan unlocked; <strong>track</strong> items with saved progress; <strong>build</strong>
+            each action side-by-side (steps, scripts, fields).</li>
+          <li><strong>AI narrative:</strong> one grounded call rephrases the matched plan into a
+            "next 7 days" guide.</li>
+          <li><strong>AI chat:</strong> grounded follow-up questions, capped by monthly quota.</li>
+          <li><strong>Progress celebrations</strong> (in development): completing an action, sealing a
+            domain, or finishing the playbook produces earned moments that also print on the PDF.
+            Celebration copy is educational reassurance only — <strong>no dollar figures, risk
+            percentages, or legal claims</strong> (guardrail-bound).</li>
+        </ol>
+      </div>
+    </section>
+
+    <section id="s5">
+      <h2><span class="h2n">05</span>System architecture</h2>
+      <div class="body">
+        <p>AWS serverless — Lambda + API Gateway + DynamoDB (<code>infra/template.yaml</code>). The
+          frontend is static. Routes validate and delegate; business logic lives in services; AI in the
+          agent layer; all persistence behind the store interface. No route touches a database directly.</p>
+        <pre class="diagram">Member (React/Vite)                 Operator (admin console)
+      │                                    │
+      ▼                                    ▼
+┌──────────────────── FastAPI backend ─────────────────────┐
+│ Routes(thin) → Services(business) → Agent(AI) → Store    │
+│ auth/plan/      auth, billing,       rules_engine  memory│
+│ chat/billing/   entitlements,        (FREE, no AI) sqlite│
+│ admin           plans, analytics,    orchestrator  dynamo│
+│                 aws_cost             personalize/chat(AI) │
+└───────────────────────────────────────────────────────────┘
+      │                                    │
+      ▼                                    ▼
+  Anthropic API                     AWS Cost Explorer +
+  (paid tier only)                  CloudWatch (opt-in)</pre>
+      </div>
+    </section>
+
+    <section id="s6">
+      <h2><span class="h2n">06</span>AI guardrails <span class="legal-flag">Legal</span></h2>
+      <div class="body">
+        <p>The architecture makes hallucination and scope-creep <strong>structurally hard</strong>, not
+          just discouraged by wording. Full detail in <code>docs/guardrails.md</code>.</p>
+        <ol>
+          <li><strong>Free/trial tier has no AI at all.</strong> No code path runs from free-tier input
+            to a model call. Content that never passes through a model cannot be hallucinated by one.</li>
+          <li><strong>The AI only ever sees already-matched, human-authored content</strong> — the 2–5
+            action items the rules engine selected, never the full library. Enforced by the function
+            signature, not just the prompt.</li>
+          <li><strong>System-prompt hard rules:</strong> "Only use the action items, scripts, and quotes
+            provided… Do not invent new advice, documents, laws, or numbers." · "If the material doesn't
+            cover something, suggest a licensed professional — do not guess." · "Never present this as
+            legal, financial, or medical advice."</li>
+          <li><strong>Structured output.</strong> The response is schema-validated into a fixed shape —
+            it cannot add new sections the UI would render uncritically.</li>
+          <li><strong>Content is marked unvalidated where it is.</strong> The knowledge base is real
+            clinical logic but a <strong>DRAFT</strong> pending expert sign-off; <code>_meta.status</code>
+            says so in plain text.</li>
+        </ol>
+        <div class="note gap">
+          <span class="k">Known open risks — disclosed, not hidden</span>
+          <strong>No automated post-hoc check</strong> that the AI's output stayed grounded to its input
+          (worth adding before scaling paid volume). The <strong>opt-in open-weight backend</strong>
+          (<code>LLM_BACKEND=bedrock</code>) has weaker JSON-schema enforcement than the default
+          Anthropic path; it is not the default and requires an explicit env change.
+        </div>
+        <div class="note">
+          <span class="k">For counsel</span>
+          These guardrails support the educational-not-advisory position but do not, by themselves,
+          constitute legal compliance. The published Terms, Privacy Policy, in-product disclaimer, and any
+          state-specific unauthorized-practice-of-law considerations are counsel's call.
+        </div>
+      </div>
+    </section>
+
+    <section id="s7">
+      <h2><span class="h2n">07</span>Data, privacy &amp; security <span class="legal-flag">Legal</span></h2>
+      <div class="body">
+        <h3>7.1 What personal data we collect and store</h3>
+        <p>Persisted per user — ground truth: <code>agent/app/data/store/</code>.</p>
+        <div class="tablewrap">
+          <table>
+            <thead><tr><th>Data</th><th>When</th><th>Sensitivity</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Email address</strong></td><td>On sign-in (paid only)</td><td>PII — identifier</td></tr>
+              <tr><td>Account created timestamp</td><td>On sign-in</td><td>Low</td></tr>
+              <tr><td><strong>Assessment answers</strong></td><td>On completing assessment</td><td>Situation flags (not records)</td></tr>
+              <tr><td><strong>Saved plan + tracked progress</strong></td><td>Paid, as the user works</td><td>Reflects the user's affairs</td></tr>
+              <tr><td><strong>AI narrative text</strong></td><td>Paid, on generation</td><td>Derived from the above</td></tr>
+              <tr><td><strong>Chat history</strong></td><td>Paid, per message</td><td>User's own questions</td></tr>
+              <tr><td>Stripe customer ID</td><td>On payment</td><td>Links to Stripe (no card data)</td></tr>
+              <tr><td>Monthly usage counters</td><td>Per AI call</td><td>Low</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="note ok">
+          <span class="k">What we do NOT store</span>
+          Payment card numbers (held by Stripe), SSNs, uploaded legal documents, or medical records. The
+          assessment captures <em>situation flags</em> (e.g., "has minor children", "owns a business") —
+          not source documents. <strong>The free tier is anonymous</strong>; data collection begins only
+          when a user signs in for the paid tier.
+        </div>
+
+        <h3>7.2 Where it lives &amp; who can see it</h3>
+        <ul>
+          <li><strong>Storage:</strong> DynamoDB in the ENDevo AWS account (prod); in-memory or local
+            SQLite in dev.</li>
+          <li><strong>Operator access:</strong> the admin console (§8) can view a user's tier, usage, and
+            plan progress, and can grant/revoke paid or reset a quota — gated by a shared admin token
+            <em>and</em> an allowlist of admin emails. This internal-staff access to member data should be
+            reflected in the Privacy Policy.</li>
+        </ul>
+
+        <h3>7.3 Billing &amp; payment security</h3>
+        <p>All card handling is delegated to <strong>Stripe</strong>; the app stores only a Stripe
+          customer ID. Paid status is granted <strong>only</strong> by Stripe's verified webhook, and tier
+          is <strong>enforced server-side</strong> — a client cannot self-grant paid access.</p>
+
+        <div class="note gap">
+          <span class="k">7.4 Retention &amp; deletion — gap to close before launch</span>
+          There is <strong>no automated data-retention or user-initiated deletion flow yet</strong>;
+          deletion is a manual operator action. A documented retention period and a deletion mechanism are
+          likely needed for the Privacy Policy and any applicable privacy regime (e.g., CCPA / GDPR-style
+          rights).
+        </div>
+      </div>
+    </section>
+
+    <section id="s8">
+      <h2><span class="h2n">08</span>Admin / operator console</h2>
+      <div class="body">
+        <p>A standalone, token-gated operator console (<code>frontend/public/admin.html</code>) reads the
+          admin API. It is separate from the member app and intended for ENDevo staff.</p>
+
+        <h3>Access control</h3>
+        <ul>
+          <li><strong>Bearer admin token</strong> (<code>ADMIN_TOKEN</code>) on every request,
+            <strong>plus</strong> — when <code>ADMIN_EMAILS</code> is set — an allowlisted admin email.
+            The token alone is not enough. The console is disabled (503) if no token is configured.</li>
+        </ul>
+
+        <h3>Overview tab</h3>
+        <ul>
+          <li>Signups, paid upgrades, free→paid conversion %, assessments, AI messages, paywall hits.</li>
+          <li>14-day activity chart, free-vs-paid split, conversion funnel.</li>
+          <li>User table with per-user drill-down; <strong>grant/revoke paid</strong> and
+            <strong>reset monthly quota</strong> as support actions.</li>
+        </ul>
+
+        <h3>Cost tab <span style="font-size:12px;font-weight:600;color:var(--accent-ink)">· new</span></h3>
+        <ul>
+          <li>Stat tiles: total spend, AI spend, AI calls, projected monthly.</li>
+          <li>A daily cost chart (by service) and a breakdown table (service · usage · cost · % ·
+            billed-vs-estimate), with a 7 / 30 / 90-day toggle.</li>
+          <li><strong>Two data sources, always labeled:</strong>
+            <ul>
+              <li><strong>Estimate (default):</strong> AI cost = tracked AI-call count × per-call cost
+                (~$0.005); Lambda / DynamoDB shown as usage volume. Needs no AWS billing access — works in
+                local dev.</li>
+              <li><strong>AWS billed $ (opt-in, <code>AWS_COST_ENABLED=1</code>):</strong> real dollars
+                from AWS Cost Explorer filtered to this app's services (Lambda + DynamoDB + API Gateway),
+                plus Lambda invocations from CloudWatch. Requires added IAM permissions;
+                <strong>Cost Explorer bills ~$0.01/call and lags ~24h</strong>, so it is gated behind a
+                flag. If the live call fails it degrades to the estimate with a visible warning — the tab
+                never breaks.</li>
+            </ul>
+          </li>
+          <li>A source badge means an operator always knows whether a number is <strong>billed</strong> or
+            <strong>estimated</strong> — an estimate is never presented as a bill.</li>
+        </ul>
+
+        <h3>Admin API surface</h3>
+        <pre>POST /api/admin/login                      validate token (+ email if allowlisted)
+GET  /api/admin/metrics                    business metrics, funnel, timeseries
+GET  /api/admin/costs?days=                cost &amp; usage (Cost tab)
+GET  /api/admin/events?limit=              recent raw product events
+GET  /api/admin/users                      known users + tier/usage
+GET  /api/admin/users/{email}              one user: tier, usage, plan progress
+POST /api/admin/users/{email}/tier         grant/revoke paid
+POST /api/admin/users/{email}/reset-usage  reset monthly quotas
+GET/POST /api/admin/config                 feature flags / config</pre>
+      </div>
+    </section>
+
+    <section id="s9">
+      <h2><span class="h2n">09</span>Intellectual property &amp; content ownership <span class="legal-flag">Legal</span></h2>
+      <div class="body">
+        <ul>
+          <li><strong>The clinical content is proprietary, human-authored draft IP.</strong> The routing
+            logic, action items, scripts, and definitions in <code>content-library.json</code> are mined
+            from real client sessions. It is marked <strong>DRAFT — pending expert sign-off</strong> and
+            must not be presented as clinically final until validation completes.</li>
+          <li><strong>The AI does not create content — it only rephrases approved content.</strong> The
+            model is fed only already-matched, human-authored items and is barred from inventing new
+            advice, keeping output derivative of owned source material rather than novel model output.</li>
+          <li><strong>Expert-agnostic by default.</strong> The product ships with no named person — all
+            brand/voice text is config-driven. A specific expert persona is surfaced <strong>only</strong>
+            by explicitly setting <code>EXPERT_NAME</code> (with permission). Relevant to
+            name/likeness/endorsement rights.</li>
+          <li><strong>Third-party processors:</strong> Anthropic (AI), AWS (hosting), Stripe (billing).
+            The app minimizes what it sends — the AI receives only the small matched plan, not the user's
+            full record.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="s10">
+      <h2><span class="h2n">10</span>Testing &amp; quality</h2>
+      <div class="body">
+        <ul>
+          <li>Backend: <code>pytest</code> — <strong>53 passing</strong> (1 AI-key-gated test auto-skips),
+            covering rules engine, entitlements, billing, admin, and the cost service. Runs with no API
+            key and the in-memory store.</li>
+          <li>Guardrail tests assert the free tier never produces AI output and never requires an API key.</li>
+          <li>Frontend: <code>vitest</code> for completion/celebration logic — <strong>15 passing</strong>.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="s11">
+      <h2><span class="h2n">11</span>Deployment &amp; environments</h2>
+      <div class="body">
+        <ul>
+          <li><strong>Local dev:</strong> in-memory store, no AWS, no API key needed for the free tier;
+            login code returned in the response.</li>
+          <li><strong>Production:</strong> AWS SAM (<code>infra/template.yaml</code>) — Lambda + API
+            Gateway + DynamoDB; Stripe for billing; static frontend host. The app runs end-to-end without
+            billing configured, so a free-tier launch can precede payments.</li>
+          <li>Full runbook: <code>DEPLOY.md</code> and <code>docs/GO-LIVE-runbook.md</code>.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="s12">
+      <h2><span class="h2n">12</span>Running it locally</h2>
+      <div class="body">
+        <p><strong>Backend</strong> (from <code>agent/</code>) — free tier + admin console, no AWS, no AI key:</p>
+        <pre>pip install -r requirements.txt
+ADMIN_TOKEN=devtoken python -m uvicorn app.main:app --port 8001</pre>
+        <p><strong>Frontend</strong> (from <code>frontend/</code>):</p>
+        <pre>npm install
+npm run dev            # http://localhost:3200</pre>
+        <p><strong>Admin console:</strong> open <code>admin.html</code> (served by the frontend, or open
+          the file with <code>?api=http://localhost:8001</code>). Sign in with the <code>ADMIN_TOKEN</code>
+          you set — the <strong>Cost tab works immediately</strong> in estimate mode.</p>
+        <p>To demo the <strong>paid</strong> experience without Stripe, set
+          <code>ALLOW_DEV_UPGRADE=true</code> and grant paid from the admin console (dev only — never in
+          production).</p>
+      </div>
+    </section>
+
+    <section id="s13">
+      <h2><span class="h2n">13</span>Open items before launch</h2>
+      <div class="body">
+        <div class="tablewrap">
+          <table>
+            <thead><tr><th>#</th><th>Item</th><th>Owner</th><th class="c">Legal</th></tr></thead>
+            <tbody>
+              <tr><td>1</td><td>Expert sign-off on DRAFT content library</td><td>Expert / Andrea</td><td class="c yes">✓</td></tr>
+              <tr><td>2</td><td>Published Terms of Service</td><td>Counsel</td><td class="c yes">✓</td></tr>
+              <tr><td>3</td><td>Published Privacy Policy (collection, staff access, third parties)</td><td>Counsel</td><td class="c yes">✓</td></tr>
+              <tr><td>4</td><td>Data retention + user deletion flow (currently manual)</td><td>Eng + Counsel</td><td class="c yes">✓</td></tr>
+              <tr><td>5</td><td>Automated grounding check on AI output (before scaling)</td><td>Eng</td><td class="c yes">✓</td></tr>
+              <tr><td>6</td><td>Confirm <code>ALLOW_DEV_UPGRADE=false</code> + strong <code>ADMIN_TOKEN</code> in prod</td><td>Eng</td><td class="c yes">✓</td></tr>
+              <tr><td>7</td><td>Sign-off on celebration/seal copy (no dollar/risk/legal claims)</td><td>Expert</td><td class="c yes">✓</td></tr>
+              <tr><td>8</td><td>Turn on real AWS cost integration if billed $ wanted</td><td>Eng</td><td class="c">—</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      This document reflects the system as built as of 2026-07-14. Claims are cited inline by file path so
+      any statement can be verified against the code. Markdown source: <code>docs/PRD.md</code>.
+    </footer>
+  </main>
+</div>
