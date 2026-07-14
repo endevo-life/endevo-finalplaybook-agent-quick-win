@@ -6,6 +6,7 @@ into the shared B2B operator dashboard.
 Endpoints:
   POST /api/admin/login              -> validate the admin token (+ email if allowlisted)
   GET  /api/admin/metrics            -> signups, conversion, funnels, agent usage
+  GET  /api/admin/costs?days=        -> AWS + AI cost/usage (Cost tab)
   GET  /api/admin/events?limit=      -> recent raw events
   GET  /api/admin/users              -> known users (derived from signups)
   GET  /api/admin/users/{email}      -> one user: tier, usage, plan progress
@@ -20,7 +21,7 @@ from typing import Optional
 from app.config import ADMIN_EMAILS, ADMIN_TOKEN
 from app.data.events import get_events
 from app.data.store import get_store, month_key
-from app.services import analytics
+from app.services import analytics, aws_cost
 from app.services.entitlements import entitlement_for
 from app.services.plans import PLANS
 
@@ -70,6 +71,13 @@ def admin_metrics(_: bool = Depends(require_admin)):
 @router.get("/events")
 def admin_events(limit: int = Query(100, le=1000), _: bool = Depends(require_admin)):
     return analytics.recent_events(limit=limit)
+
+
+@router.get("/costs")
+def admin_costs(days: int = Query(30, ge=1, le=90), _: bool = Depends(require_admin)):
+    """AWS + AI cost/usage for the Cost tab. Real billed $ when AWS_COST_ENABLED
+    is set (Cost Explorer), otherwise an estimate from tracked LLM calls."""
+    return aws_cost.costs(days=days)
 
 
 def _known_emails() -> list:

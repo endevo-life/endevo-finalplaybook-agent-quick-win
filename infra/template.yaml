@@ -106,6 +106,14 @@ Parameters:
       "true" enables the no-Stripe upgrade/downgrade routes (for demos). MUST be
       "false" in real production, where Stripe's webhook is the only way to
       grant/revoke paid.
+  AwsCostEnabled:
+    Type: String
+    Default: "0"
+    AllowedValues: ["0", "1"]
+    Description: >
+      "1" makes the admin Cost tab query real billed dollars from AWS Cost
+      Explorer (requires the ce/cloudwatch policy; ~$0.01 per call, ~24h data
+      lag). "0" (default) shows an estimate derived from tracked LLM calls.
   AdminToken:
     Type: String
     NoEcho: true
@@ -155,6 +163,9 @@ Resources:
           ADMIN_EMAILS: !Ref AdminEmails
           ALLOW_DEV_UPGRADE: !Ref AllowDevUpgrade
           PRODUCT_NAME: "Final Playbook"
+          # Admin Cost tab: when "1", /api/admin/costs queries real billed $ from
+          # Cost Explorer (needs the ce/cloudwatch policy below). Off -> estimate.
+          AWS_COST_ENABLED: !Ref AwsCostEnabled
       Policies:
         # The 7 tables already exist (created outside this stack); grant CRUD on
         # them by ARN pattern rather than !Ref-ing table resources we don't own.
@@ -188,6 +199,16 @@ Resources:
             - Effect: Allow
               Action:
                 - bedrock:InvokeModel
+              Resource: "*"
+        # Admin Cost tab (only used when AWS_COST_ENABLED=1). Cost Explorer and
+        # CloudWatch GetMetricData don't support resource-level scoping, so "*"
+        # is the required scope. Read-only. NOTE: each ce:GetCostAndUsage call is
+        # billed ~$0.01 and Cost Explorer data lags ~24h.
+        - Statement:
+            - Effect: Allow
+              Action:
+                - ce:GetCostAndUsage
+                - cloudwatch:GetMetricData
               Resource: "*"
       Events:
         ApiRoot:
