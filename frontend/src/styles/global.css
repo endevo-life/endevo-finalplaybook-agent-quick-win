@@ -655,9 +655,24 @@ button, input, textarea {
 .fp-results-main { min-width: 0; }
 .fp-pb { position: sticky; top: 84px; }
 .fp-pb-doc {
-  background: #fffefb; border: 1px solid #E7E3D8; border-radius: 10px;
-  box-shadow: 0 1px 1px rgba(22,31,51,.05), 0 10px 30px -18px rgba(22,31,51,.35);
+  /* Frosted-glass panel: translucent warm-white over a soft blur so the page
+     tint shows through. Solid fallback first for browsers without backdrop-filter. */
+  background: #fffefb;
+  background: rgba(255, 254, 251, .72);
+  -webkit-backdrop-filter: blur(14px) saturate(1.15);
+  backdrop-filter: blur(14px) saturate(1.15);
+  border: 1px solid rgba(255, 255, 255, .6);
+  box-shadow: 0 1px 1px rgba(22,31,51,.05), 0 10px 30px -18px rgba(22,31,51,.35),
+              inset 0 1px 0 rgba(255,255,255,.5);
+  border-radius: 12px;
   overflow: hidden; font-size: 13px;
+}
+/* Give the glass something to refract: a faint tinted glow behind the panel. */
+.fp-pb { --glass-glow: rgba(176, 141, 87, .10); }
+.fp-pb::before {
+  content: ""; position: absolute; inset: -24px -12px; z-index: -1;
+  background: radial-gradient(60% 50% at 70% 0%, var(--glass-glow), transparent 70%);
+  pointer-events: none;
 }
 .fp-pb-head { padding: 15px 16px 11px; border-bottom: 1.5px solid var(--brand); }
 .fp-pb-kicker { font: 600 8.5px/1 -apple-system, Segoe UI, sans-serif; letter-spacing: .13em;
@@ -805,4 +820,96 @@ button, input, textarea {
   .fp-hero { padding: 48px 20px 36px; }
   .fp-hero h1 { font-size: 32px; }
   .fp-whynow-grid { grid-template-columns: 1fr; }
+}
+
+/* ---- Earned celebrations: action glow, domain seals, complete badge ------- */
+
+/* When an action first completes, its ✓ mark pops with a soft gold glow. */
+@keyframes fp-done-pop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.45); }
+  100% { transform: scale(1); }
+}
+@keyframes fp-done-glow {
+  0%   { box-shadow: 0 0 0 0 rgba(176,141,87,.55); }
+  100% { box-shadow: 0 0 0 14px rgba(176,141,87,0); }
+}
+.fp-pb-item.done .fp-pb-mark { color: var(--accent); }
+.fp-pb-item.fp-just-done .fp-pb-mark {
+  animation: fp-done-pop .5s ease-out;
+  border-radius: 50%;
+}
+.fp-pb-item.fp-just-done .fp-pb-mark::after {
+  content: ""; position: absolute; inset: -4px; border-radius: 50%;
+  animation: fp-done-glow .7s ease-out forwards;
+}
+.fp-pb-item .fp-pb-mark { position: relative; }
+
+/* Domain seal -- a small "wax seal" that reads as an earned stamp. */
+.fp-seal-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 4px; }
+.fp-seal {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 5px 11px 5px 6px; border-radius: 999px;
+  /* Frosted gold glass -- fallback gradient first, then translucent + blur. */
+  background: linear-gradient(180deg, #FBF5E9, #F1E6CE);
+  background: linear-gradient(180deg, rgba(251,245,233,.78), rgba(241,230,206,.62));
+  -webkit-backdrop-filter: blur(8px) saturate(1.2);
+  backdrop-filter: blur(8px) saturate(1.2);
+  border: 1px solid rgba(176,141,87,.7);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.55), 0 4px 12px -6px rgba(110,83,39,.4);
+  color: #6E5327;
+}
+.fp-seal-ring { flex: none; width: 26px; height: 26px; }
+.fp-seal-disc {
+  fill: var(--accent);
+  stroke: #8A6A34; stroke-width: 1.5;
+}
+.fp-seal-check { stroke: #FFF9EC; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
+.fp-seal-text { display: flex; flex-direction: column; line-height: 1.15; }
+.fp-seal-label { font: 700 12px/1.1 Georgia, serif; letter-spacing: .01em; }
+.fp-seal-date  { font: 500 10px/1.1 -apple-system, Segoe UI, sans-serif; color: #94793F; }
+
+/* The stamp-down motion, played once when a seal is freshly earned. */
+@keyframes fp-seal-stamp {
+  0%   { transform: scale(2.1) rotate(-14deg); opacity: 0; }
+  55%  { transform: scale(.92) rotate(3deg);  opacity: 1; }
+  75%  { transform: scale(1.05) rotate(-1deg); }
+  100% { transform: scale(1) rotate(0); }
+}
+.fp-seal-fresh { animation: fp-seal-stamp .55s cubic-bezier(.2,.8,.3,1.2) both; }
+.fp-seal-fresh .fp-seal-disc { animation: fp-done-glow .8s .2s ease-out forwards; }
+
+/* Playbook-complete badge. */
+.fp-badge {
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+  gap: 4px; margin: 16px 0 6px; padding: 18px 16px;
+  border: 2px solid var(--accent); border-radius: 14px;
+  /* Frosted gold glass -- fallback gradient first, then translucent + blur. */
+  background: linear-gradient(180deg, #FCF7EC, #F3E8CF);
+  background: linear-gradient(180deg, rgba(252,247,236,.8), rgba(243,232,207,.62));
+  -webkit-backdrop-filter: blur(12px) saturate(1.2);
+  backdrop-filter: blur(12px) saturate(1.2);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.6), 0 10px 26px -14px rgba(110,83,39,.5);
+  color: var(--ink);
+}
+.fp-badge-star { font-size: 26px; color: var(--accent); line-height: 1; }
+.fp-badge-title { font: 700 16px/1.25 Georgia, serif; }
+.fp-badge-name  { font: 600 13px/1.2 Georgia, serif; color: #6E5327; }
+.fp-badge-when  { font: 500 11px/1.2 -apple-system, Segoe UI, sans-serif; color: #94793F;
+                  font-variant-numeric: tabular-nums; }
+.fp-badge-sub   { font: 400 12px/1.35 -apple-system, Segoe UI, sans-serif; color: var(--dim); max-width: 30ch; }
+@keyframes fp-badge-in {
+  0%   { transform: scale(.7); opacity: 0; }
+  60%  { transform: scale(1.04); opacity: 1; }
+  100% { transform: scale(1); }
+}
+.fp-badge-fresh { animation: fp-badge-in .55s cubic-bezier(.2,.8,.3,1.2) both; }
+
+/* Accessibility: no motion for users who ask for none -- seals/badges still
+   SHOW (just without the stamp/pop), so nothing earned is hidden. */
+@media (prefers-reduced-motion: reduce) {
+  .fp-pb-item.fp-just-done .fp-pb-mark,
+  .fp-pb-item.fp-just-done .fp-pb-mark::after,
+  .fp-seal-fresh, .fp-seal-fresh .fp-seal-disc,
+  .fp-badge-fresh { animation: none; }
 }

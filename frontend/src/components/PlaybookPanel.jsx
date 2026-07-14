@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { PLAYBOOK_NAME, PRODUCT_NAME } from "../config/branding";
 import { downloadPlaybookPdf } from "../lib/playbookPdf";
 import { useTypewriter } from "../lib/useTypewriter";
+import { actionComplete, sealedDomains, playbookComplete } from "../lib/completion";
+import { DomainSeal, CompleteBadge } from "./Seal";
 
 // Show an ISO date (2026-07-09) as a friendly "Jul 9, 2026" on the playbook.
 // Leaves any non-date value untouched.
@@ -72,6 +74,39 @@ export default function PlaybookPanel({ name, items, doneKeys, fieldValues = {},
     (it) => it.steps?.length && it.steps.every((_, i) => doneKeys.has(`${it.id}::${i}`))
   ).length;
 
+  // ---- Earned celebrations (paid only) ------------------------------------
+  // Derive earned state from the same doneKeys that drive the checklist, then
+  // detect the MOMENT something is newly earned so its animation plays once.
+  const sealed = isPaid ? sealedDomains(items, doneKeys) : [];
+  const allDone = isPaid && playbookComplete(items, doneKeys);
+
+  // Which item ids just became complete this render -> gold-glow pop on the ✓.
+  const doneSeen = useRef(new Set());
+  const [freshDone, setFreshDone] = useState(new Set());
+  useEffect(() => {
+    const nowDone = items.filter((it) => actionComplete(it, doneKeys)).map((it) => it.id);
+    const fresh = nowDone.filter((id) => !doneSeen.current.has(id));
+    doneSeen.current = new Set(nowDone);
+    if (fresh.length) {
+      setFreshDone(new Set(fresh));
+      const t = setTimeout(() => setFreshDone(new Set()), 800);
+      return () => clearTimeout(t);
+    }
+  }, [items.map((it) => (actionComplete(it, doneKeys) ? it.id : "")).join(",")]);
+
+  // Which domains just sealed this render -> the wax-seal stamp animation.
+  const sealSeen = useRef(new Set());
+  const [freshSeals, setFreshSeals] = useState(new Set());
+  useEffect(() => {
+    const fresh = sealed.filter((d) => !sealSeen.current.has(d));
+    sealSeen.current = new Set(sealed);
+    if (fresh.length) {
+      setFreshSeals(new Set(fresh));
+      const t = setTimeout(() => setFreshSeals(new Set()), 900);
+      return () => clearTimeout(t);
+    }
+  }, [sealed.join(",")]);
+
   return (
     <aside className="fp-pb" aria-label={PLAYBOOK_NAME}>
       <div className="fp-pb-doc">
@@ -103,7 +138,7 @@ export default function PlaybookPanel({ name, items, doneKeys, fieldValues = {},
               .map((f) => ({ label: f.label, value: (fieldValues[`${it.id}::${f.key}`] || "").trim() }))
               .filter((f) => f.value);
             return (
-              <li key={it.id} className={`fp-pb-item ${it.locked ? "locked" : ""} ${complete ? "done" : ""}`}>
+              <li key={it.id} className={`fp-pb-item ${it.locked ? "locked" : ""} ${complete ? "done" : ""} ${freshDone.has(it.id) ? "fp-just-done" : ""}`}>
                 <span className="fp-pb-mark" aria-hidden="true">
                   {it.locked ? "🔒" : complete ? "✓" : "○"}
                 </span>
@@ -124,6 +159,18 @@ export default function PlaybookPanel({ name, items, doneKeys, fieldValues = {},
           })}
         </ol>
         )}
+
+        {/* Earned seals: one per completed domain, stamping in as they're won. */}
+        {sealed.length > 0 && (
+          <div className="fp-seal-row">
+            {sealed.map((d) => (
+              <DomainSeal key={d} domain={d} fresh={freshSeals.has(d)} />
+            ))}
+          </div>
+        )}
+
+        {/* The big finish: every domain sealed. */}
+        {allDone && <CompleteBadge name={name} fresh={freshSeals.size > 0} />}
 
         <footer className="fp-pb-foot">
           {isPaid ? (

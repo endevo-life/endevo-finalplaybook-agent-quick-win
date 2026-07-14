@@ -1,4 +1,5 @@
-import { PLAYBOOK_NAME, PRODUCT_NAME, TAGLINE } from "../config/branding";
+import { PLAYBOOK_NAME, PRODUCT_NAME, TAGLINE, SEAL_LABELS, BADGE_COPY } from "../config/branding";
+import { sealedDomains, playbookComplete } from "./completion";
 import endevoLogo from "../assets/logo/footer-logo-light.png";
 
 // Fetch the ENDevo logo as a base64 data URI so it embeds INLINE in the print
@@ -67,6 +68,23 @@ export async function downloadPlaybookPdf({ name, items, doneKeys, fieldValues =
     })
     .join("");
 
+  // Earned seals + the complete badge print on the document, dated, so the
+  // family can see the work was finished and when.
+  const stampDate = new Date().toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
+  const sealed = sealedDomains(items, doneKeys);
+  const sealsHtml = sealed.length
+    ? `<div class="seals">${sealed
+        .map((d) => `<span class="seal"><span class="seal-tick">✓</span>${escapeHtml(SEAL_LABELS[d] || d)} · ${stampDate}</span>`)
+        .join("")}</div>`
+    : "";
+  const badgeHtml = playbookComplete(items, doneKeys)
+    ? `<div class="badge"><span class="badge-star">★</span>
+         <span class="badge-title">${escapeHtml(BADGE_COPY.title)}</span>
+         ${name ? `<span class="badge-name">${escapeHtml(name)}</span>` : ""}
+         <span class="badge-when">${stampDate}</span>
+         <span class="badge-sub">${escapeHtml(BADGE_COPY.sub)}</span></div>`
+    : "";
+
   const html = `<!doctype html><html><head><meta charset="utf-8"><title>${title}</title>
   <style>
     @page { margin: 22mm 18mm; }
@@ -101,6 +119,22 @@ export async function downloadPlaybookPdf({ name, items, doneKeys, fieldValues =
     table.details th { text-align: left; font: 600 9.5pt/1.4 -apple-system, Segoe UI, sans-serif;
       color: #45507A; padding: 2px 14px 2px 0; vertical-align: top; white-space: nowrap; }
     table.details td { padding: 2px 0; font-weight: 600; }
+    .seals { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
+    .seal { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px;
+            border: 1px solid #B08D57; border-radius: 999px; background: #FBF5E9;
+            color: #6E5327; font: 700 9.5pt/1.1 Georgia, serif;
+            -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .seal-tick { display: inline-flex; align-items: center; justify-content: center;
+                 width: 15px; height: 15px; border-radius: 50%; background: #B08D57;
+                 color: #FFF9EC; font-size: 9pt; }
+    .badge { break-inside: avoid; text-align: center; margin: 6px 0 20px; padding: 16px;
+             border: 2px solid #B08D57; border-radius: 12px; background: #FCF7EC;
+             -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .badge-star { display: block; font-size: 20pt; color: #B08D57; line-height: 1; }
+    .badge-title { display: block; font: 700 14pt/1.3 Georgia, serif; color: #08123A; }
+    .badge-name { display: block; font: 600 10.5pt/1.2 Georgia, serif; color: #6E5327; }
+    .badge-when { display: block; font: 500 9pt/1.3 -apple-system, Segoe UI, sans-serif; color: #94793F; }
+    .badge-sub { display: block; font: 400 9.5pt/1.35 -apple-system, Segoe UI, sans-serif; color: #7C86A8; }
     footer { margin-top: 26px; padding-top: 12px; border-top: 1px solid #D5D1C7;
              font: 9pt/1.4 -apple-system, Segoe UI, sans-serif; color: #9AA1B8; }
     .footer-brand { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
@@ -115,6 +149,8 @@ export async function downloadPlaybookPdf({ name, items, doneKeys, fieldValues =
       <h1>${title}</h1>
       <p class="tag">${escapeHtml(TAGLINE)}</p>
     </div>
+    ${badgeHtml}
+    ${sealsHtml}
     ${sections}
     <footer>
       <div class="footer-brand">

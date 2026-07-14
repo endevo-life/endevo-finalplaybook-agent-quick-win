@@ -39,6 +39,25 @@ import jesseLogo from "../assets/jesse_final.png";
 export const LOGO_URL = jesseLogo;
 export const LOGO_LETTER = "M"; // fallback badge if the image can't load
 
+// Celebration / earned-progress copy. All strings here so Niki can approve/edit
+// the voice in one place. NO dollar amounts, risk %s, or legal claims (guardrail)
+// -- these are educational reassurance about what finishing accomplishes, never
+// invented advice. Seal labels are keyed by domain (matches tokens.js DOMAINS).
+export const SEAL_LABELS = {
+  legal: "Legal · Ready",
+  financial: "Financial · Ready",
+  health: "Physical · Ready",
+  digital: "Digital · Ready",
+};
+export const CELEBRATION_COPY = {
+  action: "Done — one less thing your family will have to guess about.",
+  domainSealed: (label) => `${label} affairs are in order.`,
+};
+export const BADGE_COPY = {
+  title: "My Final Playbook — Complete",
+  sub: "Everything your family needs, in one place.",
+};
+
 // Checkout / upgrade. When Stripe is configured, the UpgradeButton calls the
 // backend to create a Checkout session and redirects; UPGRADE_URL is only the
 // static fallback used if the backend checkout endpoint is unavailable.
