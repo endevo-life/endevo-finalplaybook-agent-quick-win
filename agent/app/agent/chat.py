@@ -43,11 +43,39 @@ class ChatReply(BaseModel):
     reply: str
 
 
+# Chat-context directive. The canonical Jesse prompt describes the full
+# engagement arc, which OPENS with a "Peace of Mind Assessment" (KICKOFF). But by
+# the time a member is in chat, that assessment is ALREADY DONE -- their matched
+# plan is attached below. Without this, Jesse sometimes restarts the kickoff and
+# offers the assessment again, ignoring the plan (an ungrounded reply). This
+# pins the chat context: the plan exists, answer from it, don't re-onboard.
+# Kept here (not in jesse_system.txt) so the canonical prompt stays the shared
+# source of truth across the personalize + chat call sites.
+_CHAT_CONTEXT = """\
+═══════════════════════════════════════════════════════════════════════
+CHAT CONTEXT — READ THIS FIRST (it overrides the engagement-arc opening)
+═══════════════════════════════════════════════════════════════════════
+This is an ONGOING conversation about a plan the member has ALREADY built. Their
+matched plan — their Readiness Actions — is provided below. Your job here is to
+answer their questions using THAT plan.
+
+- Do NOT run or offer the Peace of Mind Assessment. It is already complete.
+- Do NOT greet them as if starting over or ask if they're "ready to begin."
+- When they ask what to do first / next, answer from the specific actions in
+  their plan below — name the actual steps, don't send them back to onboarding.
+- Stay grounded in the provided plan; never invent new advice (per your hard
+  rules). If something isn't covered, say so and point to a licensed professional."""
+
+
 def _chat_system(signals=None) -> str:
-    """CHAT_SYSTEM_PROMPT + the why-now framing so Jesse leads by scenario."""
+    """CHAT_SYSTEM_PROMPT + the chat-context directive + the why-now framing.
+
+    The chat-context directive is what keeps replies grounded in the member's
+    existing plan instead of re-running the assessment kickoff (see _CHAT_CONTEXT)."""
     from app.agent.signals import framing_for
+    base = f"{CHAT_SYSTEM_PROMPT}\n\n{_CHAT_CONTEXT}"
     framing = framing_for(signals)
-    return CHAT_SYSTEM_PROMPT if not framing else f"{CHAT_SYSTEM_PROMPT}\n\n{framing}"
+    return base if not framing else f"{base}\n\n{framing}"
 
 
 def _chat_anthropic(plan: dict, member_first_name: str, history: list[ChatMessage], signals=None) -> ChatReply:
