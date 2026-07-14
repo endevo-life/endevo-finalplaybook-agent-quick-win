@@ -19,9 +19,10 @@ Two backends are supported, selected via the LLM_BACKEND env var:
 """
 import json
 import os
+import re
 from typing import Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 
 from app.config import (
     PRODUCT_NAME,
@@ -112,6 +113,59 @@ def _personalize_anthropic(plan: dict, member_first_name: str, signals=None) -> 
     return response.parsed_output
 
 
+def _extract_json_object(text: str) -> dict:
+    """Parse a JSON object out of an open-weight model's raw output.
+
+    Open-weight models (Llama 3.1 8B) reliably produce the RIGHT content but
+    often wrap it: a ```json code fence, a "Here is the plan:" preamble, or
+    trailing commentary. `json.loads` on the whole string then fails even though
+    the object is right there. This pulls out the first balanced {...} object
+    (ignoring braces inside strings) and parses that. Raises json.JSONDecodeError
+    if no valid object is found."""
+    # 1) Strip a leading/trailing markdown code fence if present.
+    fenced = re.search(r"```(?:json)?\s*(.*?)\s*```", text, re.DOTALL)
+    candidate = fenced.group(1) if fenced else text
+
+    # 2) Fast path: the candidate is already clean JSON.
+    try:
+        return json.loads(candidate)
+    except json.JSONDecodeError:
+        pass
+
+    # 3) Scan for the first balanced top-level {...}, respecting string literals
+    #    and escapes so braces inside strings don't miscount.
+    start = candidate.find("{")
+    while start != -1:
+        depth = 0
+        in_str = False
+        esc = False
+        for i in range(start, len(candidate)):
+            ch = candidate[i]
+            if in_str:
+                if esc:
+                    esc = False
+                elif ch == "\\":
+                    esc = True
+                elif ch == '"':
+                    in_str = False
+                continue
+            if ch == '"':
+                in_str = True
+            elif ch == "{":
+                depth += 1
+            elif ch == "}":
+                depth -= 1
+                if depth == 0:
+                    try:
+                        return json.loads(candidate[start:i + 1])
+                    except json.JSONDecodeError:
+                        break  # this object was malformed; try the next {
+        start = candidate.find("{", start + 1)
+
+    # Nothing parseable -- surface a real decode error for the caller to handle.
+    return json.loads(candidate)  # raises json.JSONDecodeError
+
+
 def _personalize_bedrock(plan: dict, member_first_name: str, signals=None) -> PersonalizedPlan:
     import boto3  # lazy import: only needed when LLM_BACKEND=bedrock
 
@@ -127,36 +181,76 @@ def _personalize_bedrock(plan: dict, member_first_name: str, signals=None) -> Pe
         '"why_it_matters": string, "script": string or null}], '
         '"closing_note": string}'
     )
+    user_message = f"Build this member's next-7-days plan from ONLY this data:\n\n{user_content}"
 
-    response = client.converse(
-        modelId=model_id,
-        system=[{"text": _system_with_framing(signals) + "\n\n" + schema_instruction}],
-        messages=[{
-            "role": "user",
-            "content": [{"text": f"Build this member's next-7-days plan from ONLY this data:\n\n{user_content}"}],
-        }],
-    )
-    raw_text = response["output"]["message"]["content"][0]["text"]
+    def _call(system_text: str) -> str:
+        response = client.converse(
+            modelId=model_id,
+            system=[{"text": system_text}],
+            messages=[{"role": "user", "content": [{"text": user_message}]}],
+        )
+        return response["output"]["message"]["content"][0]["text"]
 
+    # First attempt. Tolerant extraction handles fences/preambles the model adds.
+    raw_text = _call(_system_with_framing(signals) + "\n\n" + schema_instruction)
     try:
-        data = json.loads(raw_text)
-    except json.JSONDecodeError as e:
-        raise ValueError(
-            f"Bedrock model '{model_id}' did not return valid JSON (this is a "
-            f"known reliability gap with open-weight models -- see "
-            f"docs/guardrails.md). Raw output: {raw_text!r}"
-        ) from e
+        return PersonalizedPlan(**_extract_json_object(raw_text))
+    except (json.JSONDecodeError, ValidationError):
+        pass
 
-    return PersonalizedPlan(**data)
+    # Retry once with a firmer nudge -- open-weight models usually comply on the
+    # second pass. Keep the same grounding; only the instruction hardens.
+    retry_instruction = (
+        schema_instruction
+        + " Your previous reply could not be parsed. Output the JSON object and "
+        "NOTHING else -- start your reply with { and end it with }."
+    )
+    raw_text_2 = _call(_system_with_framing(signals) + "\n\n" + retry_instruction)
+    try:
+        return PersonalizedPlan(**_extract_json_object(raw_text_2))
+    except (json.JSONDecodeError, ValidationError) as e:
+        raise ValueError(
+            f"Bedrock model '{model_id}' did not return valid JSON after a retry "
+            f"(known reliability gap with open-weight models -- see "
+            f"docs/guardrails.md). Raw output: {raw_text_2!r}"
+        ) from e
 
 
 def personalize(plan: dict, member_first_name: str, signals=None) -> PersonalizedPlan:
     """plan is the dict returned by rules_engine.build_plan(). `signals` are the
     member's why-now flags; when present, the guide LEADS by that scenario.
-    Backend is selected via LLM_BACKEND env var ("anthropic" default, or "bedrock")."""
-    backend = os.environ.get("LLM_BACKEND", "anthropic")
+
+    Backend selection (see app/agent/llm_router.py):
+    - The STARTING backend is chosen by the router: normally the configured
+      primary (LLM_BACKEND), but if the primary is bedrock and a budget guard
+      has tripped, it starts on Claude instead.
+    - If a bedrock call FAILS (Bedrock error, or unparseable output after its own
+      retry), it FALLS BACK to Claude so the member still gets a result. Claude
+      has no such fallback -- it's already the safety net."""
+    from app.agent import llm_router
+
+    backend = llm_router.choose_backend()
     if backend == "bedrock":
-        return _personalize_bedrock(plan, member_first_name, signals)
+        try:
+            return _personalize_bedrock(plan, member_first_name, signals)
+        except Exception as e:
+            # Failure fallback: Llama couldn't deliver -> use Claude for this call.
+            # Only meaningful if a Claude key is configured; if not, re-raise the
+            # original bedrock error rather than masking it with a key error.
+            if not os.environ.get("ANTHROPIC_API_KEY"):
+                raise
+            _log_fallback("personalize", e)
+            return _personalize_anthropic(plan, member_first_name, signals)
     if backend == "anthropic":
         return _personalize_anthropic(plan, member_first_name, signals)
     raise ValueError(f"Unknown LLM_BACKEND: {backend!r} (expected 'anthropic' or 'bedrock')")
+
+
+def _log_fallback(where: str, err: Exception) -> None:
+    """Record a Bedrock->Claude fallback so it's visible in the event stream /
+    Cost tab (a spike in fallbacks means Llama is struggling). Best-effort."""
+    try:
+        from app.services import analytics
+        analytics.emit("llm_fallback", where=where, error=str(err)[:200])
+    except Exception:
+        pass
