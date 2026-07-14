@@ -48,7 +48,7 @@ export default function QuestionStep({ step, flags, onToggle, onSelectSingle, se
       <p className="fp-question-topic">{step.topic}</p>
       <p className="fp-question-text">{renderPromptText(step, glossary)}</p>
       <p className="fp-dim" style={{ marginBottom: 16 }}>
-        {isSingle ? "Choose one." : "Check anything that applies — it's fine to check none."}
+        {isSingle ? "Choose one." : "Check anything that applies, it's fine to check none."}
       </p>
       <div className="fp-choice-group">
         {step.options.map((opt) => {

@@ -6,18 +6,57 @@
 // Product + company identity ------------------------------------------------
 export const PRODUCT_NAME = "MyFinalPlaybook";
 export const COMPANY_NAME = "MyFinalPlaybook";     // shown in the top-left nav
-export const TAGLINE = "Live Fully, Die Ready.";
+export const TAGLINE = "Live Fully ~ Die Ready.";
+
+// The member-facing name of the deliverable. ALWAYS "My Final Playbook" (never
+// "Your Final Playbook") -- it's the member's own document. Use this everywhere
+// the plan is referred to, and PRIMARY_CTA for the main call-to-action button.
+export const PLAYBOOK_NAME = "My Final Playbook";
+export const PRIMARY_CTA = "Get My Final Playbook";
+
+// A safe display first name. Never shows a raw email as the name: if we only
+// have an email, use the part before "@"; strip anything that looks like an
+// address. Falls back to empty so callers can render a name-less heading.
+export function firstName(raw) {
+  const v = (raw || "").trim();
+  if (!v) return "";
+  const base = v.includes("@") ? v.split("@")[0] : v;
+  // take the first word, title-case it, drop digits/punctuation noise
+  const word = base.split(/[\s._-]+/).filter(Boolean)[0] || "";
+  const clean = word.replace(/[^a-zA-Z]/g, "");
+  if (!clean) return "";
+  return clean.charAt(0).toUpperCase() + clean.slice(1);
+}
 
 // The personalized (paid) narrative is delivered in a neutral guide voice, not
 // any named person's voice. This string is used everywhere the UI describes
 // what the paid tier adds.
 export const PERSONALIZED_VOICE_LABEL = "a warm, personalized narrative";
 
-// Jesse's logo. Drop the image at frontend/public/logo.png (or .jpg/.svg) and
-// it loads from "/logo.png". If the file isn't present yet, TopNav/Welcome fall
-// back to the letter badge below (so the UI never shows a broken image).
-export const LOGO_URL = "/logo.png";
-export const LOGO_LETTER = "M"; // fallback badge until the logo file is in place
+// Jesse's logo (the Day-of-the-Dead mascot), imported so Vite bundles + hashes
+// it. If it ever fails to load, TopNav/Welcome fall back to the letter badge.
+import jesseLogo from "../assets/jesse_final.png";
+export const LOGO_URL = jesseLogo;
+export const LOGO_LETTER = "M"; // fallback badge if the image can't load
+
+// Celebration / earned-progress copy. All strings here so Niki can approve/edit
+// the voice in one place. NO dollar amounts, risk %s, or legal claims (guardrail)
+// -- these are educational reassurance about what finishing accomplishes, never
+// invented advice. Seal labels are keyed by domain (matches tokens.js DOMAINS).
+export const SEAL_LABELS = {
+  legal: "Legal · Ready",
+  financial: "Financial · Ready",
+  health: "Physical · Ready",
+  digital: "Digital · Ready",
+};
+export const CELEBRATION_COPY = {
+  action: "Done — one less thing your family will have to guess about.",
+  domainSealed: (label) => `${label} affairs are in order.`,
+};
+export const BADGE_COPY = {
+  title: "My Final Playbook — Complete",
+  sub: "Everything your family needs, in one place.",
+};
 
 // Checkout / upgrade. When Stripe is configured, the UpgradeButton calls the
 // backend to create a Checkout session and redirects; UPGRADE_URL is only the

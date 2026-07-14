@@ -1,16 +1,50 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: >
-  Final Playbook API -- FastAPI (via Mangum) on Lambda behind API Gateway, with a
-  single DynamoDB table for users, entitlements, sessions, and usage metering.
-  The deterministic rules engine (free tier) and the one paid-tier LLM call run
-  inside the same function; free-tier requests never touch the LLM.
+  Final Playbook API -- FastAPI (via Mangum) on Lambda behind API Gateway. The
+  seven prefixed DynamoDB tables (users/sessions/usage/plans/chat/events/config)
+  and the Cognito user pool (custom-auth email codes) are created OUTSIDE this
+  template and referenced by name/id -- pass TablePrefix + the Cognito IDs in as
+  parameters. This template owns only the Lambda + HTTP API. The deterministic
+  rules engine (free tier) and the one paid-tier LLM call run inside the same
+  function; free-tier requests never touch the LLM.
 
 Parameters:
+  TablePrefix:
+    Type: String
+    Default: "mfp-dev-"
+    Description: >
+      Prefix for the 7 existing DynamoDB tables (matches DDB_TABLE_PREFIX):
+      {prefix}users, sessions, usage, plans, chat, events, config. The tables
+      are NOT created here -- they already exist; this only grants the Lambda
+      access to them by name.
+  LlmBackend:
+    Type: String
+    Default: "bedrock"
+    AllowedValues: ["anthropic", "bedrock"]
+    Description: >
+      "bedrock" -- open-weight/Claude models via AWS Bedrock, auth by the
+      Lambda's IAM role (no API key). "anthropic" -- direct Claude API, needs
+      AnthropicApiKey.
+  BedrockRegion:
+    Type: String
+    Default: "us-east-1"
+    Description: Region for the Bedrock runtime (only used when LlmBackend=bedrock).
+  BedrockModelId:
+    Type: String
+    Default: "us.meta.llama3-1-8b-instruct-v1:0"
+    Description: >
+      Bedrock inference-profile id (only used when LlmBackend=bedrock). Must be
+      enabled in your Bedrock console. Default is Llama 3 8B -- note
+      docs/guardrails.md flags open-weight models as weaker-grounded for this
+      sensitive content.
   AnthropicApiKey:
     Type: String
     NoEcho: true
-    Description: Anthropic API key for the paid-tier personalization/chat calls.
+    Default: ""
+    Description: >
+      Anthropic API key for the paid-tier calls. ONLY needed when
+      LlmBackend=anthropic; leave blank for Bedrock.
   StripeSecretKey:
     Type: String
     NoEcho: true
@@ -27,19 +61,73 @@ Parameters:
     Description: Stripe webhook signing secret (whsec_...).
   AllowedOrigins:
     Type: String
-    Default: "http://localhost:5173"
+    Default: "http://localhost:3200"
     Description: Comma-separated list of allowed CORS origins (your frontend URL).
   AppBaseUrl:
     Type: String
-    Default: "http://localhost:5173"
+    Default: "http://localhost:3200"
     Description: Where Stripe Checkout redirects users back to.
+  AuthBackend:
+    Type: String
+    Default: "cognito"
+    AllowedValues: ["local", "cognito"]
+    Description: >
+      "local" -- in-process login codes (zero AWS, dev only).
+      "cognito" -- AWS Cognito custom-auth email codes (requires the pool/client
+      params below to point at an already-created pool).
   AuthReturnCode:
     Type: String
-    Default: "true"
+    Default: "false"
     AllowedValues: ["true", "false"]
     Description: >
-      "true" returns the login code in the API response (no email provider needed).
-      Set "false" once you wire up email delivery so codes are emailed, not returned.
+      "true" returns the login code in the API response (no email provider
+      needed; local dev only -- never set true in prod). "false" relies on
+      Cognito/SES to email the code.
+  CognitoUserPoolId:
+    Type: String
+    Default: ""
+    Description: >
+      Existing Cognito user pool id (e.g. us-east-1_XXXXXXXXX). This template
+      does NOT create the pool or its custom-auth Lambda triggers -- create
+      those separately, then pass the IDs in here. Required when AuthBackend=cognito.
+  CognitoClientId:
+    Type: String
+    Default: ""
+    Description: Existing Cognito app client id. Required when AuthBackend=cognito.
+  CognitoRegion:
+    Type: String
+    Default: "us-east-1"
+    Description: Region the Cognito user pool lives in.
+  AllowDevUpgrade:
+    Type: String
+    Default: "false"
+    AllowedValues: ["true", "false"]
+    Description: >
+      "true" enables the no-Stripe upgrade/downgrade routes (for demos). MUST be
+      "false" in real production, where Stripe's webhook is the only way to
+      grant/revoke paid.
+  AwsCostEnabled:
+    Type: String
+    Default: "0"
+    AllowedValues: ["0", "1"]
+    Description: >
+      "1" makes the admin Cost tab query real billed dollars from AWS Cost
+      Explorer (requires the ce/cloudwatch policy; ~$0.01 per call, ~24h data
+      lag). "0" (default) shows an estimate derived from tracked LLM calls.
+  AdminToken:
+    Type: String
+    NoEcho: true
+    Default: ""
+    Description: >
+      Shared bearer secret gating /api/admin/* and the admin console. Leave
+      blank to disable the admin API (it returns 503 until this is set).
+  AdminEmails:
+    Type: String
+    Default: ""
+    Description: >
+      Comma-separated allowlist of admin emails. When set, admin login
+      requires both AdminToken and one of these emails. Leave blank to gate
+      on the token alone.
 
 Globals:
   Function:
@@ -48,25 +136,6 @@ Globals:
     Runtime: python3.12
 
 Resources:
-  DataTable:
-    Type: AWS::DynamoDB::Table
-    Properties:
-      TableName: final-playbook
-      BillingMode: PAY_PER_REQUEST
-      AttributeDefinitions:
-        - AttributeName: PK
-          AttributeType: S
-        - AttributeName: SK
-          AttributeType: S
-      KeySchema:
-        - AttributeName: PK
-          KeyType: HASH
-        - AttributeName: SK
-          KeyType: RANGE
-      TimeToLiveSpecification:
-        AttributeName: expires_at   # auto-expires session rows
-        Enabled: true
-
   ApiFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -75,19 +144,72 @@ Resources:
       Environment:
         Variables:
           STORE_BACKEND: dynamodb
-          DDB_TABLE: !Ref DataTable
-          LLM_BACKEND: anthropic
+          DDB_TABLE_PREFIX: !Ref TablePrefix
+          LLM_BACKEND: !Ref LlmBackend
+          BEDROCK_REGION: !Ref BedrockRegion
+          BEDROCK_MODEL_ID: !Ref BedrockModelId
           ANTHROPIC_API_KEY: !Ref AnthropicApiKey
           STRIPE_SECRET_KEY: !Ref StripeSecretKey
           STRIPE_PRICE_ID: !Ref StripePriceId
           STRIPE_WEBHOOK_SECRET: !Ref StripeWebhookSecret
           ALLOWED_ORIGINS: !Ref AllowedOrigins
           APP_BASE_URL: !Ref AppBaseUrl
+          AUTH_BACKEND: !Ref AuthBackend
           AUTH_RETURN_CODE: !Ref AuthReturnCode
+          COGNITO_USER_POOL_ID: !Ref CognitoUserPoolId
+          COGNITO_CLIENT_ID: !Ref CognitoClientId
+          COGNITO_REGION: !Ref CognitoRegion
+          ADMIN_TOKEN: !Ref AdminToken
+          ADMIN_EMAILS: !Ref AdminEmails
+          ALLOW_DEV_UPGRADE: !Ref AllowDevUpgrade
           PRODUCT_NAME: "Final Playbook"
+          # Admin Cost tab: when "1", /api/admin/costs queries real billed $ from
+          # Cost Explorer (needs the ce/cloudwatch policy below). Off -> estimate.
+          AWS_COST_ENABLED: !Ref AwsCostEnabled
       Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !Ref DataTable
+        # The 7 tables already exist (created outside this stack); grant CRUD on
+        # them by ARN pattern rather than !Ref-ing table resources we don't own.
+        - Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:GetItem
+                - dynamodb:PutItem
+                - dynamodb:UpdateItem
+                - dynamodb:DeleteItem
+                - dynamodb:Query
+                - dynamodb:Scan
+                - dynamodb:BatchGetItem
+                - dynamodb:BatchWriteItem
+              Resource:
+                - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${TablePrefix}*"
+                - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${TablePrefix}*/index/*"
+        - Statement:
+            - Effect: Allow
+              Action:
+                - cognito-idp:AdminGetUser
+                - cognito-idp:AdminCreateUser
+                - cognito-idp:AdminSetUserPassword
+                - cognito-idp:InitiateAuth
+                - cognito-idp:RespondToAuthChallenge
+              Resource: !Sub "arn:aws:cognito-idp:${CognitoRegion}:${AWS::AccountId}:userpool/${CognitoUserPoolId}"
+        # Bedrock: invoke the paid-tier model (used when LlmBackend=bedrock).
+        # Foundation models + inference profiles are cross-region, so "*" is the
+        # practical scope; tighten to specific model ARNs if your policy requires.
+        - Statement:
+            - Effect: Allow
+              Action:
+                - bedrock:InvokeModel
+              Resource: "*"
+        # Admin Cost tab (only used when AWS_COST_ENABLED=1). Cost Explorer and
+        # CloudWatch GetMetricData don't support resource-level scoping, so "*"
+        # is the required scope. Read-only. NOTE: each ce:GetCostAndUsage call is
+        # billed ~$0.01 and Cost Explorer data lags ~24h.
+        - Statement:
+            - Effect: Allow
+              Action:
+                - ce:GetCostAndUsage
+                - cloudwatch:GetMetricData
+              Resource: "*"
       Events:
         ApiRoot:
           Type: HttpApi
@@ -104,6 +226,6 @@ Outputs:
   ApiUrl:
     Description: Base URL of the deployed API. Set this as VITE_API_BASE_URL for the frontend.
     Value: !Sub "https://${ServerlessHttpApi}.execute-api.${AWS::Region}.amazonaws.com"
-  TableName:
-    Description: DynamoDB table name.
-    Value: !Ref DataTable
+  TablePrefix:
+    Description: DynamoDB table prefix in use.
+    Value: !Ref TablePrefix

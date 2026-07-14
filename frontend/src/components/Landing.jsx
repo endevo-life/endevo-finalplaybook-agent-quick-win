@@ -1,5 +1,7 @@
-import { PRODUCT_NAME, TAGLINE } from "../config/branding";
+import { PRODUCT_NAME, TAGLINE, PRIMARY_CTA } from "../config/branding";
 import Pricing from "./Pricing";
+import landingVideo from "../assets/video_landing/MyFinalPlaybook Video (music).mp4";
+import landingCaptions from "../assets/video_landing/captions.en.vtt?url";
 
 // Public marketing page. Positioning (per growth strategy): we own DIGITAL death
 // — the questions nobody else answers. The product is fear reduction: turn "what
@@ -8,7 +10,7 @@ import Pricing from "./Pricing";
 // High-anxiety questions — the exact hooks that convert (from the content model).
 const FEARS = [
   "Who can unlock your phone if you're gone?",
-  "Can your family reach your online banking — past the 2FA?",
+  "Can your family reach your online banking, past the 2FA?",
   "What happens to your photos and a lifetime of memories?",
   "Could anyone actually access your crypto or digital wallet?",
   "Who handles your Instagram, email, and work accounts?",
@@ -16,40 +18,104 @@ const FEARS = [
 ];
 
 const PREMIUM = [
-  ["Track every item", "Check off progress and watch your playbook come together — your plan, saved."],
+  ["Track every item", "Check off progress and watch your playbook come together, your plan, saved."],
   ["Build side by side", "Work through each action with the exact steps, scripts, and fields as you go."],
-  ["AI assistant", "Ask anything about your situation. Grounded in your plan — never guesses, never invents."],
+  ["AI assistant", "Ask anything about your situation. Grounded in your plan, never guesses, never invents."],
   ["Your full plan", "Every personalized action across all domains, prioritized for you."],
 ];
 
 export default function Landing({ onStart, onSignIn, onUpgrade, isPaid }) {
   return (
     <div>
-      {/* Hero — fear reduction, not feature list */}
+      {/* Hero: fear reduction, not feature list */}
       <div className="fp-hero">
-        <p className="fp-hero-eyebrow">{PRODUCT_NAME} · Digital + Legacy Planning</p>
         <h1>When you're gone, will your family be locked out of everything?</h1>
         <p className="fp-hero-sub">
-          Your phone, your accounts, your money, your memories — all behind passwords no
-          one else has. {PRODUCT_NAME} turns that fear into a clear, calm plan you can
+          Your phone, your accounts, your money, your memories. All behind passwords no
+          one else has. {PRODUCT_NAME} turns that worry into a clear, calm plan you can
           start in minutes. <strong>{TAGLINE}</strong>
         </p>
         <div className="fp-hero-cta-row">
           <button className="fp-btn" style={{ padding: "14px 30px", fontSize: 15 }} onClick={onStart}>
-            Start free →
+            {PRIMARY_CTA} →
           </button>
-          <button className="fp-btn-secondary" onClick={onSignIn}>Sign in</button>
         </div>
-        <p className="fp-hero-note">Free to start · No account needed to try · Not legal, financial, or medical advice</p>
+        <p className="fp-hero-note">
+          New here? Start free, no account needed. Takes about 5 minutes.
+        </p>
+        <p className="fp-hero-signin">
+          Already made your playbook?{" "}
+          <button className="fp-linkbtn" onClick={onSignIn}>Sign in to pick up where you left off</button>
+        </p>
+        <p className="fp-hero-note" style={{ marginTop: 18 }}>
+          Not legal, financial, or medical advice.
+        </p>
       </div>
 
-      {/* Video placeholder — for Niki's short-form / explainer */}
+      {/* Explainer video, "What happens to your digital life when you die" */}
       <div className="fp-section" style={{ paddingTop: 8 }}>
-        <div className="fp-video-placeholder" role="button" tabIndex={0}>
-          <div className="fp-video-play">▶</div>
-          <p className="fp-video-label">Watch: What happens to your digital life when you die (2 min)</p>
-          <p className="fp-video-sub">Video coming soon</p>
+        <video
+          className="fp-video"
+          src={landingVideo}
+          controls
+          controlsList="nodownload noplaybackrate"
+          disablePictureInPicture
+          preload="metadata"
+          playsInline
+          onContextMenu={(e) => e.preventDefault()}
+          aria-label="What happens to your digital life when you die (2 min)"
+        >
+          <track
+            kind="subtitles"
+            src={landingCaptions}
+            srcLang="en"
+            label="English"
+            default
+          />
+          Your browser doesn’t support embedded video.
+        </video>
+      </div>
+
+      {/* ROI / "why prepare" stats (from ENDevo: endevo.life) */}
+      <div className="fp-section">
+        <h2 className="fp-section-title">
+          If you don't prepare, this is what happens.
+        </h2>
+        <div className="fp-stats-grid">
+          {[
+            ["67%", "of adults have no plan in place, leaving families to make painful decisions alone."],
+            ["420+", "hours families spend sorting affairs when information isn't organized."],
+            ["30%", "of loved ones never access digital accounts, losing photos, messages, and records forever."],
+            ["$58B", "in assets goes unclaimed because families didn't know accounts or policies existed."],
+          ].map(([stat, label]) => (
+            <div key={stat} className="fp-stat-card">
+              <div className="fp-stat-num">{stat}</div>
+              <p className="fp-stat-label">{label}</p>
+            </div>
+          ))}
         </div>
+        <p className="fp-stats-source">
+          Source: ENDevo legacy-readiness research. The good news: every one of
+          these is preventable, and you can start in minutes.
+        </p>
+      </div>
+
+      {/* Program results / proof (from ENDevo program outcomes) */}
+      <div className="fp-section">
+        <h2 className="fp-section-title">People who plan, feel it.</h2>
+        <div className="fp-proof-row">
+          {[
+            ["92%", "reached planning clarity"],
+            ["9.9/10", "participant satisfaction"],
+            ["75%", "completed critical documents they'd been putting off"],
+          ].map(([stat, label]) => (
+            <div key={stat} className="fp-proof-item">
+              <span className="fp-proof-num">{stat}</span>
+              <span className="fp-proof-label">{label}</span>
+            </div>
+          ))}
+        </div>
+        <p className="fp-stats-source">From ENDevo's guided program outcomes.</p>
       </div>
 
       {/* The fears we answer */}
@@ -66,7 +132,7 @@ export default function Landing({ onStart, onSignIn, onUpgrade, isPaid }) {
         </div>
         <div style={{ textAlign: "center", marginTop: 28 }}>
           <button className="fp-btn" style={{ padding: "13px 28px" }} onClick={onStart}>
-            Find your gaps — free →
+            Find your gaps, free →
           </button>
         </div>
       </div>
@@ -78,7 +144,7 @@ export default function Landing({ onStart, onSignIn, onUpgrade, isPaid }) {
         <div className="fp-steps">
           {[
             ["1", "Answer a few questions", "Quick, plain-language questions about your digital, legal, financial, and health readiness. No jargon."],
-            ["2", "Get your gaps + first steps", "We show you exactly where you're exposed and the two things to do first — free."],
+            ["2", "Get your gaps + first steps", "We show you exactly where you're exposed and the two things to do first, free."],
             ["3", "Go Premium to finish it", "Unlock your full plan, track every item, build it side by side, and get an AI assistant for your situation."],
           ].map(([num, title, body]) => (
             <div key={num} className="fp-step-card">
@@ -111,7 +177,7 @@ export default function Landing({ onStart, onSignIn, onUpgrade, isPaid }) {
       <div className="fp-section" style={{ textAlign: "center", paddingTop: 8 }}>
         <h2 className="fp-section-title" style={{ marginBottom: 18 }}>{TAGLINE}</h2>
         <button className="fp-btn" style={{ padding: "14px 30px", fontSize: 15 }} onClick={onStart}>
-          Start your plan — it's free →
+          {PRIMARY_CTA}, it's free →
         </button>
       </div>
     </div>

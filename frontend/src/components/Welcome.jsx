@@ -11,7 +11,7 @@ export default function Welcome({ onStart }) {
       </div>
       <h1 className="fp-h1">{PRODUCT_NAME}</h1>
       <p className="fp-body" style={{ maxWidth: 440, marginLeft: "auto", marginRight: "auto" }}>
-        A calm, guided walkthrough to help you get your affairs in order — so the people you love
+        A calm, guided walkthrough to help you get your affairs in order, so the people you love
         are never left guessing. No jargon. Just a plan.
       </p>
       <button onClick={onStart} className="fp-btn" style={{ padding: "14px 32px", fontSize: 15 }}>

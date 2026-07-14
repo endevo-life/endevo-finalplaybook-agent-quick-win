@@ -27,6 +27,8 @@ class Entitlement:
     email: str
     tier: str
     plan_name: str
+    canceled: bool = False       # subscription canceled but still within paid period
+    paid_until: int = None       # epoch seconds paid access ends (if canceled)
 
     def _plan(self):
         return get_plan(self.tier)
@@ -79,13 +81,32 @@ class Entitlement:
                 "chatUsed": usage["chat_count"],
                 "chatQuota": plan.monthly_chat_quota,
             },
+            "canceled": self.canceled,
+            "paidUntil": self.paid_until,
         }
 
 
 def entitlement_for(email: str) -> Entitlement:
     """Load a user's live entitlement from the store. Auto-provisions a free
-    user if they somehow have a valid session but no profile row."""
+    user if they somehow have a valid session but no profile row.
+
+    A canceled paid user KEEPS paid access until `paid_until` passes (they paid
+    for the period). Once that timestamp is in the past, they resolve to free."""
+    from app.data.store.base import now
     store = get_store()
     user = store.get_user(email) or store.upsert_user(email, tier="free")
     tier = get_plan(user["tier"]).tier
-    return Entitlement(email=email, tier=tier, plan_name=get_plan(tier).name)
+    # Downgrade an expired cancellation to free at read time (self-healing;
+    # no cron needed). Only when they actually canceled AND the paid period ended.
+    paid_until = user.get("paid_until")
+    canceled = bool(user.get("canceled"))
+    if tier == "paid" and canceled and paid_until and int(paid_until) < now():
+        tier = "free"
+        canceled = False
+        paid_until = None
+        store.set_tier(email, "free", canceled=False)  # settle it
+    return Entitlement(
+        email=email, tier=tier, plan_name=get_plan(tier).name,
+        canceled=(canceled and tier == "paid"),
+        paid_until=int(paid_until) if (paid_until and tier == "paid") else None,
+    )

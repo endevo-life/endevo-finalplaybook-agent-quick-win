@@ -27,9 +27,13 @@ class MemoryStore:
         self.users[email] = user
         return user
 
-    def set_tier(self, email: str, tier: str) -> None:
+    def set_tier(self, email: str, tier: str, paid_until: int = None, canceled: bool = None) -> None:
         user = self.users.get(email) or {"email": email, "created_at": now()}
         user["tier"] = tier
+        if paid_until is not None:
+            user["paid_until"] = paid_until
+        if canceled is not None:
+            user["canceled"] = canceled
         self.users[email] = user
 
     def email_for_stripe_customer(self, stripe_customer_id: str) -> Optional[str]:
@@ -59,11 +63,14 @@ class MemoryStore:
         rec[field] = rec.get(field, 0) + 1
         return rec[field]
 
+    def reset_usage(self, email: str) -> None:
+        self.usage[(email, month_key())] = {"personalize_count": 0, "chat_count": 0}
+
     # --- saved plan + progress ---
     def get_plan(self, email: str) -> Optional[dict]:
         return self.plans.get(email)
 
-    def save_plan(self, email: str, answers=None, plan=None, tracked=None, narrative=None) -> None:
+    def save_plan(self, email: str, answers=None, plan=None, tracked=None, narrative=None, fields=None) -> None:
         rec = self.plans.setdefault(email, {})
         if answers is not None:
             rec["answers"] = answers
@@ -73,6 +80,8 @@ class MemoryStore:
             rec["tracked"] = tracked
         if narrative is not None:
             rec["narrative"] = narrative
+        if fields is not None:
+            rec["fields"] = fields
         rec["updated_at"] = now()
 
     # --- chat history ---

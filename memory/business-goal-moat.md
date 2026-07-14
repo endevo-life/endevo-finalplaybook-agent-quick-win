@@ -19,7 +19,7 @@ User's goal (2026-07-06): "take MOAT Final Playbook, make money with this app."
   are a trust moat if the content is validated.
 
 **Monetization paths (both wired or scaffolded):**
-1. B2C freemium: free rules/assessment (funnel, $0 to serve) -> $9/mo paid
+1. B2C freemium: free rules/assessment (funnel, $0 to serve) -> $25/mo paid
    (LLM narrative + chat). Stripe Checkout ready. Quotas cap cost (plans.py).
 2. B2B/enterprise: SAME agent, branded per-tenant via brand.py (prompt is already
    tenant-neutral). Enterprise value = SSO, seat billing, admin dashboard,

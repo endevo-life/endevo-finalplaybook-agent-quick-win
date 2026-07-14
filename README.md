@@ -90,8 +90,9 @@ cp .env.example .env.local  # VITE_API_BASE_URL defaults to http://localhost:800
 npm run dev
 ```
 
-Open **http://localhost:5173**. In dev, the sign-in code is shown right in the
-login modal (no email provider needed).
+Open **http://localhost:3200**. In dev, the sign-in code is shown right in the
+login modal (no email provider needed). The operator console lives at
+**http://localhost:3200/admin.html** (set `ADMIN_TOKEN` in the backend `.env`).
 
 ### One-command launch (Windows)
 

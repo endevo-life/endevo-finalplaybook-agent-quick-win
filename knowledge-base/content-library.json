@@ -3,7 +3,7 @@
     "title": "Final Playbook content library - Q&A, action items, scenario-based education",
     "purpose": "Grounding data for the low-token AI agent: deterministic routing/rules only, no engineering/DDB/worksheet-validation content included by design (scoped to the clinical/educational routing logic per 2026-07-01 direction).",
     "source": "Extracted from niki_routing_rules_v1.html (6 Otter session transcripts: Peter Chmiel Sprint 1+2, Jayne Lammers, Ellen Feinberg, Sue, Billie), cross-checked against Elisa Seeherman meet-and-greet transcript for tone/glossary.",
-    "status": "DRAFT — content and priority ordering pending expert sign-off. Use as working content-library seed; do not present as clinically final. Domain tags (added 2026-07-02) on actionItems and the definitionsGlossary array (added 2026-07-02) are engineering-authored classifications/definitions derived from this content for UI organization — not independently reviewed. Treat as a working scaffold, not clinically final; each glossary entry carries its own 'validated': false flag for tracking. Digital assessment questions D1-D3 (added 2026-07-02) are drafted from client-provided source questions, converted to fit this app's format -- captured as MemberContext flags (noLegacyContact, noSocialMediaPlan, noPasswordManager) but NOT YET wired into lead-profile routing or action items, since no digital-gap action items have been authored yet. Unvalidated. profile_digital_gap (added 2026-07-02) is drafted, unvalidated content -- practical digital-access how-tos matching the established voice/format, written to answer the digital-assessment gap (D1-D3). Always parallel/additive like profile_business_owner, never a lead profile. Each actionItem carries a `flag` field -- rules_engine.build_plan() includes an item only if that specific MemberContext flag is true, not the whole profile at once.",
+    "status": "DRAFT — content and priority ordering pending expert sign-off. Use as working content-library seed; do not present as clinically final. Domain tags (added 2026-07-02) on actionItems and the definitionsGlossary array (added 2026-07-02) are engineering-authored classifications/definitions derived from this content for UI organization — not independently reviewed. Treat as a working scaffold, not clinically final; each glossary entry carries its own 'validated': false flag for tracking. Digital assessment questions D1-D3 (added 2026-07-02) are drafted from client-provided source questions, converted to fit this app's format, captured as MemberContext flags (noLegacyContact, noSocialMediaPlan, noPasswordManager) but NOT YET wired into lead-profile routing or action items, since no digital-gap action items have been authored yet. Unvalidated. profile_digital_gap (added 2026-07-02) is drafted, unvalidated content, practical digital-access how-tos matching the established voice/format, written to answer the digital-assessment gap (D1-D3). Always parallel/additive like profile_business_owner, never a lead profile. Each actionItem carries a `flag` field, rules_engine.build_plan() includes an item only if that specific MemberContext flag is true, not the whole profile at once.",
     "extractedOn": "2026-07-01"
   },
   "coreFraming": {
@@ -566,7 +566,7 @@
     {
       "id": "profile_digital_gap",
       "name": "Digital access gaps",
-      "urgency": "parallel -- always additive, like profile_business_owner",
+      "urgency": "parallel, always additive, like profile_business_owner",
       "triggerConditions": [
         "noLegacyContact",
         "noSocialMediaPlan",
@@ -574,11 +574,11 @@
       ],
       "questions": [
         "If you died tomorrow and your phone went with you, is there a Legacy Contact set up on your account so someone could actually get in?",
-        "Have you named someone to handle your social media if you couldn't do it yourself -- and do they actually know what to do?",
+        "Have you named someone to handle your social media if you couldn't do it yourself, and do they actually know what to do?",
         "Are your passwords and logins somewhere a trusted person could actually find and use?"
       ],
       "priorityOrder": [
-        "Legacy Contact on phone/device accounts -- the gateway to everything else digital",
+        "Legacy Contact on phone/device accounts, the gateway to everything else digital",
         "Named social media executor with real instructions, not just a name",
         "Password manager or written access list a trusted person can actually use"
       ],
@@ -589,8 +589,8 @@
           "flag": "noLegacyContact"
         },
         {
-          "text": "Name someone to handle your social media if you couldn't -- and write down exactly what you want done (memorialize, delete, or keep active).",
-          "script": "If something happened to me, here's what I'd want you to do with my accounts -- can I walk you through it?",
+          "text": "Name someone to handle your social media if you couldn't, and write down exactly what you want done (memorialize, delete, or keep active).",
+          "script": "If something happened to me, here's what I'd want you to do with my accounts, can I walk you through it?",
           "domain": "digital",
           "flag": "noSocialMediaPlan"
         },
@@ -749,6 +749,134 @@
       "shortDefinition": "The person legally named to raise your minor children if you (and your partner) are no longer able to.",
       "sourceRef": "situationProfiles.profile_young_children",
       "validated": false
+    },
+    {
+      "term": "Trust",
+      "domain": "legal",
+      "shortDefinition": "A legal arrangement where a trustee holds and manages assets for your beneficiaries. Unlike a will, a living trust can let assets pass to your people WITHOUT going through probate court, and can take effect while you're alive if you become unable to manage things yourself.",
+      "sourceRef": "claude-authored",
+      "_note": "DRAFT 2026-07-12: plain-language term for Jesse, educational only, not advice. Pending Niki review.",
+      "validated": false
+    },
+    {
+      "term": "Will vs. trust",
+      "domain": "legal",
+      "shortDefinition": "A will takes effect only after you die and usually goes through probate (a public court process) before assets are distributed. A living trust can avoid probate, works if you're incapacitated (not just at death), and stays private. Many people have BOTH: a will as a backstop, and a trust for the main assets. Which fits you depends on your situation. An estate attorney can advise.",
+      "sourceRef": "claude-authored",
+      "_note": "DRAFT 2026-07-12: plain-language term for Jesse, educational only, not advice. Pending Niki review.",
+      "validated": false
+    },
+    {
+      "term": "Living will",
+      "domain": "legal",
+      "shortDefinition": "A document that states the medical care you do or don't want if you can't speak for yourself (for example, life support). Different from a regular will, which is about your assets after death.",
+      "sourceRef": "claude-authored",
+      "_note": "DRAFT 2026-07-12: plain-language term for Jesse, educational only, not advice. Pending Niki review.",
+      "validated": false
+    },
+    {
+      "term": "Estate",
+      "domain": "legal",
+      "shortDefinition": "Everything you own at death: property, accounts, belongings, and digital assets. Your estate is what gets distributed by your will, trust, or, if you have neither, by state law.",
+      "sourceRef": "claude-authored",
+      "_note": "DRAFT 2026-07-12: plain-language term for Jesse, educational only, not advice. Pending Niki review.",
+      "validated": false
+    },
+    {
+      "term": "Intestate",
+      "domain": "legal",
+      "shortDefinition": "Dying without a valid will. When that happens, your state's laws decide who inherits your assets, which may not match what you would have wanted.",
+      "sourceRef": "claude-authored",
+      "_note": "DRAFT 2026-07-12: plain-language term for Jesse, educational only, not advice. Pending Niki review.",
+      "validated": false
+    },
+    {
+      "term": "Beneficiary",
+      "domain": "financial",
+      "shortDefinition": "The person or organization you name to receive an asset (like a retirement account or life insurance) when you die. Beneficiary designations usually override what your will says, so keeping them current matters.",
+      "sourceRef": "claude-authored",
+      "_note": "DRAFT 2026-07-12: plain-language term for Jesse, educational only, not advice. Pending Niki review.",
+      "validated": false
+    },
+    {
+      "term": "Life insurance",
+      "domain": "financial",
+      "shortDefinition": "A policy that pays a chosen beneficiary a sum of money when you die. It can help your family cover costs and replace lost income. Confirm the named beneficiary is still who you intend.",
+      "sourceRef": "claude-authored",
+      "_note": "DRAFT 2026-07-12: plain-language term for Jesse, educational only, not advice. Pending Niki review.",
+      "validated": false
+    },
+    {
+      "term": "Financial inventory",
+      "domain": "financial",
+      "shortDefinition": "A single organized list of your accounts, policies, debts, and where to find them, so the person handling your affairs isn't searching blind.",
+      "sourceRef": "claude-authored",
+      "_note": "DRAFT 2026-07-12: plain-language term for Jesse, educational only, not advice. Pending Niki review.",
+      "validated": false
+    },
+    {
+      "term": "Healthcare proxy / agent",
+      "domain": "physical",
+      "shortDefinition": "The person you legally name to make medical decisions for you if you can't make them yourself. Also called a healthcare power of attorney.",
+      "sourceRef": "claude-authored",
+      "_note": "DRAFT 2026-07-12: plain-language term for Jesse, educational only, not advice. Pending Niki review.",
+      "validated": false
+    },
+    {
+      "term": "Advance directive",
+      "domain": "physical",
+      "shortDefinition": "A general term for the documents that spell out your medical wishes and who decides for you: typically a living will plus a healthcare proxy.",
+      "sourceRef": "claude-authored",
+      "_note": "DRAFT 2026-07-12: plain-language term for Jesse, educational only, not advice. Pending Niki review.",
+      "validated": false
+    },
+    {
+      "term": "Five Wishes",
+      "domain": "physical",
+      "shortDefinition": "A widely used, plain-language advance directive that covers medical, personal, emotional, and spiritual wishes, not just legal ones.",
+      "sourceRef": "claude-authored",
+      "_note": "DRAFT 2026-07-12: plain-language term for Jesse, educational only, not advice. Pending Niki review.",
+      "validated": false
+    },
+    {
+      "term": "Legacy contact",
+      "domain": "digital",
+      "shortDefinition": "A person you designate with Apple, Google, or Facebook who can access or manage your account after you die. Setting one up is one of the simplest, highest-impact digital steps.",
+      "sourceRef": "claude-authored",
+      "_note": "DRAFT 2026-07-12: plain-language term for Jesse, educational only, not advice. Pending Niki review.",
+      "validated": false
+    },
+    {
+      "term": "Password manager",
+      "domain": "digital",
+      "shortDefinition": "A secure app that stores your logins in one place. It lets a trusted person reach your accounts (with the right access) instead of being locked out.",
+      "sourceRef": "claude-authored",
+      "_note": "DRAFT 2026-07-12: plain-language term for Jesse, educational only, not advice. Pending Niki review.",
+      "validated": false
+    },
+    {
+      "term": "Digital assets",
+      "domain": "digital",
+      "shortDefinition": "Anything you own or control online: accounts, photos, email, social media, crypto, domains, and files. Without a plan, much of it can be lost or inaccessible to your family.",
+      "sourceRef": "claude-authored",
+      "_note": "DRAFT 2026-07-12: plain-language term for Jesse, educational only, not advice. Pending Niki review.",
+      "validated": false
+    },
+    {
+      "term": "Inactive Account Manager",
+      "domain": "digital",
+      "shortDefinition": "Google's tool to decide what happens to your account and data if you stop using it, including who can be notified or given access.",
+      "sourceRef": "claude-authored",
+      "_note": "DRAFT 2026-07-12: plain-language term for Jesse, educational only, not advice. Pending Niki review.",
+      "validated": false
+    },
+    {
+      "term": "Ethical will / legacy letter",
+      "domain": "beliefs",
+      "shortDefinition": "A personal (non-legal) letter sharing your values, stories, and wishes for your loved ones. Not legally binding, but often the most treasured thing you leave behind.",
+      "sourceRef": "claude-authored",
+      "_note": "DRAFT 2026-07-12: plain-language term for Jesse, educational only, not advice. Pending Niki review.",
+      "validated": false
     }
   ],
   "domainAssessment": {
@@ -759,7 +887,7 @@
         "id": "basics_docbox",
         "domain": "digital",
         "title": "Set up your doc box",
-        "action": "Create one central, secure place ('doc box') where all your important documents live -- so everything else can actually be found.",
+        "action": "Create one central, secure place ('doc box') where all your important documents live, so everything else can actually be found.",
         "steps": [
           "Pick one secure location (a fireproof/waterproof box, or a single encrypted cloud folder). One place, not five.",
           "Put your key documents there as you complete each step below.",
@@ -770,7 +898,7 @@
         "id": "basics_legacy_contact",
         "domain": "digital",
         "title": "Set up a Legacy Contact on your phone (iPhone & Android)",
-        "action": "Add a Legacy Contact so your trusted person can reach your device and accounts. It's free and takes 2 minutes -- on whichever phone you use.",
+        "action": "Add a Legacy Contact so your trusted person can reach your device and accounts. It's free and takes 2 minutes, on whichever phone you use.",
         "steps": [
           "iPhone: Settings > tap your name > Sign-In & Security > Legacy Contact > Add Legacy Contact.",
           "Android / Google: myaccount.google.com > Data & privacy > 'Make a plan for your account' (Inactive Account Manager).",
@@ -801,7 +929,7 @@
         "options": [
           {
             "value": "yes",
-            "label": "Yes -- they have the names and contacts in writing",
+            "label": "Yes, they have the names and contacts in writing",
             "resultType": "review",
             "action": "Review your financial contact list so it still reflects your current accounts and institutions.",
             "checklist": [
@@ -840,11 +968,11 @@
       {
         "id": "FIN_beneficiaries",
         "domain": "financial",
-        "question": "Have you named -- and recently checked -- the beneficiaries on your 401(k), IRA, and bank/investment accounts?",
+        "question": "Have you named, and recently checked, the beneficiaries on your 401(k), IRA, and bank/investment accounts?",
         "options": [
           {
             "value": "yes",
-            "label": "Yes -- all named and reviewed in the last year or two",
+            "label": "Yes, all named and reviewed in the last year or two",
             "resultType": "review",
             "action": "Review your beneficiary designations. These override your will, so a stale one sends money to the wrong person.",
             "checklist": [
@@ -858,7 +986,7 @@
             "value": "partial",
             "label": "Some are named, but I haven't checked them in years",
             "resultType": "steps",
-            "action": "Review and update your beneficiary designations -- they override your will, so out-of-date ones cause the biggest, most avoidable mistakes.",
+            "action": "Review and update your beneficiary designations, they override your will, so out-of-date ones cause the biggest, most avoidable mistakes.",
             "steps": [
               "List every account that names a beneficiary (401k, IRA, pension, bank, brokerage, life insurance).",
               "Log in or call each institution and confirm who's named.",
@@ -870,7 +998,7 @@
             "value": "no",
             "label": "No, or I'm not sure",
             "resultType": "steps",
-            "action": "Name beneficiaries on your accounts. This is one of the highest-impact steps -- beneficiary designations pass money directly, skipping probate.",
+            "action": "Name beneficiaries on your accounts. This is one of the highest-impact steps, beneficiary designations pass money directly, skipping probate.",
             "steps": [
               "List your 401k, IRA, bank, and investment accounts.",
               "For each, ask the institution how to add a beneficiary (often called TOD/POD on bank/brokerage accounts).",
@@ -883,11 +1011,11 @@
       {
         "id": "PHYS_directive",
         "domain": "physical",
-        "question": "If you were unconscious in an ICU tomorrow, do you have a Medical Advance Directive telling doctors what care you want?",
+        "question": "If you couldn't speak for yourself in a medical emergency, have you written down the care you would and wouldn't want, so doctors and your family aren't left guessing?",
         "options": [
           {
             "value": "yes",
-            "label": "Yes -- signed and on file with my doctor and Healthcare POA",
+            "label": "Yes, signed and on file with my doctor and Healthcare POA",
             "resultType": "review",
             "action": "Review your Advance Directive so it still reflects your current wishes.",
             "checklist": [
@@ -903,7 +1031,7 @@
             "resultType": "steps",
             "action": "Finish and distribute your Advance Directive so it can actually guide your care.",
             "steps": [
-              "Finish writing it -- what treatments you do and don't want (ventilation, resuscitation, feeding tubes, comfort-only care).",
+              "Finish writing it, what treatments you do and don't want (ventilation, resuscitation, feeding tubes, comfort-only care).",
               "Sign it per your state's requirements (witnesses or notary).",
               "Give copies to your doctor, hospital system, and Healthcare POA.",
               "Store the original securely and tell your POA where it is."
@@ -926,11 +1054,11 @@
       {
         "id": "DIG_password_manager",
         "domain": "digital",
-        "question": "If something happened tomorrow, could your trusted person get into your accounts -- do you use a password manager they can reach?",
+        "question": "If something happened tomorrow, could your trusted person get into your accounts, do you use a password manager they can reach?",
         "options": [
           {
             "value": "yes",
-            "label": "Yes -- I use one and emergency access is set up",
+            "label": "Yes, I use one and emergency access is set up",
             "resultType": "review",
             "action": "Review your password manager so your critical accounts and emergency access are current.",
             "checklist": [
@@ -954,7 +1082,7 @@
           },
           {
             "value": "no",
-            "label": "No -- I don't use a password manager",
+            "label": "No, I don't use a password manager",
             "resultType": "steps",
             "action": "Start using a password manager so your logins are secure and reachable if someone needs to step in.",
             "steps": [
@@ -969,11 +1097,11 @@
       {
         "id": "DIG_online_banking",
         "domain": "digital",
-        "question": "Could your trusted person actually get into your online banking and bill-pay if they had to -- not just know the bank's name, but log in?",
+        "question": "Could your trusted person actually get into your online banking and bill-pay if they had to, not just know the bank's name, but log in?",
         "options": [
           {
             "value": "yes",
-            "label": "Yes -- logins and 2FA access are documented for them",
+            "label": "Yes, logins and 2FA access are documented for them",
             "resultType": "review",
             "action": "Review your online-banking access so logins and two-factor methods are still current.",
             "checklist": [
@@ -990,14 +1118,14 @@
             "action": "Document real login access to your online banking, including the two-factor step that usually blocks people.",
             "steps": [
               "List each bank's online login (username + where the password lives).",
-              "Note the 2FA method for each -- and how your person would receive the code (this is the part that traps families).",
+              "Note the 2FA method for each, and how your person would receive the code (this is the part that traps families).",
               "List autopay / scheduled payments so bills don't lapse.",
               "Store this in your password manager and tell your person where it is."
             ]
           },
           {
             "value": "no",
-            "label": "No -- they'd be locked out",
+            "label": "No, they'd be locked out",
             "resultType": "steps",
             "action": "Set up a way for your trusted person to reach your online banking so bills and accounts don't freeze up in an emergency.",
             "steps": [
@@ -1012,11 +1140,11 @@
       {
         "id": "DIG_photos",
         "domain": "digital",
-        "question": "Are your photos, videos, and personal files backed up -- AND does your family know how to get to them?",
+        "question": "Are your photos, videos, and personal files backed up, AND does your family know how to get to them?",
         "options": [
           {
             "value": "yes",
-            "label": "Yes -- backed up and access is documented",
+            "label": "Yes, backed up and access is documented",
             "resultType": "review",
             "action": "Review your backups so they're current and your family can reach them.",
             "checklist": [
@@ -1030,7 +1158,7 @@
             "value": "partial",
             "label": "Backed up, but no one knows how to access them",
             "resultType": "steps",
-            "action": "Make sure someone can actually find and open your photos and files -- a backup no one can reach is lost with you.",
+            "action": "Make sure someone can actually find and open your photos and files, a backup no one can reach is lost with you.",
             "steps": [
               "Confirm photos/videos/files are backed up (cloud and/or external drive).",
               "Write down how to access each backup (logins, physical drive location, any app needed).",
@@ -1040,7 +1168,7 @@
           },
           {
             "value": "no",
-            "label": "No -- not really backed up",
+            "label": "No, not really backed up",
             "resultType": "steps",
             "action": "Back up your photos and files and leave a way in, so a lifetime of memories isn't lost.",
             "steps": [
@@ -1055,11 +1183,11 @@
       {
         "id": "DIG_crypto",
         "domain": "digital",
-        "question": "Do you own crypto or other digital assets (wallets, NFTs, domains, online business, loyalty points) -- and could anyone actually inherit them?",
+        "question": "Do you own valuable digital assets, like an online business, domain names, creative work, cryptocurrency, or online accounts worth money, and could the right person actually access and inherit them?",
         "options": [
           {
             "value": "yes",
-            "label": "Yes -- documented with a secure access plan",
+            "label": "Yes, documented with a secure access plan",
             "resultType": "review",
             "action": "Review your digital-asset access so wallet keys and logins are current and reachable.",
             "checklist": [
@@ -1073,10 +1201,10 @@
             "value": "partial",
             "label": "I own some, but no one could access them",
             "resultType": "steps",
-            "action": "Document access to your digital assets -- crypto especially is gone forever without the keys, no bank can recover it.",
+            "action": "Document access to your digital assets, crypto especially is gone forever without the keys, no bank can recover it.",
             "steps": [
               "List every digital asset (crypto wallets, NFTs, domains, online business, loyalty points).",
-              "Document access per asset -- wallet keys, recovery phrases, logins, transfer steps.",
+              "Document access per asset, wallet keys, recovery phrases, logins, transfer steps.",
               "Store this in a password manager or a secure physical location.",
               "Tell your trusted person where it is and how to use it."
             ]
@@ -1085,7 +1213,7 @@
             "value": "no",
             "label": "I don't own any",
             "resultType": "review",
-            "action": "No action needed now -- but re-check yearly. Digital assets accumulate quietly (a wallet, domains, loyalty points).",
+            "action": "No action needed now, but re-check yearly. Digital assets accumulate quietly (a wallet, domains, loyalty points).",
             "checklist": [
               "Do a yearly check: any new wallet, domain, or online asset?",
               "If yes, document access the same way as other accounts."
@@ -1096,11 +1224,11 @@
       {
         "id": "DIG_social",
         "domain": "digital",
-        "question": "Have you decided what happens to your social media accounts (Facebook, Instagram, LinkedIn, etc.) -- memorialize, delete, or transfer?",
+        "question": "Have you decided what happens to your social media accounts (Facebook, Instagram, LinkedIn, etc.), memorialize, delete, or transfer?",
         "options": [
           {
             "value": "yes",
-            "label": "Yes -- accounts listed and decisions documented",
+            "label": "Yes, accounts listed and decisions documented",
             "resultType": "review",
             "action": "Review your social-media plan so accounts and decisions are still current.",
             "checklist": [
@@ -1143,7 +1271,7 @@
         "options": [
           {
             "value": "yes",
-            "label": "Yes -- named in writing and authorized in my will",
+            "label": "Yes, named in writing and authorized in my will",
             "resultType": "review",
             "action": "Review your Digital Asset Manager designation so it still matches your digital life and your wishes.",
             "checklist": [
@@ -1157,7 +1285,7 @@
             "value": "partial",
             "label": "I've picked someone but nothing's in writing",
             "resultType": "steps",
-            "action": "Give your chosen person written, legal authority -- without it, platforms and courts can block them from your accounts.",
+            "action": "Give your chosen person written, legal authority, without it, platforms and courts can block them from your accounts.",
             "steps": [
               "Add a Digital Asset Manager designation to your will or estate plan.",
               "Write clear instructions for accessing your digital accounts.",
@@ -1175,6 +1303,462 @@
               "Add their role to your will or estate documents for legal authority.",
               "Document your digital accounts and access instructions.",
               "Store it securely and tell them where to find it."
+            ]
+          }
+        ]
+      },
+      {
+        "id": "GUARD_named",
+        "domain": "legal",
+        "validated": false,
+        "_note": "DRAFT (2026-07-08): Claude-authored scenario question, matches existing voice/format. Educational situation-surfacing only, not advice. Pending Niki sign-off.",
+        "triggerSignals": [
+          "becameResponsible"
+        ],
+        "question": "If both parents were gone tomorrow, is there a legally named guardian who would raise your children?",
+        "options": [
+          {
+            "value": "yes",
+            "label": "Yes, a guardian is named in a signed document",
+            "resultType": "review",
+            "action": "Review your guardian choice so it still reflects who you'd want and their current willingness.",
+            "checklist": [
+              "Is the named guardian still the right person and still willing?",
+              "Have you named a backup guardian if the first can't serve?",
+              "Does the guardian know they're named, and where the document is?",
+              "Has anything changed (a move, a falling-out, a new child) since you named them?"
+            ]
+          },
+          {
+            "value": "informal",
+            "label": "We've talked about it, but nothing is written down",
+            "resultType": "steps",
+            "action": "Put your guardian choice in writing so a court would honor it, instead of deciding for your children.",
+            "steps": [
+              "Decide on a first-choice guardian and a backup, and confirm both are willing.",
+              "Have the choice documented in your will or a standalone guardian nomination (an estate attorney can do this).",
+              "Tell the guardians where the document is kept.",
+              "Revisit the choice after any major family change."
+            ]
+          },
+          {
+            "value": "no",
+            "label": "No, no guardian has been named",
+            "resultType": "steps",
+            "action": "Name a guardian for your children so the choice is yours, not a court's.",
+            "steps": [
+              "Talk with your first-choice guardian (and a backup) to confirm they'd say yes.",
+              "Have the nomination documented in your will or a guardian designation.",
+              "Store it in your doc box and tell the guardian it exists.",
+              "Note any wishes about how you'd want the children raised."
+            ]
+          }
+        ]
+      },
+      {
+        "id": "GUARD_provision",
+        "domain": "financial",
+        "validated": false,
+        "_note": "DRAFT (2026-07-08): Claude-authored scenario question, matches existing voice/format. Educational situation-surfacing only, not advice. Pending Niki sign-off.",
+        "triggerSignals": [
+          "becameResponsible"
+        ],
+        "question": "If you were gone, is there money set aside so whoever raises your children isn't doing it out of pocket?",
+        "options": [
+          {
+            "value": "yes",
+            "label": "Yes, life insurance and/or a trust is in place",
+            "resultType": "review",
+            "action": "Review that the provision for your children is current and points to the right people.",
+            "checklist": [
+              "Is the coverage amount still enough for their care and education?",
+              "Are the beneficiaries (or a trust) named so a minor doesn't inherit directly?",
+              "Does the guardian know how the funds are accessed?",
+              "Have you updated it after any new child or major change?"
+            ]
+          },
+          {
+            "value": "no",
+            "label": "No, there's no plan for their financial care",
+            "resultType": "steps",
+            "action": "Set up a way for your children to be provided for if you're gone.",
+            "steps": [
+              "Estimate what raising them to adulthood would take (care, housing, education).",
+              "Explore term life insurance to cover that gap.",
+              "Ask an estate attorney whether a trust should receive the funds (so a minor doesn't inherit directly).",
+              "Make sure the guardian knows the plan and how to reach the funds."
+            ]
+          }
+        ]
+      },
+      {
+        "id": "BIZ_succession",
+        "domain": "financial",
+        "validated": false,
+        "_note": "DRAFT (2026-07-08): Claude-authored scenario question, matches existing voice/format. Educational situation-surfacing only, not advice. Pending Niki sign-off.",
+        "triggerSignals": [
+          "worthProtecting"
+        ],
+        "question": "If you couldn't run your business tomorrow, is there a written plan for who takes over and how?",
+        "options": [
+          {
+            "value": "yes",
+            "label": "Yes, there's a documented succession plan",
+            "resultType": "review",
+            "action": "Review your succession plan so it matches how the business runs today.",
+            "checklist": [
+              "Is the named successor still willing and able?",
+              "Are ownership-transfer terms (buy-sell, valuation) still current?",
+              "Do key people know the plan exists and where to find it?",
+              "Has anything changed (partners, structure, value) since you wrote it?"
+            ]
+          },
+          {
+            "value": "partial",
+            "label": "There's an idea, but nothing formal",
+            "resultType": "steps",
+            "action": "Turn your succession idea into a written plan so the business survives a sudden gap.",
+            "steps": [
+              "Name who would take over day-to-day operations, and a backup.",
+              "Document how ownership transfers (a buy-sell agreement, if there are partners).",
+              "Write down the essentials only you know: key accounts, vendors, logins, passwords.",
+              "Tell your successor where the plan and the credentials live."
+            ]
+          },
+          {
+            "value": "no",
+            "label": "No, the business depends entirely on me",
+            "resultType": "steps",
+            "action": "Create a basic continuity plan so your business isn't lost if you can't run it.",
+            "steps": [
+              "Write down the handful of things that would stop if you disappeared (accounts, contracts, access).",
+              "Name one person who could step in, even temporarily.",
+              "Put critical logins and documents in your doc box, reachable by that person.",
+              "Consult an attorney about ownership transfer and a buy-sell if you have partners."
+            ]
+          }
+        ]
+      },
+      {
+        "id": "PHYS_proxy",
+        "domain": "physical",
+        "validated": false,
+        "_note": "DRAFT (2026-07-08): Claude-authored scenario question, matches existing voice/format. Educational situation-surfacing only, not advice. Pending Niki sign-off.",
+        "triggerSignals": [
+          "recentNearMiss"
+        ],
+        "question": "If you couldn't speak for yourself in a medical crisis, does one specific person have the legal authority to decide for you?",
+        "options": [
+          {
+            "value": "yes",
+            "label": "Yes, a healthcare proxy/agent is named in writing",
+            "resultType": "review",
+            "action": "Review your healthcare proxy so the right person can act without friction.",
+            "checklist": [
+              "Is the named agent still the right person and still willing?",
+              "Have you named a backup if they're unreachable?",
+              "Does your agent know your wishes about care, not just that they're named?",
+              "Do your doctor and hospital have a copy on file?"
+            ]
+          },
+          {
+            "value": "no",
+            "label": "No, no one is formally authorized",
+            "resultType": "steps",
+            "action": "Name a healthcare agent so someone you trust can decide for you in a crisis.",
+            "steps": [
+              "Choose the person who'd make medical decisions the way you'd want, and a backup.",
+              "Complete a healthcare power of attorney / proxy form for your state.",
+              "Talk with your agent about what matters to you, so they're not guessing.",
+              "Give copies to your agent, your doctor, and your doc box."
+            ]
+          }
+        ]
+      },
+      {
+        "id": "LOSS_gaps",
+        "domain": "legal",
+        "validated": false,
+        "_note": "DRAFT (2026-07-09): Claude-authored scenario question, matches existing voice/format. Educational situation-surfacing only, not advice. Pending Niki sign-off.",
+        "triggerSignals": [
+          "recentLossInCircle"
+        ],
+        "question": "After losing someone close, was there something they didn't leave behind that made it harder — access, wishes, or documents?",
+        "options": [
+          {
+            "value": "yes",
+            "label": "Yes — and I don't want that for my people",
+            "resultType": "steps",
+            "action": "Capture the specific gaps you saw, so your own plan closes them first.",
+            "steps": [
+              "Write down what was missing when you settled or grieved (a password, a wish, a document).",
+              "Mark which of those you haven't handled for yourself yet.",
+              "Start with the one that caused the most friction.",
+              "Put it in your doc box so your people never hit that wall."
+            ]
+          },
+          {
+            "value": "unsure",
+            "label": "It was hard, but I'm not sure what was missing",
+            "resultType": "review",
+            "action": "Review the moments that were hardest, to surface what your own plan should include.",
+            "checklist": [
+              "What information did you or the family scramble to find?",
+              "Were their wishes clear, or did people have to guess?",
+              "Could you access what you needed (accounts, documents, the home)?",
+              "Which of those are unresolved in your own life?"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "ESTATE_executor",
+        "domain": "legal",
+        "validated": false,
+        "_note": "DRAFT (2026-07-09): Claude-authored scenario question, matches existing voice/format. Educational situation-surfacing only, not advice. Pending Niki sign-off.",
+        "triggerSignals": [
+          "settledAnEstate"
+        ],
+        "question": "Having settled an estate, do you have your own executor named — and have you spared them what you went through?",
+        "options": [
+          {
+            "value": "yes",
+            "label": "Yes — my executor is named and equipped",
+            "resultType": "review",
+            "action": "Review that your executor has what you wished you'd had.",
+            "checklist": [
+              "Is your executor named in a current, signed document?",
+              "Do they know where every account and document lives?",
+              "Have you left the instructions you wished the last estate had?",
+              "Is there a backup executor if they can't serve?"
+            ]
+          },
+          {
+            "value": "no",
+            "label": "No — I haven't set up my own",
+            "resultType": "steps",
+            "action": "Name your executor and give them the roadmap you didn't have.",
+            "steps": [
+              "Choose an executor (and a backup) and confirm they're willing.",
+              "Name them in your will.",
+              "Write down where accounts, documents, and passwords live.",
+              "Leave the one instruction you most wish the estate you settled had included."
+            ]
+          }
+        ]
+      },
+      {
+        "id": "CHANGE_beneficiaries",
+        "domain": "financial",
+        "validated": false,
+        "_note": "DRAFT (2026-07-09): Claude-authored scenario question, matches existing voice/format. Educational situation-surfacing only, not advice. Pending Niki sign-off.",
+        "triggerSignals": [
+          "majorLifeChange"
+        ],
+        "question": "After your recent life change, have you re-checked who inherits — beneficiaries, titles, and who's named on your documents?",
+        "options": [
+          {
+            "value": "yes",
+            "label": "Yes — I've updated everything to match",
+            "resultType": "review",
+            "action": "Review that every document reflects your life as it is now.",
+            "checklist": [
+              "Do your beneficiary designations name the right people today?",
+              "Are account and property titles current?",
+              "Do your POA and healthcare proxy still name who you'd want?",
+              "Does your will reflect the change?"
+            ]
+          },
+          {
+            "value": "no",
+            "label": "No — some things may still name the old situation",
+            "resultType": "steps",
+            "action": "Update your beneficiaries and named roles so nothing routes to the wrong person.",
+            "steps": [
+              "List accounts with beneficiary designations (retirement, insurance, bank).",
+              "Update each to name the right person after your change.",
+              "Re-check property titles and your POA/healthcare proxy.",
+              "Update your will if the change affects who inherits."
+            ]
+          }
+        ]
+      },
+      {
+        "id": "AGE_sweep",
+        "domain": "legal",
+        "validated": false,
+        "_note": "DRAFT (2026-07-09): Claude-authored scenario question, matches existing voice/format. Educational situation-surfacing only, not advice. Pending Niki sign-off.",
+        "triggerSignals": [
+          "thresholdAge"
+        ],
+        "question": "You've hit a milestone age. Do you have the three basics in place — a will, a healthcare proxy, and a financial POA?",
+        "options": [
+          {
+            "value": "all",
+            "label": "Yes — all three are current",
+            "resultType": "review",
+            "action": "Review the three basics so they still reflect your wishes.",
+            "checklist": [
+              "Is your will signed and up to date?",
+              "Is your healthcare proxy named and on file with your doctor?",
+              "Is your financial POA current?",
+              "Have any life changes happened since you last updated them?"
+            ]
+          },
+          {
+            "value": "some",
+            "label": "I have one or two, not all",
+            "resultType": "steps",
+            "action": "Complete the missing basics so all three are in place.",
+            "steps": [
+              "Note which of will / healthcare proxy / financial POA you have.",
+              "Complete the missing one(s) with the right forms for your state.",
+              "Store them in your doc box.",
+              "Tell your named people where to find them."
+            ]
+          },
+          {
+            "value": "none",
+            "label": "None yet",
+            "resultType": "steps",
+            "action": "Put the three foundational documents in place.",
+            "steps": [
+              "Start with a will (an estate attorney or a reputable service).",
+              "Name a healthcare proxy and complete the form for your state.",
+              "Set up a financial POA.",
+              "Store all three in your doc box and tell your people."
+            ]
+          }
+        ]
+      },
+      {
+        "id": "DIGITAL_inventory",
+        "domain": "digital",
+        "validated": false,
+        "_note": "DRAFT (2026-07-09): Claude-authored scenario question, matches existing voice/format. Educational situation-surfacing only, not advice. Pending Niki sign-off.",
+        "triggerSignals": [
+          "digitalOutweighs"
+        ],
+        "question": "Since most of your life is online, is there a single place your trusted person could find every important account and how to reach it?",
+        "options": [
+          {
+            "value": "yes",
+            "label": "Yes — I keep a maintained list / password manager",
+            "resultType": "review",
+            "action": "Review your digital inventory so it's complete and reachable.",
+            "checklist": [
+              "Does it cover email, banking, photos, social, subscriptions, crypto?",
+              "Does your trusted person know it exists and how to unlock it?",
+              "Is the recovery/legacy access set up where the platform offers it?",
+              "Is it current with accounts you've added recently?"
+            ]
+          },
+          {
+            "value": "no",
+            "label": "No — it's scattered across my devices and memory",
+            "resultType": "steps",
+            "action": "Build one digital inventory so nothing important is lost or locked away.",
+            "steps": [
+              "List your key accounts by category (email, money, photos, social, subscriptions).",
+              "Put them in one place — a password manager or a single secure document.",
+              "Set up legacy/recovery access where the platform offers it.",
+              "Tell your trusted person where it lives and how to reach it."
+            ]
+          }
+        ]
+      },
+      {
+        "id": "PUBLIC_worry",
+        "domain": "legal",
+        "validated": false,
+        "_note": "DRAFT (2026-07-09): Claude-authored scenario question, matches existing voice/format. Educational situation-surfacing only, not advice. Pending Niki sign-off.",
+        "triggerSignals": [
+          "publicCaseShook"
+        ],
+        "question": "A story that shook you usually points at a specific fear. Is the thing you worried could happen to your family actually covered in your plan?",
+        "options": [
+          {
+            "value": "no",
+            "label": "No — that exact gap is open for me",
+            "resultType": "steps",
+            "action": "Close the specific gap the story exposed, before anything else.",
+            "steps": [
+              "Name the exact thing you feared (guardianship, access, wishes, money).",
+              "Check whether your plan currently covers it.",
+              "Take the one step that would close it.",
+              "Put the result in your doc box."
+            ]
+          },
+          {
+            "value": "unsure",
+            "label": "I think so, but I want to be sure",
+            "resultType": "review",
+            "action": "Pressure-test the area the story worried you about.",
+            "checklist": [
+              "What specifically did the story make you afraid of?",
+              "Which document or step would prevent that outcome?",
+              "Is that document current and findable?",
+              "Does your trusted person know about it?"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "UNFINISHED_named",
+        "domain": "legal",
+        "validated": false,
+        "_note": "DRAFT (2026-07-09): Claude-authored scenario question, matches existing voice/format. Educational situation-surfacing only, not advice. Pending Niki sign-off.",
+        "triggerSignals": [
+          "tiredOfUnfinished"
+        ],
+        "question": "You're here because something's been unfinished too long. What's the one thing that's been nagging you?",
+        "options": [
+          {
+            "value": "will",
+            "label": "A will / who gets what",
+            "resultType": "steps",
+            "action": "Finish the will that's been waiting.",
+            "steps": [
+              "Decide who inherits and who's your executor.",
+              "Use an estate attorney or a reputable service to draft it.",
+              "Sign it properly for your state.",
+              "Store it in your doc box and tell your executor."
+            ]
+          },
+          {
+            "value": "medical",
+            "label": "Medical wishes / who decides for me",
+            "resultType": "steps",
+            "action": "Put your healthcare wishes and proxy in place.",
+            "steps": [
+              "Choose who'd make medical decisions if you couldn't.",
+              "Complete a healthcare proxy and advance directive for your state.",
+              "Talk with your proxy about what matters to you.",
+              "Give copies to them, your doctor, and your doc box."
+            ]
+          },
+          {
+            "value": "digital",
+            "label": "Access to my accounts / passwords",
+            "resultType": "steps",
+            "action": "Close the access gap that's been open.",
+            "steps": [
+              "Gather your key logins into one secure place.",
+              "Set up legacy/recovery access where offered.",
+              "Name the person who should have access.",
+              "Tell them where it lives."
+            ]
+          },
+          {
+            "value": "other",
+            "label": "Something else",
+            "resultType": "steps",
+            "action": "Name it and take the first concrete step.",
+            "steps": [
+              "Write down the one unfinished thing.",
+              "Break it into the very next action.",
+              "Do that one action today.",
+              "Put whatever results in your doc box."
             ]
           }
         ]

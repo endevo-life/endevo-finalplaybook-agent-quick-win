@@ -72,6 +72,8 @@ class DynamoStore:
             "tier": item.get("tier", "free"),
             "created_at": int(item.get("created_at", 0)),
             "stripe_customer_id": item.get("stripe_customer_id"),
+            "paid_until": int(item["paid_until"]) if item.get("paid_until") is not None else None,
+            "canceled": bool(item.get("canceled", False)),
         }
 
     def upsert_user(self, email: str, tier: str = "free", stripe_customer_id: str = None) -> dict:
@@ -85,11 +87,17 @@ class DynamoStore:
         )
         return self.get_user(email)
 
-    def set_tier(self, email: str, tier: str) -> None:
+    def set_tier(self, email: str, tier: str, paid_until: int = None, canceled: bool = None) -> None:
+        expr = "SET tier = :t, created_at = if_not_exists(created_at, :c)"
+        vals = {":t": tier, ":c": now()}
+        if paid_until is not None:
+            expr += ", paid_until = :pu"
+            vals[":pu"] = paid_until
+        if canceled is not None:
+            expr += ", canceled = :cx"
+            vals[":cx"] = canceled
         self.t_users.update_item(
-            Key={"email": email},
-            UpdateExpression="SET tier = :t, created_at = if_not_exists(created_at, :c)",
-            ExpressionAttributeValues={":t": tier, ":c": now()},
+            Key={"email": email}, UpdateExpression=expr, ExpressionAttributeValues=vals,
         )
 
     def email_for_stripe_customer(self, stripe_customer_id: str) -> Optional[str]:
@@ -134,6 +142,12 @@ class DynamoStore:
         )
         return int(resp["Attributes"][field])
 
+    def reset_usage(self, email: str) -> None:
+        self.t_usage.put_item(Item={
+            "email": email, "month": month_key(),
+            "personalize_count": 0, "chat_count": 0,
+        })
+
     # --- saved plan + progress (paid experience) ---
     def get_plan(self, email: str) -> Optional[dict]:
         item = self.t_plans.get_item(Key={"email": email}).get("Item")
@@ -145,17 +159,19 @@ class DynamoStore:
             "plan": item.get("plan"),
             "tracked": item.get("tracked", {}),
             "narrative": item.get("narrative"),
+            "fields": item.get("fields", {}),
             "updated_at": int(item.get("updated_at", 0)),
         }
 
-    def save_plan(self, email: str, answers=None, plan=None, tracked=None, narrative=None) -> None:
+    def save_plan(self, email: str, answers=None, plan=None, tracked=None, narrative=None, fields=None) -> None:
         # Alias every attribute via #names -- "plan" (and others) are DynamoDB
         # reserved keywords. Sanitize values (float->Decimal, drop empties) first.
-        fields = {"answers": answers, "plan": plan, "tracked": tracked, "narrative": narrative}
+        attrs = {"answers": answers, "plan": plan, "tracked": tracked,
+                 "narrative": narrative, "fields": fields}
         sets = ["#updated_at = :updated_at"]
         names = {"#updated_at": "updated_at"}
         vals = {":updated_at": now()}
-        for key, value in fields.items():
+        for key, value in attrs.items():
             if value is not None:
                 sets.append(f"#{key} = :{key}")
                 names[f"#{key}"] = key

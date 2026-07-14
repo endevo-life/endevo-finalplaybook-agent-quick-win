@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faComments, faPaperPlane, faXmark, faLock } from "@fortawesome/free-solid-svg-icons";
+import { faPaperPlane, faXmark, faLock } from "@fortawesome/free-solid-svg-icons";
 import { postChat } from "../api/client";
+import { LOGO_URL } from "../config/branding";
 
 const FREE_QUERY_LIMIT = 3;
 const STORAGE_KEY = "fp_chat_query_count";
 
-export default function ChatWidget({ plan, memberFirstName, tier, onUpgrade }) {
+export default function ChatWidget({ plan, memberFirstName, tier, signals, onUpgrade }) {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState([]); // [{role, content}]
   const [input, setInput] = useState("");
@@ -31,7 +32,7 @@ export default function ChatWidget({ plan, memberFirstName, tier, onUpgrade }) {
     setLoading(true);
     setError(null);
     try {
-      const { reply } = await postChat({ plan, memberFirstName, history: nextHistory });
+      const { reply } = await postChat({ plan, memberFirstName, history: nextHistory, signals });
       setMessages([...nextHistory, { role: "assistant", content: reply }]);
       if (!isPaid) {
         const next = queryCount + 1;
@@ -41,12 +42,12 @@ export default function ChatWidget({ plan, memberFirstName, tier, onUpgrade }) {
     } catch (e) {
       // 401 = must sign in first; 402/429 = out of free questions -> upgrade.
       if (e.status === 401) {
-        setError("Sign in (free) to try the AI guide.");
+        setError("Sign in (free) to ask Jesse.");
       } else if (e.status === 402 || e.status === 429) {
         setQueryCount(FREE_QUERY_LIMIT); // flip to the upgrade state
         localStorage.setItem(STORAGE_KEY, String(FREE_QUERY_LIMIT));
       } else {
-        setError(e.message || "Something went wrong — try again.");
+        setError(e.message || "Something went wrong, try again.");
       }
       // roll back the optimistic user message on error
       setMessages(messages);
@@ -57,21 +58,25 @@ export default function ChatWidget({ plan, memberFirstName, tier, onUpgrade }) {
 
   return (
     <>
-      <button className="fp-chat-fab" onClick={() => setOpen((o) => !o)} aria-label={open ? "Close chat" : "Open chat"}>
-        <FontAwesomeIcon icon={open ? faXmark : faComments} />
+      <button className={`fp-chat-fab ${open ? "open" : "jesse"}`} onClick={() => setOpen((o) => !o)} aria-label={open ? "Close Jesse" : "Ask Jesse"}>
+        {open ? <FontAwesomeIcon icon={faXmark} /> : <img src={LOGO_URL} alt="" className="fp-chat-fab-jesse" />}
       </button>
       {open && (
         <div className="fp-chat-panel">
           <div className="fp-chat-header">
-            <p>{isPaid ? "Your AI guide" : "Ask about your plan"}</p>
-            {!isPaid && <span className="fp-chat-quota">{Math.min(queryCount, FREE_QUERY_LIMIT)}/{FREE_QUERY_LIMIT} free questions</span>}
+            <img src={LOGO_URL} alt="" className="fp-chat-header-jesse" />
+            <div className="fp-chat-header-text">
+              <p>Jesse Guide</p>
+              <span className="fp-chat-header-sub">{isPaid ? "Here to walk you through it" : "Ask about your plan"}</span>
+            </div>
+            {!isPaid && <span className="fp-chat-quota">{Math.min(queryCount, FREE_QUERY_LIMIT)}/{FREE_QUERY_LIMIT} free</span>}
           </div>
           <div className="fp-chat-messages" ref={scrollRef}>
             {messages.length === 0 && (
               <p className="fp-chat-empty">
                 {isPaid
-                  ? "Ask me anything about your plan — I'll walk you through any step, grounded only in what's here."
-                  : "Try me — ask a question about your plan. Free includes 3 questions; upgrade for unlimited."}
+                  ? "Hi, I'm Jesse. Ask me anything about your plan, I'll walk you through any step, grounded only in what's here."
+                  : "Hi, I'm Jesse. Ask me a question about your plan, free includes 3, upgrade for unlimited."}
                 {" "}We're educators, not legal, financial, or medical advisors.
               </p>
             )}
@@ -84,7 +89,7 @@ export default function ChatWidget({ plan, memberFirstName, tier, onUpgrade }) {
           {capped ? (
             <div className="fp-chat-capped">
               <FontAwesomeIcon icon={faLock} />
-              <p>You've used your 3 free questions. Upgrade for an unlimited AI guide.</p>
+              <p>You've used your 3 free questions. Upgrade for unlimited time with Jesse.</p>
               <button className="fp-btn-upgrade" style={{ width: "100%" }} onClick={onUpgrade}>Upgrade →</button>
             </div>
           ) : (

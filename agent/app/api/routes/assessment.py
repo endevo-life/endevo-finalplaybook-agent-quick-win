@@ -6,6 +6,7 @@ from app.agent.personalize import personalize as run_personalize
 from app.agent.rules_engine import assessment_questions, build_domain_plan
 from app.api.deps import require_email
 from app.schemas.requests import AssessmentPersonalizeRequest, AssessmentRequest
+from app.services import analytics
 from app.services.entitlements import EntitlementError, entitlement_for
 
 router = APIRouter(prefix="/api/assessment", tags=["assessment"])
@@ -22,7 +23,9 @@ def get_assessment():
 def create_assessment_plan(req: AssessmentRequest):
     """Resolve a member's answers into their action plan (basics-first + one
     action per answered question). Free and anonymous -- pure rules, no LLM."""
-    return build_domain_plan(req.answers)
+    plan = build_domain_plan(req.answers)
+    analytics.emit(analytics.ASSESSMENT_COMPLETED, answered=len(req.answers or {}))
+    return plan
 
 
 @router.post("/personalize")
@@ -35,6 +38,7 @@ def personalize_assessment(
     try:
         ent.require_personalize()
     except EntitlementError as e:
+        analytics.emit(analytics.UPGRADE_BLOCKED, email=email, feature="personalize", code=e.code)
         raise HTTPException(e.code, str(e))
 
     domain_plan = build_domain_plan(req.answers)
@@ -55,9 +59,10 @@ def personalize_assessment(
         "quotes": [],
     }
     try:
-        result = run_personalize(adapted, req.memberFirstName)
+        result = run_personalize(adapted, req.memberFirstName, signals=req.signals)
     except Exception as e:
         raise HTTPException(502, f"Agent error: {e}")
 
     ent.record_personalize()
+    analytics.emit(analytics.PERSONALIZE, email=email)
     return {"tier": "paid", "personalized": result.model_dump()}

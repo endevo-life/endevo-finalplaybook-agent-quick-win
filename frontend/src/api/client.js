@@ -29,8 +29,13 @@ async function request(path, { method = "GET", body } = {}) {
   });
   const data = await res.json().catch(() => null);
   if (!res.ok) {
-    const err = new Error(data?.detail || `Request failed (${res.status})`);
+    // detail is usually a string, but can be an object (e.g. auth code-retry
+    // returns {message, session}). Keep the object on err.detail either way.
+    const detail = data?.detail;
+    const message = typeof detail === "string" ? detail : detail?.message;
+    const err = new Error(message || `Request failed (${res.status})`);
     err.status = res.status;
+    err.detail = detail;
     throw err;
   }
   return data;
@@ -49,8 +54,8 @@ export async function getGlossary() {
   }
 }
 
-export function postChat({ plan, memberFirstName, history }) {
-  return request("/api/chat", { method: "POST", body: { plan, memberFirstName, history } });
+export function postChat({ plan, memberFirstName, history, signals }) {
+  return request("/api/chat", { method: "POST", body: { plan, memberFirstName, history, signals } });
 }
 
 // --- pricing / marketing -----------------------------------------------------
@@ -66,10 +71,11 @@ export function postAssessmentPlan(answers) {
   return request("/api/assessment/plan", { method: "POST", body: { answers } });
 }
 // Paid: turn the assessment into a personalized 7-day narrative (one LLM call).
-export function postAssessmentPersonalize(answers, memberFirstName) {
+// `signals` = the member's why-now flags, so the narrative leads by scenario.
+export function postAssessmentPersonalize(answers, memberFirstName, signals) {
   return request("/api/assessment/personalize", {
     method: "POST",
-    body: { answers, memberFirstName },
+    body: { answers, memberFirstName, signals },
   });
 }
 
@@ -86,8 +92,10 @@ export function saveMyPlan({ answers, plan, tracked, narrative }) {
 export function authStart(email) {
   return request("/api/auth/start", { method: "POST", body: { email } });
 }
-export function authVerify(email, code) {
-  return request("/api/auth/verify", { method: "POST", body: { email, code } });
+export function authVerify(email, code, session) {
+  // `session` is the Cognito challenge session from authStart (cognito auth
+  // backend only); harmless extra field for the local auth backend.
+  return request("/api/auth/verify", { method: "POST", body: { email, code, session } });
 }
 export function getMe() {
   return request("/api/me");
@@ -103,4 +111,8 @@ export function startCheckout() {
 // Dev-only unlock (no Stripe). Backend gates this behind ALLOW_DEV_UPGRADE.
 export function devUpgrade() {
   return request("/api/billing/dev-upgrade", { method: "POST" });
+}
+// Cancel subscription -> back to free. Backend gates behind ALLOW_DEV_UPGRADE.
+export function cancelSubscription() {
+  return request("/api/billing/downgrade", { method: "POST" });
 }

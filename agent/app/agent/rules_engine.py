@@ -178,7 +178,13 @@ def build_domain_plan(answers: dict) -> dict:
         for b in DOMAIN_ASSESSMENT.get("basicsFirst", [])
     ]
 
+    # Cap at MAX_PER_DOMAIN items per domain so even the full (paid) plan stays
+    # focused, not overwhelming. Items resolve in the order questions were
+    # answered; the first N per domain are kept. (Free tier then unlocks the
+    # first 2 of those per domain client-side; the rest are the upgrade driver.)
+    MAX_PER_DOMAIN = 3
     resolved = []
+    per_domain = {}
     for qid, value in (answers or {}).items():
         question = _ASSESSMENT_QUESTIONS_BY_ID.get(qid)
         if not question:
@@ -186,9 +192,13 @@ def build_domain_plan(answers: dict) -> dict:
         option = next((o for o in question["options"] if o["value"] == value), None)
         if not option:
             continue
+        domain = question["domain"]
+        per_domain[domain] = per_domain.get(domain, 0) + 1
+        if per_domain[domain] > MAX_PER_DOMAIN:
+            continue  # already have enough for this domain
         resolved.append({
             "id": qid,
-            "domain": question["domain"],
+            "domain": domain,
             "question": question["question"],
             "answer": option["label"],
             "resultType": option.get("resultType", "steps"),

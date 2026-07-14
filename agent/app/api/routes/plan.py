@@ -63,6 +63,7 @@ def get_my_plan(email: str = Depends(require_email)):
         "plan": saved.get("plan"),
         "tracked": saved.get("tracked", {}),
         "narrative": saved.get("narrative"),
+        "fields": saved.get("fields", {}),
         "chatHistory": store.get_chat_history(email),
     }
 
@@ -77,6 +78,7 @@ def save_my_plan(req: SavePlanRequest, email: str = Depends(require_email)):
             plan=req.plan,
             tracked=req.tracked,
             narrative=req.narrative,
+            fields=req.fields,
         )
     except Exception as e:
         # Surface storage failures instead of silently losing the user's data.

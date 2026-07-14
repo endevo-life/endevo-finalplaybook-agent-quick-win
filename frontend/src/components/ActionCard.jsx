@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { fieldInputType } from "../lib/fieldType";
 
 // Condensed action card.
 //
@@ -14,13 +15,20 @@ export default function ActionCard({
   isStepDone,
   onToggleStep,
   stepKey,
+  fieldValues = {},
+  onFieldChange,
 }) {
   const isReview = item.resultType === "review";
   const detail = isReview ? item.checklist : item.steps;
   const hasDetail = detail && detail.length > 0;
-  const trackable = !locked && typeof onToggleStep === "function" && !isReview;
-  // Paid: show the checklist expanded by default so it's immediately workable.
-  const [open, setOpen] = useState(trackable);
+  // Any unlocked card whose steps we can toggle is trackable -- including free
+  // users on their "do these first" basics, so the plan never LOOKS pre-done:
+  // every step is a visibly-empty checkbox the member ticks themselves.
+  const trackable = !locked && typeof onToggleStep === "function";
+  // Steps are COLLAPSED by default so the plan reads as a short list of clear
+  // ACTIONS, not an overwhelming wall of 50+ sub-steps. The member expands
+  // "Show me how" on the one they're working on. (Feedback: too many steps.)
+  const [open, setOpen] = useState(false);
 
   // How many of this card's steps are done (for the little per-card badge).
   const doneCount = trackable && isStepDone
@@ -29,7 +37,7 @@ export default function ActionCard({
   const allDone = trackable && detail.length > 0 && doneCount === detail.length;
 
   return (
-    <div className={`fp-action-card ${item.basic ? "basic" : ""} ${isReview ? "done-review" : ""} ${allDone ? "tracked-done" : ""} ${locked ? "fp-locked-card" : ""}`}>
+    <div className={`fp-action-card ${item.basic ? "basic" : ""} ${allDone ? "tracked-done" : ""} ${locked ? "fp-locked-card" : ""}`}>
       <div className={locked ? "fp-locked-content" : ""}>
         {item.domain && <span className="fp-domain-tag">{item.domain}</span>}
         {item.title && <p className="fp-action-title">{item.title}</p>}
@@ -37,23 +45,24 @@ export default function ActionCard({
         <p className="fp-action-text">{item.action}</p>
 
         {trackable && detail.length > 0 && (
-          <span className="fp-card-progress">{doneCount}/{detail.length} steps</span>
+          <span className="fp-card-progress">{doneCount}/{detail.length} done</span>
         )}
 
         {hasDetail && (
           <>
-            {!trackable && (
-              <button className="fp-showhow" onClick={() => setOpen((o) => !o)}>
-                {open ? "Hide" : isReview ? "Show checklist" : "Show me how"} {open ? "▲" : "▼"}
-              </button>
-            )}
+            {/* Expander shown for BOTH tiers: steps stay collapsed by default so
+                the plan reads as clear actions, not a wall of sub-steps. */}
+            <button className="fp-showhow" onClick={() => setOpen((o) => !o)}>
+              {open
+                ? "Hide steps"
+                : trackable
+                ? `Show the ${detail.length} steps`
+                : isReview ? "Show checklist" : "Show me how"} {open ? "▲" : "▼"}
+            </button>
             {open && (
-              isReview ? (
-                <ul className="fp-checklist">
-                  {detail.map((c, i) => <li key={i}>{c}</li>)}
-                </ul>
-              ) : trackable ? (
-                // Premium: each step is its own checkable row.
+              trackable ? (
+                // Every unlocked step is its own checkable row (empty box until
+                // the member ticks it) -- so the plan reads as "to do", never done.
                 <div className="fp-step-checks">
                   {detail.map((s, i) => {
                     const key = stepKey(i);
@@ -64,12 +73,16 @@ export default function ActionCard({
                         className={`fp-step-check-row ${done ? "done" : ""}`}
                         onClick={() => onToggleStep(key)}
                       >
-                        <span className={`fp-step-check-box ${done ? "done" : ""}`}>{done ? "✓" : ""}</span>
+                        <span className={`fp-step-check-box ${done ? "done" : ""}`} aria-hidden="true">{done ? "✓" : ""}</span>
                         <span className="fp-step-check-text">{s}</span>
                       </button>
                     );
                   })}
                 </div>
+              ) : isReview ? (
+                <ul className="fp-checklist">
+                  {detail.map((c, i) => <li key={i}>{c}</li>)}
+                </ul>
               ) : (
                 <ol className="fp-steps-list">
                   {detail.map((s, i) => <li key={i}>{s}</li>)}
@@ -78,12 +91,23 @@ export default function ActionCard({
             )}
             {open && !locked && item.fields?.length > 0 && (
               <div style={{ marginTop: 10 }}>
-                {item.fields.map((f) => (
-                  <div key={f.key} className="fp-field-row">
-                    <label className="fp-label">{f.label}</label>
-                    <input className="fp-input" placeholder={f.label} />
-                  </div>
-                ))}
+                {item.fields.map((f) => {
+                  const fk = `${item.id}::${f.key}`;
+                  const type = fieldInputType(f);
+                  return (
+                    <div key={f.key} className="fp-field-row">
+                      <label className="fp-label" htmlFor={fk}>{f.label}</label>
+                      <input
+                        id={fk}
+                        type={type}
+                        className="fp-input"
+                        placeholder={type === "date" ? "" : f.label}
+                        value={fieldValues[fk] || ""}
+                        onChange={(e) => onFieldChange?.(fk, e.target.value)}
+                      />
+                    </div>
+                  );
+                })}
               </div>
             )}
           </>

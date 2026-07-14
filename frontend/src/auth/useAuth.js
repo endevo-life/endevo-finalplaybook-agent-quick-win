@@ -30,8 +30,8 @@ export function useAuth() {
 
   const startLogin = useCallback((email) => authStart(email), []);
 
-  const verifyLogin = useCallback(async (email, code) => {
-    const { token, user } = await authVerify(email, code);
+  const verifyLogin = useCallback(async (email, code, session) => {
+    const { token, user } = await authVerify(email, code, session);
     setToken(token);
     setAccount(user);
     return user;

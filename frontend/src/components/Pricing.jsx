@@ -18,7 +18,7 @@ function FreeCard() {
     <div className="fp-price-card">
       <p className="fp-price-name">Free</p>
       <div className="fp-price-amount">$0<span> / forever</span></div>
-      <p className="fp-price-desc">Everything you need to get a real, prioritized plan started — no account, no card.</p>
+      <p className="fp-price-desc">Everything you need to get a real, prioritized plan started, no account, no card.</p>
       <ul className="fp-price-feats">
         <li>Personalized situation assessment</li>
         <li>Prioritized action plan (rules engine)</li>
@@ -39,7 +39,7 @@ function PaidCard({ plan, onUpgrade, ctaLabel }) {
       <span className="fp-price-badge">Most popular</span>
       <p className="fp-price-name">{plan.name || "Personalized"}</p>
       <div className="fp-price-amount">{price}<span> / month</span></div>
-      <p className="fp-price-desc">Your plan, rewritten as a warm, personal next-7-days narrative — plus a guide you can ask questions.</p>
+      <p className="fp-price-desc">Your plan, rewritten as a warm, personal next-7-days narrative, plus a guide you can ask questions.</p>
       <ul className="fp-price-feats">
         <li>Everything in Free</li>
         <li>AI-personalized "next 7 days" narrative</li>
