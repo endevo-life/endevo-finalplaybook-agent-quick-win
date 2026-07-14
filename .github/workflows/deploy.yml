@@ -111,14 +111,28 @@ jobs:
           aws s3 sync dist "s3://$FRONTEND_BUCKET" \
             --cache-control "no-cache" --exclude "*" --include "*.html"
       - name: Invalidate CloudFront cache
+        # The uploaded S3 files ARE the deploy; clearing the CDN cache is a
+        # best-effort finisher. Don't fail the whole deploy if it can't resolve
+        # the distribution -- log and move on (cache expires on its own TTL).
+        continue-on-error: true
         run: |
-          DIST_ID=$(aws cloudfront list-distributions \
-            --query "DistributionList.Items[?contains(Aliases.Items, '${CLOUDFRONT_URL}') || DomainName=='${CLOUDFRONT_URL#https://}'].Id | [0]" \
-            --output text)
+          set +e  # this step tolerates lookup failures; handle them explicitly
+          # Primary: the distribution ID from OUR own frontend stack output --
+          # deterministic and doesn't depend on aliases being set.
+          DIST_ID=$(aws cloudformation describe-stacks --stack-name mfp-dev-frontend \
+            --query "Stacks[0].Outputs[?OutputKey=='DistributionId'].OutputValue | [0]" \
+            --output text 2>/dev/null)
+          # Fallback: match by alias or domain. not_null(...) guards Aliases.Items
+          # so contains() never sees null (distributions without an alias) -- the
+          # bug that failed the previous run.
           if [ -z "$DIST_ID" ] || [ "$DIST_ID" = "None" ]; then
-            # fall back to the frontend stack output
-            DIST_ID=$(aws cloudformation describe-stacks --stack-name mfp-dev-frontend \
-              --query "Stacks[0].Outputs[?OutputKey=='DistributionId'].OutputValue | [0]" --output text)
+            DIST_ID=$(aws cloudfront list-distributions \
+              --query "DistributionList.Items[?contains(not_null(Aliases.Items, \`[]\`), '${CLOUDFRONT_URL#https://}') || DomainName=='${CLOUDFRONT_URL#https://}'].Id | [0]" \
+              --output text 2>/dev/null)
+          fi
+          if [ -z "$DIST_ID" ] || [ "$DIST_ID" = "None" ]; then
+            echo "::warning::Could not resolve a CloudFront distribution id; skipping cache invalidation. New files are already live in S3."
+            exit 0
           fi
           echo "invalidating $DIST_ID"
           aws cloudfront create-invalidation --distribution-id "$DIST_ID" --paths "/*"
