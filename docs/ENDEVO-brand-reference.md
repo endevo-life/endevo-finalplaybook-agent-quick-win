@@ -63,7 +63,7 @@ Section headline: **"If you don't prepare, this is what happens…"**
 | Stat | Line |
 |---|---|
 | **67%** | of adults have no plan in place, leaving families to make painful decisions alone. |
-| **420+ hours** | families spend sorting affairs when information isn't organized. |
+| **200+ hours** | families spend sorting affairs when information isn't organized. |
 | **30%** | of loved ones never access digital accounts, losing photos, messages, and records forever. |
 | **$58B** | in assets goes unclaimed because families didn't know accounts or policies existed. |
 
