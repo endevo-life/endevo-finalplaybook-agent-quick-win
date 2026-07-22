@@ -1,0 +1,7 @@
+Lever,What it does,Engine field,Feels like (to the member),Why it's the moat
+1. REORDER,"Same questions, the urgent-for-you one FIRST",priorityBoost,"""She led with exactly my problem""","The most powerful and most underused. An expert never hides questions in a call; they LEAD with what is on fire for you. Show/hide alone can't copy this."
+2. GATE,Situational clusters appear or vanish,showPolicy: ifSignal + triggerSignals,"""It didn't waste my time""","A solo ager never sees guardian questions; a parent does. The list feels made for you, not a generic form."
+3. BRANCH,"Same question, answer-specific follow-up path",QuestionOption.variants,"""It went deep on my actual answer""","One answer opens a different, deeper path than another. The interview adapts as you go, like a real conversation."
+THE CLAIM (honest),"Pure show/hide is NOT the moat","-","-","If ~70% of 40-per-domain questions are universal (everyone makes a will), hiding the other 30% still shows everyone almost the same list. The moat is the THREE levers together, only one of which is show/hide."
+THE LEAD RULE,"Order = (1) why-now signal target -> (2) who-you're-responsible-for cluster -> (3) base order","-","-","The expert never opens with the bank. They find the why-now and the who-you're-responsible-for, and lead with THAT. Evidence-backed across all case studies."
+DETERMINISM,"Same signals + same answers -> same order, every time","pure function","-","Auditable and defensible. Not a black-box model guessing; a transparent rules engine an expert can sign off on. Regulated-friendly."

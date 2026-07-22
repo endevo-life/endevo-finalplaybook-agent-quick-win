@@ -1,0 +1,640 @@
+<title>My Final Playbook — Product Video Blueprint</title>
+<style>
+  :root{
+    --navy:#0A1B3D; --teal:#2E7F7B; --teal-lt:#58BBB6; --gold:#94793F; --gold-dk:#6E5327;
+    --orange:#F26A21;
+    --cream:#FBF5E9; --cream-2:#FFF9EC; --paper:#fffefb;
+    --ink:#152238; --body:#3d4761; --dim:#7b8398; --faint:#a6abbb;
+    --line:#e7e0cf; --line-2:#d8cfb8;
+    --surf:#ffffff; --bg:#f6f1e6;
+    --vo-bg:#eef5f4; --vo-edge:#2E7F7B;
+    --maxw:1080px;
+    --serif:"Iowan Old Style","Palatino Linotype","Palatino","Georgia",serif;
+    --sans:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    --mono:"SFMono-Regular","JetBrains Mono",Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --navy:#c7d2ea; --teal:#5fb5b0; --teal-lt:#6fc6c0; --gold:#c6a862; --gold-dk:#d8bd7f;
+      --cream:#1a2338; --cream-2:#1e2740; --paper:#161f33;
+      --ink:#eef1f7; --body:#c2c9db; --dim:#8b93a8; --faint:#666e83;
+      --line:#2b3450; --line-2:#39415f;
+      --surf:#182135; --bg:#0f1626;
+      --vo-bg:#15272a; --vo-edge:#5fb5b0;
+    }
+  }
+  :root[data-theme="light"]{
+    --navy:#0A1B3D;--teal:#2E7F7B;--teal-lt:#58BBB6;--gold:#94793F;--gold-dk:#6E5327;
+    --cream:#FBF5E9;--cream-2:#FFF9EC;--paper:#fffefb;--ink:#152238;--body:#3d4761;--dim:#7b8398;--faint:#a6abbb;
+    --line:#e7e0cf;--line-2:#d8cfb8;--surf:#fff;--bg:#f6f1e6;--vo-bg:#eef5f4;--vo-edge:#2E7F7B;
+  }
+  :root[data-theme="dark"]{
+    --navy:#c7d2ea;--teal:#5fb5b0;--teal-lt:#6fc6c0;--gold:#c6a862;--gold-dk:#d8bd7f;
+    --cream:#1a2338;--cream-2:#1e2740;--paper:#161f33;--ink:#eef1f7;--body:#c2c9db;--dim:#8b93a8;--faint:#666e83;
+    --line:#2b3450;--line-2:#39415f;--surf:#182135;--bg:#0f1626;--vo-bg:#15272a;--vo-edge:#5fb5b0;
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--body);font-family:var(--sans);
+    font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 22px}
+
+  /* hero */
+  header.hero{background:linear-gradient(160deg,var(--navy),#12294d);color:#eaf0fb;
+    padding:52px 0 40px;border-bottom:3px solid var(--gold)}
+  header.hero .wrap{max-width:var(--maxw)}
+  .kick{font-size:12px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--teal-lt)}
+  header.hero h1{font-family:var(--serif);font-weight:600;font-size:clamp(30px,5vw,46px);
+    line-height:1.1;margin:12px 0 10px;text-wrap:balance;color:#fff}
+  header.hero p.lede{font-size:17px;max-width:60ch;color:#c3cee4;margin:0}
+  .tag{font-family:var(--serif);font-style:italic;color:var(--teal-lt);font-size:19px;margin-top:16px}
+  .specs{display:flex;flex-wrap:wrap;gap:10px 26px;margin-top:22px;font-size:13px;color:#9fb0cf}
+  .specs b{color:#eaf0fb;font-weight:600}
+
+  main{padding:34px 0 90px}
+  section{margin:34px 0}
+  h2{font-family:var(--serif);color:var(--ink);font-size:25px;font-weight:600;margin:0 0 4px;
+    letter-spacing:-.01em}
+  h2 .num{color:var(--teal);font-family:var(--sans);font-size:14px;font-weight:700;margin-right:10px}
+  .sec-sub{color:var(--dim);font-size:14px;margin:0 0 18px;max-width:70ch}
+  h3{font-family:var(--sans);color:var(--ink);font-size:15px;font-weight:700;margin:26px 0 8px;
+    text-transform:uppercase;letter-spacing:.04em}
+
+  /* the two acts banner */
+  .acts{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:14px 0 6px}
+  @media(max-width:640px){.acts{grid-template-columns:1fr}}
+  .act{border-radius:14px;padding:16px 18px;border:1px solid var(--line-2)}
+  .act.emo{background:var(--cream-2)}
+  .act.demo{background:var(--vo-bg)}
+  .act .t{font-family:var(--serif);font-size:18px;color:var(--ink);font-weight:600}
+  .act .r{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--teal);margin-bottom:4px}
+  .act p{font-size:13.5px;margin:6px 0 0;color:var(--body)}
+
+  /* storyboard scene */
+  .scene{background:var(--surf);border:1px solid var(--line);border-radius:16px;
+    overflow:hidden;margin:16px 0;box-shadow:0 1px 0 rgba(20,34,56,.03)}
+  .scene-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+    padding:12px 18px;background:var(--cream);border-bottom:1px solid var(--line)}
+  .tc{font-family:var(--mono);font-size:12.5px;font-weight:600;color:#fff;background:var(--navy);
+    border-radius:6px;padding:3px 9px;letter-spacing:.02em}
+  .scene-title{font-family:var(--serif);font-size:17px;color:var(--ink);font-weight:600;flex:1;min-width:180px}
+  .chip{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+    border-radius:20px;padding:3px 10px}
+  .chip.emo{background:#f6e9d2;color:var(--gold-dk)}
+  .chip.demo{background:#d9ecea;color:var(--teal)}
+
+  .scene-body{display:grid;grid-template-columns:1fr 1fr;gap:0}
+  @media(max-width:760px){.scene-body{grid-template-columns:1fr}}
+  .col{padding:16px 18px}
+  .col.vo{background:var(--vo-bg);border-right:1px solid var(--line)}
+  @media(max-width:760px){.col.vo{border-right:0;border-bottom:1px solid var(--line)}}
+  .lbl{font-size:10.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--teal);margin-bottom:7px;display:flex;align-items:center;gap:6px}
+  .lbl.vis{color:var(--gold)}
+  .vo-text{font-family:var(--serif);font-size:17px;line-height:1.5;color:var(--ink)}
+  .vo-text.silent{font-style:italic;color:var(--dim);font-family:var(--sans);font-size:14px}
+  .onscreen{margin-top:12px;font-size:13px;color:var(--body)}
+  .onscreen b{color:var(--ink)}
+  .vis-list{margin:0;padding:0;list-style:none;font-size:13.5px}
+  .vis-list li{padding:3px 0 3px 16px;position:relative}
+  .vis-list li::before{content:"";position:absolute;left:0;top:9px;width:6px;height:6px;
+    border-radius:50%;background:var(--gold)}
+  .prompt{margin-top:12px;background:var(--paper);border:1px dashed var(--line-2);border-radius:8px;
+    padding:9px 11px;font-family:var(--mono);font-size:11.5px;line-height:1.45;color:var(--body)}
+  .prompt .pk{display:block;font-family:var(--sans);font-size:10px;font-weight:800;letter-spacing:.08em;
+    text-transform:uppercase;color:var(--gold-dk);margin-bottom:4px}
+
+  /* transcript / vtt */
+  pre{font-family:var(--mono);font-size:12.5px;line-height:1.55;background:var(--navy);color:#dfe7f5;
+    border-radius:12px;padding:18px 20px;overflow-x:auto;margin:14px 0}
+  pre .cue{color:#7fd3cd}
+
+  /* callouts */
+  .note{border-radius:12px;padding:14px 18px;margin:16px 0;font-size:14px;border:1px solid var(--line-2)}
+  .note .k{font-weight:800;font-size:11px;letter-spacing:.07em;text-transform:uppercase;display:block;margin-bottom:5px}
+  .note.brand{background:var(--cream-2)} .note.brand .k{color:var(--gold-dk)}
+  .note.warn{background:#fbeee6;border-color:#eccdb4} .note.warn .k{color:var(--orange)}
+  :root[data-theme="dark"] .note.warn{background:#2a1c12;border-color:#5a3a22}
+  @media(prefers-color-scheme:dark){.note.warn{background:#2a1c12;border-color:#5a3a22}}
+
+  /* steps / tools */
+  .tool{display:grid;grid-template-columns:auto 1fr;gap:0 16px;border:1px solid var(--line);
+    border-radius:14px;background:var(--surf);margin:12px 0;overflow:hidden}
+  .tool .side{background:var(--cream);padding:16px 14px;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;text-align:center;border-right:1px solid var(--line);min-width:120px}
+  .tool .side .stage{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--teal)}
+  .tool .side .name{font-family:var(--serif);font-size:16px;color:var(--ink);font-weight:600;margin-top:3px}
+  .tool .main{padding:14px 18px}
+  .tool .main p{margin:6px 0}
+  .tool ul{margin:6px 0;padding-left:20px;font-size:13.5px}
+  .tool li{margin:4px 0}
+  .pill{display:inline-block;font-size:11px;font-weight:700;background:var(--vo-bg);color:var(--teal);
+    border-radius:20px;padding:2px 9px;margin:2px 4px 2px 0}
+
+  a{color:var(--teal)}
+  footer{border-top:1px solid var(--line);margin-top:40px;padding-top:18px;color:var(--dim);font-size:13px}
+  @media print{header.hero{background:var(--navy)!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .scene,.tool{page-break-inside:avoid}}
+</style>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="kick">Product Video · Blueprint &amp; Production Guide</div>
+    <h1>My Final Playbook — the 2-minute film</h1>
+    <p class="lede">One video, two acts: an honest, warm family story that opens the heart, then a
+      calm walkthrough of the real product that answers "so what do I actually do?" Every word of
+      voiceover is paired with the exact visual it should sit over — so what you hear always matches
+      what you see.</p>
+    <div class="tag">Live Fully ~ Die Ready.</div>
+    <div class="specs">
+      <span><b>Runtime:</b> ~2:00</span>
+      <span><b>Act 1:</b> Emotional open (0:00–0:40)</span>
+      <span><b>Act 2:</b> Product demo (0:40–2:00)</span>
+      <span><b>Visuals:</b> AI-generated</span>
+      <span><b>Aspect:</b> 16:9 master (+ 9:16 cutdowns)</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <div class="note brand">
+    <span class="k">Brand rules baked into this script</span>
+    No em-dashes in anything on screen or spoken. Plain, kitchen-table language (no "probate,"
+    "intestate," "fiduciary" unexplained). Candid about death without dread: warm, human, never
+    morbid, clinical, or salesy. We educate, we do not advise. Product name is written in full:
+    <b>My Final Playbook</b>. Tagline uses a tilde: <b>Live Fully ~ Die Ready.</b>
+  </div>
+
+  <section>
+    <h2><span class="num">01</span>The shape of the film</h2>
+    <p class="sec-sub">Two acts, one arc: from the quiet fear of leaving your family locked out, to
+      the relief of a plan they can actually find and follow.</p>
+    <div class="acts">
+      <div class="act emo">
+        <div class="r">Act 1 · 0:00–0:40</div>
+        <div class="t">The worry, named gently</div>
+        <p>A real family moment. Warm home light. The unspoken question: if you were gone tomorrow,
+          would they be able to find anything? We name the fear, then offer a hand, not a lecture.</p>
+      </div>
+      <div class="act demo">
+        <div class="r">Act 2 · 0:40–2:00</div>
+        <div class="t">The plan, made simple</div>
+        <p>The real product on screen. Answer a few plain questions, see your prioritized plan across
+          Legal, Financial, Physical, and Digital, check items off, and hand your family a finished,
+          sealed playbook.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">02</span>Storyboard — voiceover matched to visuals</h2>
+    <p class="sec-sub">Left column is exactly what is said (or the on-screen text if silent). Right
+      column is exactly what is shown, plus an AI image/video prompt you can paste into your generator.
+      The two are written to lock together beat for beat.</p>
+
+    <!-- SCENE 1 -->
+    <div class="scene">
+      <div class="scene-head">
+        <span class="tc">0:00–0:08</span>
+        <span class="scene-title">Cold open — the ordinary moment</span>
+        <span class="chip emo">Act 1 · Emotional</span>
+      </div>
+      <div class="scene-body">
+        <div class="col vo">
+          <div class="lbl">🔊 Voiceover</div>
+          <div class="vo-text">"We plan for almost everything. The wedding. The house. The next
+            vacation."</div>
+          <div class="onscreen"><b>On screen:</b> no text yet. Let the image breathe.</div>
+        </div>
+        <div class="col vis">
+          <div class="lbl vis">🎬 Visual</div>
+          <ul class="vis-list">
+            <li>A multi-generational family at a sunlit kitchen table, laughing over coffee.</li>
+            <li>Slow, gentle push-in. Warm morning light, cream and teal tones.</li>
+            <li>Faces soft, candid, unposed. This is life being lived fully.</li>
+          </ul>
+          <div class="prompt"><span class="pk">AI image prompt</span>
+            Warm candid photo of a multigenerational family (grandparent, two adults, a child)
+            laughing together at a sunlit wooden kitchen table with coffee mugs, soft morning light
+            through a window, cozy home, shallow depth of field, natural skin tones, documentary
+            style, teal and cream palette, no text.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENE 2 -->
+    <div class="scene">
+      <div class="scene-head">
+        <span class="tc">0:08–0:20</span>
+        <span class="scene-title">The quiet question</span>
+        <span class="chip emo">Act 1 · Emotional</span>
+      </div>
+      <div class="scene-body">
+        <div class="col vo">
+          <div class="lbl">🔊 Voiceover</div>
+          <div class="vo-text">"But there's one plan most of us keep putting off. The one our family
+            will need most, on the hardest day of their lives."</div>
+          <div class="onscreen"><b>On screen (0:16):</b> soft text fades in, lower third —
+            <b>"Would they know where to look?"</b></div>
+        </div>
+        <div class="col vis">
+          <div class="lbl vis">🎬 Visual</div>
+          <ul class="vis-list">
+            <li>The laughter settles. One adult glances at an older parent, a flicker of a thought.</li>
+            <li>Cut to a hand resting on a phone that stays locked, screen dark.</li>
+            <li>Mood softens: same warm room, a little quieter, a little slower.</li>
+          </ul>
+          <div class="prompt"><span class="pk">AI image prompt</span>
+            Thoughtful adult woman in a warm living room glancing tenderly at her elderly father,
+            soft reflective mood, gentle window light, close and intimate, documentary photography,
+            muted teal and cream tones, quiet emotion, no text.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENE 3 -->
+    <div class="scene">
+      <div class="scene-head">
+        <span class="tc">0:20–0:32</span>
+        <span class="scene-title">The stakes, spoken plainly</span>
+        <span class="chip emo">Act 1 · Emotional</span>
+      </div>
+      <div class="scene-body">
+        <div class="col vo">
+          <div class="lbl">🔊 Voiceover</div>
+          <div class="vo-text">"Your phone. Your accounts. Your money. Your memories. All behind
+            passwords no one else has."</div>
+          <div class="onscreen"><b>On screen:</b> four words appear in rhythm with the VO, one at a
+            time, gold on cream: <b>Phone · Accounts · Money · Memories.</b></div>
+        </div>
+        <div class="col vis">
+          <div class="lbl vis">🎬 Visual</div>
+          <ul class="vis-list">
+            <li>Four quick, tender close-ups timed to the four words: a locked phone; a bank letter;
+              a shoebox of photos; a child's drawing on a fridge.</li>
+            <li>Each held about 1.5s, soft focus, same warm world.</li>
+            <li>Not scary. Precious things, just out of reach.</li>
+          </ul>
+          <div class="prompt"><span class="pk">AI image prompt (x4, same style)</span>
+            Series of warm intimate still-life close-ups: (1) a locked smartphone on a wooden table,
+            (2) an unopened bank envelope, (3) an open shoebox of old family photographs, (4) a
+            child's crayon drawing pinned to a fridge. Soft natural light, shallow focus, nostalgic,
+            teal and cream palette, film grain, no text.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENE 4 -->
+    <div class="scene">
+      <div class="scene-head">
+        <span class="tc">0:32–0:40</span>
+        <span class="scene-title">The turn — from worry to relief</span>
+        <span class="chip emo">Act 1 → 2 · Bridge</span>
+      </div>
+      <div class="scene-body">
+        <div class="col vo">
+          <div class="lbl">🔊 Voiceover</div>
+          <div class="vo-text">"My Final Playbook turns that worry into a clear, calm plan. One you can
+            start today, in about five minutes."</div>
+          <div class="onscreen"><b>On screen (0:36):</b> logo + <b>My Final Playbook</b> resolves
+            center, tagline beneath: <i>Live Fully ~ Die Ready.</i></div>
+        </div>
+        <div class="col vis">
+          <div class="lbl vis">🎬 Visual</div>
+          <ul class="vis-list">
+            <li>Light lifts. The room brightens. The same parent and adult child now sit together,
+              calm, a tablet between them.</li>
+            <li>Cross-dissolve from the warm home into the soft cream of the product UI.</li>
+            <li>This is the emotional hinge: shoulders drop, a small relieved smile.</li>
+          </ul>
+          <div class="prompt"><span class="pk">AI image prompt</span>
+            Calm relieved adult daughter and elderly father sitting close together on a sofa looking
+            at a tablet, warm brightening light, gentle smiles, a sense of relief and togetherness,
+            documentary style, teal and cream tones, no text.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENE 5 -->
+    <div class="scene">
+      <div class="scene-head">
+        <span class="tc">0:40–0:56</span>
+        <span class="scene-title">Demo — answer a few plain questions</span>
+        <span class="chip demo">Act 2 · Product</span>
+      </div>
+      <div class="scene-body">
+        <div class="col vo">
+          <div class="lbl">🔊 Voiceover</div>
+          <div class="vo-text">"It starts with a few simple questions. No jargon. No forms to dread.
+            Just your real situation, in plain words."</div>
+          <div class="onscreen"><b>On screen:</b> real assessment UI. A question with tap-able answers
+            highlights as the cursor selects one.</div>
+        </div>
+        <div class="col vis">
+          <div class="lbl vis">🎬 Visual</div>
+          <ul class="vis-list">
+            <li><b>Screen recording of the actual product</b> (not AI): the assessment step, answering
+              1–2 questions.</li>
+            <li>Clean screen capture on the cream UI, smooth cursor, one answer selected.</li>
+            <li>AI-generated warm border/background frames the screen so it sits in the film's world.</li>
+          </ul>
+          <div class="prompt"><span class="pk">Production note</span>
+            Record this from the live app at myfinalplaybook (the CloudFront URL). Use a clean
+            browser, hide bookmarks. Capture at 1920x1080, then place on an AI-generated soft cream
+            desk background for warmth.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENE 6 -->
+    <div class="scene">
+      <div class="scene-head">
+        <span class="tc">0:56–1:14</span>
+        <span class="scene-title">Demo — your prioritized plan, four areas</span>
+        <span class="chip demo">Act 2 · Product</span>
+      </div>
+      <div class="scene-body">
+        <div class="col vo">
+          <div class="lbl">🔊 Voiceover</div>
+          <div class="vo-text">"In minutes, you get a plan built around you. Your first, most important
+            steps across four areas: legal, financial, physical, and digital."</div>
+          <div class="onscreen"><b>On screen:</b> the four domain labels animate in as spoken —
+            <b>Legal · Financial · Physical · Digital</b> — each with its first action card.</div>
+        </div>
+        <div class="col vis">
+          <div class="lbl vis">🎬 Visual</div>
+          <ul class="vis-list">
+            <li>Screen recording of the generated plan: the prioritized action cards.</li>
+            <li>As each domain word is spoken, that card gently highlights in sync (words match
+              visuals, exactly).</li>
+            <li>Show a real script line on a card, so viewers see the plain-language help.</li>
+          </ul>
+          <div class="prompt"><span class="pk">Production note</span>
+            Use the aging-parent example plan (rich, four domains populated). Highlight one card per
+            spoken domain word using a subtle scale + glow, timed to the VO.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENE 7 -->
+    <div class="scene">
+      <div class="scene-head">
+        <span class="tc">1:14–1:30</span>
+        <span class="scene-title">Demo — check it off, feel it move</span>
+        <span class="chip demo">Act 2 · Product</span>
+      </div>
+      <div class="scene-body">
+        <div class="col vo">
+          <div class="lbl">🔊 Voiceover</div>
+          <div class="vo-text">"Do one small step at a time. Check it off. Watch your affairs quietly
+            come into order."</div>
+          <div class="onscreen"><b>On screen:</b> a step is checked; the gold-glow completion pop
+            fires; a domain seals with the dated wax stamp.</div>
+        </div>
+        <div class="col vis">
+          <div class="lbl vis">🎬 Visual</div>
+          <ul class="vis-list">
+            <li>Screen recording of tracking: check a step, the celebration pop, then a domain seal
+              stamping down (your real feature).</li>
+            <li>Let the wax-seal animation land as a satisfying beat.</li>
+            <li>This is the "progress feels good" moment. Keep it earned, not gimmicky.</li>
+          </ul>
+          <div class="prompt"><span class="pk">Production note</span>
+            This showcases the celebrations feature. Capture the seal stamp at full quality; it
+            doubles as a lovely hero motif for the cutdowns.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENE 8 -->
+    <div class="scene">
+      <div class="scene-head">
+        <span class="tc">1:30–1:44</span>
+        <span class="scene-title">The gift — a finished playbook for the family</span>
+        <span class="chip demo">Act 2 → 1 · Return</span>
+      </div>
+      <div class="scene-body">
+        <div class="col vo">
+          <div class="lbl">🔊 Voiceover</div>
+          <div class="vo-text">"And when it's done, your family gets one clear playbook. Everything they
+            need, in one place, when they need it most."</div>
+          <div class="onscreen"><b>On screen:</b> the downloaded PDF, sealed and dated, then dissolve
+            back to a real person holding it.</div>
+        </div>
+        <div class="col vis">
+          <div class="lbl vis">🎬 Visual</div>
+          <ul class="vis-list">
+            <li>Quick look at the branded, sealed PDF (real product output).</li>
+            <li>Cross-dissolve to AI-generated shot: an adult child holding a printed folder, calm,
+              at the same kitchen table from the open. The circle closes.</li>
+          </ul>
+          <div class="prompt"><span class="pk">AI image prompt</span>
+            Warm photo of a middle-aged person holding a neat printed document folder at a sunlit
+            kitchen table, peaceful and reassured expression, soft morning light, same cozy home as
+            before, teal and cream tones, documentary style, no text.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENE 9 -->
+    <div class="scene">
+      <div class="scene-head">
+        <span class="tc">1:44–2:00</span>
+        <span class="scene-title">Close — the invitation</span>
+        <span class="chip demo">Outro</span>
+      </div>
+      <div class="scene-body">
+        <div class="col vo">
+          <div class="lbl">🔊 Voiceover</div>
+          <div class="vo-text">"Start free today. No account needed. Because the best gift you can leave
+            is not having to guess. My Final Playbook. Live Fully ~ Die Ready."</div>
+          <div class="onscreen"><b>On screen:</b> logo, CTA button <b>Get My Final Playbook</b>, URL,
+            and small line: <i>Not legal, financial, or medical advice.</i></div>
+        </div>
+        <div class="col vis">
+          <div class="lbl vis">🎬 Visual</div>
+          <ul class="vis-list">
+            <li>Return to the full family from scene 1, together, warm, whole.</li>
+            <li>Logo resolves center on cream. CTA button in teal. Tagline in italic serif beneath.</li>
+            <li>Hold 2 seconds on the calm end card. Music resolves softly.</li>
+          </ul>
+          <div class="prompt"><span class="pk">End-card note</span>
+            Keep the disclaimer line legible but small. CTA text must read exactly
+            "Get My Final Playbook" to match the site.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">03</span>Full transcript &amp; captions (.vtt)</h2>
+    <p class="sec-sub">Clean voiceover script, then the same thing as a WebVTT caption file that drops
+      straight into your existing landing-page video slot (it already supports a captions track). No
+      em-dashes, plain language, brand-checked.</p>
+
+    <h3>Voiceover script (read-through)</h3>
+    <div class="note brand" style="font-family:var(--serif);font-size:16.5px;line-height:1.7">
+      We plan for almost everything. The wedding. The house. The next vacation. But there's one plan
+      most of us keep putting off. The one our family will need most, on the hardest day of their
+      lives. Your phone. Your accounts. Your money. Your memories. All behind passwords no one else
+      has. My Final Playbook turns that worry into a clear, calm plan. One you can start today, in
+      about five minutes. It starts with a few simple questions. No jargon. No forms to dread. Just
+      your real situation, in plain words. In minutes, you get a plan built around you. Your first,
+      most important steps across four areas: legal, financial, physical, and digital. Do one small
+      step at a time. Check it off. Watch your affairs quietly come into order. And when it's done,
+      your family gets one clear playbook. Everything they need, in one place, when they need it most.
+      Start free today. No account needed. Because the best gift you can leave is not having to guess.
+      My Final Playbook. Live Fully ~ Die Ready.
+    </div>
+
+    <h3>Captions file — captions.en.vtt</h3>
+    <pre><span class="cue">WEBVTT</span>
+
+00:00:00.000 --> 00:00:08.000
+We plan for almost everything.
+The wedding. The house. The next vacation.
+
+00:00:08.000 --> 00:00:20.000
+But there's one plan most of us keep putting off,
+the one our family will need most, on the hardest day of their lives.
+
+00:00:20.000 --> 00:00:32.000
+Your phone. Your accounts. Your money. Your memories.
+All behind passwords no one else has.
+
+00:00:32.000 --> 00:00:40.000
+My Final Playbook turns that worry into a clear, calm plan,
+one you can start today, in about five minutes.
+
+00:00:40.000 --> 00:00:56.000
+It starts with a few simple questions.
+No jargon. No forms to dread. Just your real situation, in plain words.
+
+00:00:56.000 --> 00:01:14.000
+In minutes, you get a plan built around you:
+your first, most important steps across legal, financial, physical, and digital.
+
+00:01:14.000 --> 00:01:30.000
+Do one small step at a time. Check it off.
+Watch your affairs quietly come into order.
+
+00:01:30.000 --> 00:01:44.000
+And when it's done, your family gets one clear playbook.
+Everything they need, in one place, when they need it most.
+
+00:01:44.000 --> 00:02:00.000
+Start free today. No account needed.
+The best gift you can leave is not having to guess.
+My Final Playbook. Live Fully ~ Die Ready.</pre>
+    <div class="note brand">
+      <span class="k">Drop-in ready</span>
+      This matches the format of your existing <code>captions.en.vtt</code>. Replace that file to
+      caption the new video, and the landing-page player will show it automatically.
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">04</span>How to actually make it — tools &amp; connectors</h2>
+    <p class="sec-sub">A production pipeline that fits what you have connected. Each stage names the
+      tool, what it makes, and how it hands off to the next.</p>
+
+    <div class="tool">
+      <div class="side"><div class="stage">Stage 1</div><div class="name">Stills</div></div>
+      <div class="main">
+        <p><b>Generate the Act 1 family scenes + still-life shots</b> from the AI image prompts in each
+          storyboard scene.</p>
+        <ul>
+          <li>Use an image generator (Midjourney, DALL·E, or your image-gen connector). Keep one
+            consistent family + one consistent home across all Act 1 prompts by reusing a seed or
+            character reference.</li>
+          <li>Render 16:9. Generate 2–3 variants per scene and pick the warmest, most candid.</li>
+        </ul>
+        <p><span class="pill">Consistency tip</span> Lead every prompt with the same style suffix
+          ("documentary style, teal and cream palette, soft natural light, film grain, no text") so
+          all shots feel like one film.</p>
+      </div>
+    </div>
+
+    <div class="tool">
+      <div class="side"><div class="stage">Stage 2</div><div class="name">Motion</div></div>
+      <div class="main">
+        <p><b>Turn stills into gentle moving shots</b> (the slow push-ins and cross-dissolves).</p>
+        <ul>
+          <li>Use an image-to-video tool (Runway, Pika, Kling, or Luma) to add subtle camera motion to
+            each still. Keep moves slow: this is a calm film.</li>
+          <li>Or, simplest: apply a slow Ken Burns zoom to each still in your editor. Often enough for
+            this tone.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="tool">
+      <div class="side"><div class="stage">Stage 3</div><div class="name">Screens</div></div>
+      <div class="main">
+        <p><b>Record the Act 2 product demo</b> from the live app.</p>
+        <ul>
+          <li>Screen-record the real flow: assessment → generated plan → check-off + seal → sealed PDF.
+            Use the aging-parent example so all four domains are full.</li>
+          <li>1920x1080, clean browser. Then frame each capture on an AI-generated warm desk/cream
+            background so the screens live inside the film's world.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="tool">
+      <div class="side"><div class="stage">Stage 4</div><div class="name">Voice</div></div>
+      <div class="main">
+        <p><b>Record or generate the voiceover</b> from the transcript above.</p>
+        <ul>
+          <li>Warm, calm, unhurried female or male voice. A real human read is ideal for this topic;
+            if using AI voice (ElevenLabs), choose a gentle, mature timbre and slow the pace slightly.</li>
+          <li>The .vtt timings above are your target read pace (about 2:00 total).</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="tool">
+      <div class="side"><div class="stage">Stage 5</div><div class="name">Assemble</div></div>
+      <div class="main">
+        <p><b>Edit it all together</b> to the storyboard timings.</p>
+        <ul>
+          <li>Lay the VO on the timeline first, then drop each scene's visual to match its timecode, so
+            words and visuals lock (that is the whole point of the two-column storyboard).</li>
+          <li>Add the soft on-screen text beats. Add music (calm piano/strings, low under VO). You
+            already have a music and a no-music cut of the current video for reference.</li>
+          <li>Attach <code>captions.en.vtt</code>. Export a 16:9 master.</li>
+        </ul>
+        <p><span class="pill">Editors</span> CapCut, DaVinci Resolve (free), Premiere, or Descript
+          (which also does the VO + captions in one place).</p>
+      </div>
+    </div>
+
+    <div class="tool">
+      <div class="side"><div class="stage">Stage 6</div><div class="name">Cutdowns</div></div>
+      <div class="main">
+        <p><b>Make the social/ad versions</b> from the master.</p>
+        <ul>
+          <li>9:16 vertical, 15–30s: open on the strongest line ("passwords no one else has"), one
+            product beat (the seal), then the CTA. Hook in the first 3 seconds.</li>
+          <li>Burn in captions for silent autoplay. Keep the disclaimer line on the end card.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="note warn">
+      <span class="k">Sensitive-topic + AI-imagery cautions</span>
+      This is end-of-life content, so keep AI faces warm and dignified, never distressed or in a
+      hospital. Review every generated frame for the tell-tale AI artifacts (hands, eyes, text on
+      signs). Because these are AI-generated people, do not imply they are real customers or use them
+      in testimonials. Keep the disclaimer "Not legal, financial, or medical advice" on the end card.
+      Nothing spoken or shown should claim a specific dollar saved or a legal outcome.
+    </div>
+  </section>
+
+  <footer>
+    Blueprint for the My Final Playbook 2-minute product video. Script is brand-checked against
+    <code>docs/BRAND-VOICE-RULES.md</code> (no em-dashes, plain language, "Live Fully ~ Die Ready.").
+    Visual palette drawn from the live product. Stats reflect the corrected figures (200+ hours).
+  </footer>
+</main>

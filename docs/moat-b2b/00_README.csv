@@ -1,0 +1,9 @@
+File,What it is,How B2B uses it
+00_README.csv,This guide,Read first.
+01_ten_why_now_signals.csv,"The 10 WHY-NOW signals (what moved someone to act), each with its flag, whether it reorders or gates, and how the guide speaks to that person.","The gamified entry: 'Ten signals you're ready. Which is yours?' Map your onboarding to these 10."
+02_life_stage_signals.csv,"The WHO-you-are signals (partner, kids, aging parent, business owner, etc.) that gate clusters and set base order.","The first onboarding part. These decide which of your 40 questions a person even sees."
+03_the_moat_three_levers.csv,"The moat itself: REORDER + GATE + BRANCH, why show/hide alone is NOT the moat, the lead rule, and why it's deterministic/defensible.","The pitch. This is what makes it feel like a 1:1 expert session, not a form. Use in the deck."
+04_question_tagging_template.csv,"The working template: tag each question with showPolicy / triggerSignals / priorityBoost. Pre-filled with worked examples + template rows.","THE ACTION ITEM. Paste your 40 B2B questions in, tag each one. Same schema the engine reads."
+,,
+THE ONE-LINE MOAT,"Same question bank, three levers (reorder, gate, branch) driven by two signal families (who-you-are + why-now), producing a genuinely different journey per person, deterministically.","Same 40 questions. Every person gets a different, expert-led path. That is the moat."
+THE FLOW,"Welcome -> Part 1 (who is in your life) -> Part 2 (why now: pick from 10) -> domains ordered by combined signals.","Two short onboarding screens set every downstream signal. No score shown, no judgment."
