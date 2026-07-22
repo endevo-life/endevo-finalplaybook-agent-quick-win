@@ -6,7 +6,7 @@ export default function TopNav({ route, user, account, onHome, onSignIn, onSignO
   return (
     <div className="fp-topnav">
       <div className="fp-topnav-brand" onClick={onHome}>
-        <Logo size={30} radius={8} fontSize={13} />
+        <Logo size={40} radius={8} fontSize={13} />
         <span className="fp-topnav-name">{COMPANY_NAME}</span>
         {PRODUCT_NAME !== COMPANY_NAME && <span className="fp-topnav-sub">· {PRODUCT_NAME}</span>}
       </div>
