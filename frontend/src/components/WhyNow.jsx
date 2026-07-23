@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { WHY_NOW_SIGNALS } from "../config/whyNowSignals";
 import { firstName } from "../config/branding";
+import SignalIcon from "./SignalIcon";
 
 // "Why now?" — the avoidance-breaking entry point (MOAT doc §1b).
 //
@@ -54,12 +55,13 @@ export default function WhyNow({ user, picked, setPicked, onNext, onBack }) {
               aria-pressed={on}
               onClick={() => toggle(s.flag)}
             >
-              <span className="fp-whynow-check" aria-hidden="true">
-                {on ? "✓" : ""}
-              </span>
+              <SignalIcon flag={s.flag} />
               <span className="fp-whynow-text">
                 <span className="fp-whynow-label">{s.label}</span>
                 <span className="fp-whynow-sub">{s.sub}</span>
+              </span>
+              <span className="fp-whynow-check" aria-hidden="true">
+                {on ? "✓" : ""}
               </span>
             </button>
           );
