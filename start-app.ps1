@@ -1,4 +1,4 @@
-# Final Playbook — one-click launcher
+﻿# Final Playbook — one-click launcher
 # Starts the FastAPI backend (port 8001) and the Vite frontend (port 3200)
 # each in its own window, independent of any editor/agent session.
 

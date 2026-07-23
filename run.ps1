@@ -1,4 +1,4 @@
-<#
+﻿<#
   Final Playbook — one-command local launcher.
 
   Starts the backend (FastAPI/uvicorn on :8001) and the frontend (Vite dev

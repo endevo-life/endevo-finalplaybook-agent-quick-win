@@ -1,0 +1,15 @@
+#,Life-stage signal (WHO you are),Flag,Primary role,Effect on the journey,Source
+1,Has a partner/spouse,hasPartner,GATE + order,Surfaces spousal/beneficiary questions; base order,10-signal chart
+2,Has young children,hasYoungChildren,GATE + order,Surfaces guardian cluster; Legal into top two domains,10-signal chart
+3,Has adult children,hasAdultChildren,GATE + order,Surfaces adult-dependent / communication questions,10-signal chart
+4,Has an aging parent,hasAgingParent,GATE + order,Surfaces parent-planning questions,"Real sessions [Sasha],[Ling]"
+5,Parent lives alone,parentLivesAlone,GATE,Adds access/check-in prompts for the parent,Real sessions
+6,Parent has no documents,parentHasNoDocs,GATE (leads),"With hasAgingParent, the parent-planning cluster LEADS","Real sessions [Sasha],[Ling]"
+7,Is a solo ager,isSoloAger,GATE,Removes guardian/spousal; adds chosen-decision-maker prompts,10-signal chart
+8,Is a caregiver,isCaregiver,GATE + order,Surfaces caregiving/long-term-care lens,10-signal chart
+9,Is a business owner,isBusinessOwner,GATE + order,Surfaces business-succession; Legal+Financial top two,10-signal chart
+10,Has significant assets,hasSignificantAssets / hasAssets,GATE + boost,Surfaces asset-transfer / TOD-POD questions,10-signal chart
+11,Digital life heavy,digitalLifeHeavy / digitalOutweighs,GATE + boost,Boosts digital-access questions for everyone,Baseline gap
+12,Has a special-needs dependent,hasSpecialNeedsDependent,GATE (cluster),Adds special-needs-trust cluster,Case study [CS2]
+13,Terminal diagnosis / hospice path,terminalDiagnosis,GATE (leads),Five Wishes + healthcare-proxy depth + VSED lead,"Case study [Sasha],[CS3]"
+14,One partner holds all the info,spousalDependency,GATE (cluster),Ownership-transfer prompts (learn the safe combo),Case study [CS3]

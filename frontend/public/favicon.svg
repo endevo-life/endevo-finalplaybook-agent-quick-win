@@ -1,9 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
-  <rect width="64" height="64" rx="14" fill="#08123A"/>
-  <!-- open book / playbook mark -->
-  <path d="M14 20c5-2.4 11-2.4 18 0v26c-7-2.4-13-2.4-18 0V20z" fill="#58BBB6"/>
-  <path d="M50 20c-5-2.4-11-2.4-18 0v26c7-2.4 13-2.4 18 0V20z" fill="#D5D1C7"/>
-  <path d="M32 20v26" stroke="#08123A" stroke-width="2.5"/>
-  <!-- setting-sun ribbon bookmark -->
-  <path d="M40 14v14l4-3 4 3V14z" fill="#FF5D00"/>
+  <!-- open book / playbook mark: transparent bg, scaled to fill and outlined in
+       navy so it stays readable at 16px on both light and dark tab bars -->
+  <g transform="translate(32 30) scale(1.6) translate(-32 -30)">
+    <path d="M14 20c5-2.4 11-2.4 18 0v26c-7-2.4-13-2.4-18 0V20z" fill="#58BBB6" stroke="#08123A" stroke-width="1.6" stroke-linejoin="round"/>
+    <path d="M50 20c-5-2.4-11-2.4-18 0v26c7-2.4 13-2.4 18 0V20z" fill="#D5D1C7" stroke="#08123A" stroke-width="1.6" stroke-linejoin="round"/>
+    <path d="M32 20v26" stroke="#08123A" stroke-width="2"/>
+    <!-- setting-sun ribbon bookmark -->
+    <path d="M40 14v14l4-3 4 3V14z" fill="#FF5D00" stroke="#08123A" stroke-width="1.2" stroke-linejoin="round"/>
+  </g>
 </svg>

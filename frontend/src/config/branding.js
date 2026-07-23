@@ -4,8 +4,8 @@
 // "clone" framing now reads from here.
 
 // Product + company identity ------------------------------------------------
-export const PRODUCT_NAME = "MyFinalPlaybook";
-export const COMPANY_NAME = "MyFinalPlaybook";     // shown in the top-left nav
+export const PRODUCT_NAME = "My Final Playbook";
+export const COMPANY_NAME = "My Final Playbook";   // shown in the top-left nav
 export const TAGLINE = "Live Fully ~ Die Ready.";
 
 // The member-facing name of the deliverable. ALWAYS "My Final Playbook" (never
