@@ -630,8 +630,16 @@ button, input, textarea {
   border-color: var(--brand); background: var(--brand-lt);
   box-shadow: 0 2px 4px rgba(22,31,51,.06), 0 12px 26px -14px rgba(22,31,51,.3);
 }
+.fp-whynow-icon {
+  flex: none; width: 36px; height: 36px; border-radius: 10px; margin-top: 1px;
+  background: var(--brand-lt); color: var(--brand);
+  display: grid; place-items: center;
+  transition: background .2s ease, color .2s ease;
+}
+.fp-whynow-icon svg { width: 21px; height: 21px; display: block; }
+.fp-whynow-card.on .fp-whynow-icon { background: var(--brand); color: var(--brand-lt); }
 .fp-whynow-check {
-  flex: none; width: 22px; height: 22px; border-radius: 7px; margin-top: 1px;
+  flex: none; width: 22px; height: 22px; border-radius: 7px; margin: 1px 0 0 auto;
   border: 1.5px solid var(--line); background: var(--bg);
   display: grid; place-items: center; font-size: 13px; font-weight: 700;
   color: #fff; transition: background .2s ease, border-color .2s ease;
