@@ -1,7 +1,8 @@
 <!doctype html>
 <html>
 <head>
-<meta charset="utf-8"><title>MyFinalPlaybook — Operator Console</title>
+<meta charset="utf-8"><title>My Final Playbook — Operator Console</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <style>
  :root{--ink:#161f33;--body:#4a5468;--dim:#8b92a3;--line:#e3e1d9;--brand:#1b2a4a;--brand-lt:#e9e2d2;--accent:#b08d57;--bg:#fafaf9;--surf:#fff;--ok:#2e7d47;--warn:#a6423a}
@@ -25,6 +26,8 @@
  button.ghost{background:transparent;color:var(--body);border:1px solid var(--line)}
  input{border:1px solid var(--line);border-radius:8px;padding:9px 12px;font-size:14px;width:100%}
  .login{max-width:360px;margin:80px auto} .err{color:var(--warn);font-size:13px;margin-top:8px}
+ .brandmark{display:inline-flex;align-items:center;gap:9px} .brandmark svg{width:22px;height:22px;flex:none}
+ .login .brandmark{width:100%;justify-content:center;margin-bottom:10px} .login .brandmark svg{width:36px;height:36px}
  .done{color:var(--ok)} .todo{color:var(--dim)}
  a{color:var(--brand)}
  /* tabs */
@@ -70,6 +73,8 @@ async function api(path, opts={}){
 }
 const el = document.getElementById("app");
 const esc = s => (s==null?"":String(s)).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+// The brand book mark (same as /favicon.svg) so the console reads as ours.
+const LOGO = `<svg viewBox="0 0 64 64" aria-hidden="true"><g transform="translate(32 30) scale(1.6) translate(-32 -30)"><path d="M14 20c5-2.4 11-2.4 18 0v26c-7-2.4-13-2.4-18 0V20z" fill="#58BBB6" stroke="#08123A" stroke-width="1.6" stroke-linejoin="round"/><path d="M50 20c-5-2.4-11-2.4-18 0v26c7-2.4 13-2.4 18 0V20z" fill="#D5D1C7" stroke="#08123A" stroke-width="1.6" stroke-linejoin="round"/><path d="M32 20v26" stroke="#08123A" stroke-width="2"/><path d="M40 14v14l4-3 4 3V14z" fill="#FF5D00" stroke="#08123A" stroke-width="1.2" stroke-linejoin="round"/></g></svg>`;
 
 // Passwordless admin login: same email-code flow members use. The backend
 // grants admin to a session whose email is on ADMIN_EMAILS — no token to
@@ -84,7 +89,7 @@ async function post(path, body){
 }
 
 function loginView(msg){
-  el.innerHTML = `<div class="login card"><h2>Operator Console</h2>
+  el.innerHTML = `<div class="login card"><div class="brandmark">${LOGO}</div><h2>Operator Console</h2>
     <p style="color:var(--dim);font-size:13px">Enter your admin email — we'll send you a one-time sign-in code.</p>
     <input id="em" type="email" placeholder="admin email" value="${esc(adminEmail)}" onkeydown="if(event.key==='Enter')sendCode()">
     <button style="margin-top:12px;width:100%" onclick="sendCode()">Email me a code →</button>
@@ -101,7 +106,7 @@ async function sendCode(){
   } catch(e){ loginView(e.message); }
 }
 function codeView(devCode, msg){
-  el.innerHTML = `<div class="login card"><h2>Operator Console</h2>
+  el.innerHTML = `<div class="login card"><div class="brandmark">${LOGO}</div><h2>Operator Console</h2>
     <p style="color:var(--dim);font-size:13px">We sent a 6-digit code to <b>${esc(adminEmail)}</b>.${devCode?` <span style="color:var(--dim)">(dev code: <b>${esc(devCode)}</b>)</span>`:""}</p>
     <input id="code" inputmode="numeric" placeholder="6-digit code" value="${esc(devCode)}" onkeydown="if(event.key==='Enter')verifyCode()">
     <button style="margin-top:12px;width:100%" onclick="verifyCode()">Sign in →</button>
@@ -122,7 +127,7 @@ async function verifyCode(){
   catch(e){ token=""; loginView(e.status===401?"Signed in, but that email doesn't have admin access.":e.message); }
 }
 function tokenView(msg){
-  el.innerHTML = `<div class="login card"><h2>Operator Console</h2>
+  el.innerHTML = `<div class="login card"><div class="brandmark">${LOGO}</div><h2>Operator Console</h2>
     <p style="color:var(--dim);font-size:13px">Fallback: sign in with the shared admin token.</p>
     <input id="em" type="email" placeholder="admin email" value="${esc(adminEmail)}" style="margin-bottom:8px">
     <input id="tok" type="password" placeholder="admin token">
@@ -141,7 +146,7 @@ function logout(){ token=""; adminEmail=""; localStorage.removeItem(TK); localSt
 let activeTab = "overview";
 function dashboard(tab){
   if(tab) activeTab = tab;
-  el.innerHTML = `<header><div><span class="t">MyFinalPlaybook — Operator Console</span><span class="plane">plane: b2c</span></div>
+  el.innerHTML = `<header><div class="brandmark">${LOGO}<span class="t">My Final Playbook — Operator Console</span><span class="plane">plane: b2c</span></div>
     <button class="ghost" onclick="logout()">sign out</button></header>
     <main>
       <div class="tabs">
