@@ -26,6 +26,7 @@ env:
   API_URL: https://xlzj6dntz0.execute-api.us-east-1.amazonaws.com
   FRONTEND_BUCKET: mfp-dev-frontend
   CLOUDFRONT_URL: https://d3m7jok0qoyofy.cloudfront.net
+  APP_URL: https://app.finalplaybook.com
 
 jobs:
   deploy-backend:
@@ -72,8 +73,8 @@ jobs:
               "AdminToken=${{ secrets.ADMIN_TOKEN }}" \
               "AdminEmails=hello@endevo.life,bluesproutagency@gmail.com" \
               "AllowDevUpgrade=true" \
-              "AllowedOrigins=http://localhost:3200,${CLOUDFRONT_URL}" \
-              "AppBaseUrl=${CLOUDFRONT_URL}"
+              "AllowedOrigins=http://localhost:3200,${CLOUDFRONT_URL},${APP_URL}" \
+              "AppBaseUrl=${APP_URL}"
       - name: Smoke test the live API
         run: |
           code=$(curl -s -o /dev/null -w "%{http_code}" "$API_URL/api/health")

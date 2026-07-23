@@ -14,19 +14,32 @@ param(
   [string]$StackName = "mfp-dev-frontend",
   [string]$Region    = "us-east-1",
   [string]$BucketName = "mfp-dev-frontend",
-  [string]$ApiUrl    = "https://xlzj6dntz0.execute-api.us-east-1.amazonaws.com"
+  [string]$ApiUrl    = "https://xlzj6dntz0.execute-api.us-east-1.amazonaws.com",
+  # Custom domain: pass BOTH or NEITHER. Cert must be ISSUED, in us-east-1.
+  #   .\deploy-frontend.ps1 -DomainName app.finalplaybook.com -CertificateArn arn:aws:acm:us-east-1:...:certificate/...
+  [string]$DomainName = "",
+  [string]$CertificateArn = ""
 )
 
 $ErrorActionPreference = "Stop"
 $infra = $PSScriptRoot
 $root  = Split-Path $infra -Parent
 
+if (($DomainName -and -not $CertificateArn) -or ($CertificateArn -and -not $DomainName)) {
+  throw "Pass -DomainName and -CertificateArn together (or neither)."
+}
+$overrides = @("BucketName=$BucketName")
+if ($DomainName) {
+  $overrides += "DomainName=$DomainName"
+  $overrides += "AcmCertificateArn=$CertificateArn"
+}
+
 Write-Host "1/5  Deploying frontend stack (S3 + CloudFront)..." -ForegroundColor Cyan
 aws cloudformation deploy `
   --template-file (Join-Path $infra "frontend.yaml") `
   --stack-name $StackName `
   --region $Region `
-  --parameter-overrides "BucketName=$BucketName" `
+  --parameter-overrides $overrides `
   --no-fail-on-empty-changeset
 if ($LASTEXITCODE -ne 0) { throw "stack deploy failed" }
 

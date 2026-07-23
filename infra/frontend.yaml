@@ -10,6 +10,23 @@ Parameters:
     Type: String
     Default: "mfp-dev-frontend"
     Description: Globally-unique S3 bucket name for the built app.
+  DomainName:
+    Type: String
+    Default: ""
+    Description: >
+      Custom domain for the app (e.g. app.finalplaybook.com). Leave empty to
+      serve on the default *.cloudfront.net URL only.
+  AcmCertificateArn:
+    Type: String
+    Default: ""
+    Description: >
+      ARN of an ISSUED ACM certificate in us-east-1 covering DomainName.
+      Required whenever DomainName is set (CloudFront only accepts us-east-1 certs).
+
+Conditions:
+  HasCustomDomain: !And
+    - !Not [!Equals [!Ref DomainName, ""]]
+    - !Not [!Equals [!Ref AcmCertificateArn, ""]]
 
 Resources:
   # Private bucket — no public access; only CloudFront (via OAC) can read it.
@@ -61,8 +78,15 @@ Resources:
           - ErrorCode: 404
             ResponseCode: 200
             ResponsePagePath: /index.html
-        ViewerCertificate:
-          CloudFrontDefaultCertificate: true   # *.cloudfront.net HTTPS, no custom domain
+        # Custom domain (app.finalplaybook.com): alias + ACM cert when provided,
+        # otherwise the default *.cloudfront.net certificate.
+        Aliases: !If [HasCustomDomain, [!Ref DomainName], !Ref "AWS::NoValue"]
+        ViewerCertificate: !If
+          - HasCustomDomain
+          - AcmCertificateArn: !Ref AcmCertificateArn
+            SslSupportMethod: sni-only
+            MinimumProtocolVersion: TLSv1.2_2021
+          - CloudFrontDefaultCertificate: true   # *.cloudfront.net HTTPS, no custom domain
 
   # Bucket policy: allow ONLY this CloudFront distribution to GetObject.
   SiteBucketPolicy:
