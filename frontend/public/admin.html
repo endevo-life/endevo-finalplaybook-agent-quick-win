@@ -71,19 +71,70 @@ async function api(path, opts={}){
 const el = document.getElementById("app");
 const esc = s => (s==null?"":String(s)).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
 
+// Passwordless admin login: same email-code flow members use. The backend
+// grants admin to a session whose email is on ADMIN_EMAILS — no token to
+// remember. The shared-token form remains as a fallback for scripts/edge cases.
+let authSession = ""; // Cognito custom-auth challenge session (echoed on verify)
+
+async function post(path, body){
+  const res = await fetch(BASE+path, {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(body)});
+  const data = await res.json().catch(()=>null);
+  if(!res.ok){ const e=new Error((data&&data.detail&&(data.detail.message||data.detail))||("HTTP "+res.status)); e.status=res.status; e.detail=data&&data.detail; throw e; }
+  return data;
+}
+
 function loginView(msg){
   el.innerHTML = `<div class="login card"><h2>Operator Console</h2>
-    <p style="color:var(--dim);font-size:13px">Enter your admin email and the admin token to sign in.</p>
+    <p style="color:var(--dim);font-size:13px">Enter your admin email — we'll send you a one-time sign-in code.</p>
+    <input id="em" type="email" placeholder="admin email" value="${esc(adminEmail)}" onkeydown="if(event.key==='Enter')sendCode()">
+    <button style="margin-top:12px;width:100%" onclick="sendCode()">Email me a code →</button>
+    <p style="margin:10px 0 0;font-size:12px;text-align:center"><a href="#" style="color:var(--dim)" onclick="tokenView();return false">use admin token instead</a></p>
+    ${msg?`<p class="err">${esc(msg)}</p>`:""}</div>`;
+}
+async function sendCode(){
+  adminEmail = document.getElementById("em").value.trim().toLowerCase();
+  if(!adminEmail) return loginView("Enter your admin email.");
+  try{
+    const r = await post("/api/auth/start", {email: adminEmail});
+    authSession = r.session || "";
+    codeView(r.devLoginCode || "");
+  } catch(e){ loginView(e.message); }
+}
+function codeView(devCode, msg){
+  el.innerHTML = `<div class="login card"><h2>Operator Console</h2>
+    <p style="color:var(--dim);font-size:13px">We sent a 6-digit code to <b>${esc(adminEmail)}</b>.${devCode?` <span style="color:var(--dim)">(dev code: <b>${esc(devCode)}</b>)</span>`:""}</p>
+    <input id="code" inputmode="numeric" placeholder="6-digit code" value="${esc(devCode)}" onkeydown="if(event.key==='Enter')verifyCode()">
+    <button style="margin-top:12px;width:100%" onclick="verifyCode()">Sign in →</button>
+    <p style="margin:10px 0 0;font-size:12px;text-align:center"><a href="#" style="color:var(--dim)" onclick="loginView();return false">← different email</a></p>
+    ${msg?`<p class="err">${esc(msg)}</p>`:""}</div>`;
+}
+async function verifyCode(){
+  const code = document.getElementById("code").value.trim();
+  if(!code) return codeView("", "Enter the code from your email.");
+  try{
+    const r = await post("/api/auth/verify", {email: adminEmail, code, session: authSession});
+    token = r.token;
+  } catch(e){
+    if(e.detail && e.detail.session) authSession = e.detail.session; // Cognito: retry with fresh session
+    return codeView("", e.status===401 ? (e.message||"Wrong or expired code — try again.") : e.message);
+  }
+  try{ await api("/api/admin/login",{method:"POST",body:"{}"}); localStorage.setItem(TK,token); localStorage.setItem(EM,adminEmail); dashboard(); }
+  catch(e){ token=""; loginView(e.status===401?"Signed in, but that email doesn't have admin access.":e.message); }
+}
+function tokenView(msg){
+  el.innerHTML = `<div class="login card"><h2>Operator Console</h2>
+    <p style="color:var(--dim);font-size:13px">Fallback: sign in with the shared admin token.</p>
     <input id="em" type="email" placeholder="admin email" value="${esc(adminEmail)}" style="margin-bottom:8px">
-    <input id="tok" type="password" placeholder="admin token" value="${esc(token)}">
+    <input id="tok" type="password" placeholder="admin token">
     <button style="margin-top:12px;width:100%" onclick="doLogin()">Sign in →</button>
+    <p style="margin:10px 0 0;font-size:12px;text-align:center"><a href="#" style="color:var(--dim)" onclick="loginView();return false">← sign in with email code</a></p>
     ${msg?`<p class="err">${esc(msg)}</p>`:""}</div>`;
 }
 async function doLogin(){
   adminEmail = document.getElementById("em").value.trim().toLowerCase();
   token = document.getElementById("tok").value.trim();
   try{ await api("/api/admin/login",{method:"POST",body:"{}"}); localStorage.setItem(TK,token); localStorage.setItem(EM,adminEmail); dashboard(); }
-  catch(e){ loginView(e.status===401?"Invalid token or email.":e.message); }
+  catch(e){ tokenView(e.status===401?"Invalid token or email.":e.message); }
 }
 function logout(){ token=""; adminEmail=""; localStorage.removeItem(TK); localStorage.removeItem(EM); loginView(); }
 
