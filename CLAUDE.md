@@ -48,11 +48,14 @@ Final-Playbook/
 │   │   ├── config.py           # brand/voice + runtime settings (de-branding seam)
 │   │   ├── api/
 │   │   │   ├── deps.py         # auth dependencies (current_email / require_email)
-│   │   │   └── routes/         # meta, auth, assessment, plan, chat, billing
+│   │   │   └── routes/         # meta, auth, assessment, plan, chat, billing,
+│   │   │                       #   feedback, admin
 │   │   ├── schemas/requests.py # Pydantic request models
-│   │   ├── services/           # BUSINESS logic: auth, billing, entitlements, plans
+│   │   ├── services/           # BUSINESS logic: auth, billing, entitlements,
+│   │   │                       #   plans, feedback, notifications
 │   │   ├── agent/              # the AI agent: rules_engine, orchestrator,
 │   │   │                       #   personalize, chat (rules = free, LLM = paid)
+│   │   ├── data/email.py       # email TRANSPORT (console | ses) — no content
 │   │   └── data/store/         # DATA layer: base(+factory), memory, sqlite, dynamodb
 │   ├── lambda_handler.py       # Mangum wrapper for AWS Lambda (imports app.main)
 │   ├── demo.py                 # manual smoke test
@@ -89,6 +92,27 @@ it, paid-tier requests return a 502 with the underlying error rather than a raw
 crash. To test paid features without Stripe, grant a user paid tier manually
 (see `DEPLOY.md` §2).
 
+## Operator notifications & member feedback
+
+- **Signup alert:** a brand-new member triggers one email to `OPERATOR_EMAILS`.
+  Returning logins send nothing.
+- **Weekly digest:** EventBridge invokes the same Lambda with
+  `{"job": "weekly_digest"}` on Mondays; `lambda_handler.py` dispatches on event
+  shape. Idempotent per week via a watermark in the config store.
+- **Feedback:** one `POST /api/feedback` serves help / complaint / survey, works
+  signed-in *and* anonymous. Persisted first, emailed second. Rate-limited by
+  email when identified, by IP when not — the anonymous path is public and
+  writes rows + sends mail, so it always needs a ceiling.
+- **Everything is best-effort** — `data/email.py`'s `send()` returns a bool and
+  never raises, and `services/notifications.py` swallows. A mail failure must
+  never cost a signup or lose a complaint. Same contract as `analytics.emit()`.
+- **Off by default:** `EMAIL_BACKEND=console` + empty `OPERATOR_EMAILS` means no
+  sends from a dev laptop or a test run. Set both to go live (see `DEPLOY.md` §3d).
+- **Privacy line:** operator email carries identity only (address, tier,
+  timestamps, counts). A member's answers, plan, or narrative must NEVER appear
+  in an outbound email — there's a test asserting this.
+- Spec: `specs/notifications-and-feedback.md`.
+
 ## Freemium / paid (enforced server-side)
 
 - **Free:** anonymous, unlimited, rules engine only. No LLM, no chat.
@@ -105,7 +129,9 @@ From `agent/`:
 ```
 pytest tests/ -v
 ```
-Everything passes with only `requirements.txt` and no API key (28 tests). The
+Everything passes with only `requirements.txt` and no API key (118 tests, no AWS
+credentials needed — `conftest.py` forces the in-memory store and the
+log-only email backend so a test run can never send real mail). The
 paid-tier LLM grounding tests auto-skip if no `ANTHROPIC_API_KEY` is configured.
 
 ## Deploying
@@ -135,3 +161,7 @@ first and payments can be turned on later.
   `/api/pricing` — edit them there, not in the frontend.
 - To add a new store backend, implement the full method set in a new
   `app/data/store/<name>.py` and register it in `base.py`'s `get_store()`.
+- Notifications keep transport (`app/data/email.py`) separate from content
+  (`app/services/notifications.py`). Add a new channel by implementing a
+  backend in `email.py`; add a new message by adding a function in
+  `notifications.py`. Never let a send raise into a request path.

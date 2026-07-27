@@ -24,7 +24,7 @@ const PREMIUM = [
   ["Your full plan", "Every personalized action across all domains, prioritized for you."],
 ];
 
-export default function Landing({ onStart, onSignIn, onUpgrade, isPaid }) {
+export default function Landing({ onStart, onSignIn, onUpgrade, isPaid, onHelp }) {
   return (
     <div>
       {/* Hero: fear reduction, not feature list */}
@@ -180,6 +180,18 @@ export default function Landing({ onStart, onSignIn, onUpgrade, isPaid }) {
           {PRIMARY_CTA}, it's free →
         </button>
       </div>
+
+      {/* A way to reach a person, reachable before anyone signs up. */}
+      {onHelp && (
+        <div className="fp-footer-links">
+          <button className="fp-footer-link" onClick={() => onHelp("help")}>
+            Need help?
+          </button>
+          <button className="fp-footer-link" onClick={() => onHelp("survey")}>
+            Send feedback
+          </button>
+        </div>
+      )}
     </div>
   );
 }

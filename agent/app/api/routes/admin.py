@@ -13,6 +13,10 @@ Endpoints:
   POST /api/admin/users/{email}/tier -> grant/revoke paid
   POST /api/admin/users/{email}/reset-usage -> reset monthly quotas
   GET/POST /api/admin/config         -> feature flags / config
+  GET  /api/admin/feedback?limit=    -> member help/complaint/survey submissions
+  POST /api/admin/digest/send        -> send the weekly summary now
+  GET  /api/admin/digest/preview     -> this week's numbers without sending
+  GET  /api/admin/notifications      -> email backend + recipients + last sends
 """
 import secrets
 
@@ -192,6 +196,66 @@ def admin_reset_usage(email: str, _: bool = Depends(require_admin)):
         pass
     analytics.emit("admin_reset_usage", email=email)
     return {"ok": True, "month": month_key(), "usage": store.get_usage(email)}
+
+
+@router.get("/feedback")
+def admin_feedback(limit: int = Query(100, le=500), _: bool = Depends(require_admin)):
+    """Member help requests, complaints, and survey responses -- newest first."""
+    from app.services import feedback as feedback_service
+    items = feedback_service.recent(limit=limit)
+    by_kind = {}
+    for f in items:
+        by_kind[f.get("kind", "help")] = by_kind.get(f.get("kind", "help"), 0) + 1
+    return {"feedback": items, "count": len(items), "byKind": by_kind}
+
+
+@router.post("/digest/send")
+def admin_send_digest(force: bool = Query(False), _: bool = Depends(require_admin)):
+    """Send the weekly summary now. Idempotent per week unless force=true, so a
+    double-click can't double-send."""
+    from app.services import notifications
+    result = notifications.send_weekly_digest(force=force)
+    analytics.emit("admin_digest_send", sent=result.get("sent"))
+    return result
+
+
+@router.get("/digest/preview")
+def admin_preview_digest(_: bool = Depends(require_admin)):
+    """The numbers the next digest WOULD report, without sending anything."""
+    from app.services import notifications
+    window = notifications._last_week_window()
+    summary = notifications.weekly_summary(window)
+    return {
+        "window": {"label": window["label"], "week": window["key"], "tz": window["tz"]},
+        "summary": summary,
+        "subject": notifications._digest_subject(summary, window),
+        "body": notifications._digest_body(summary, window),
+    }
+
+
+@router.get("/notifications")
+def admin_notifications(_: bool = Depends(require_admin)):
+    """Delivery status: which transport is live, who receives, what went out.
+
+    SES failures are silent by design (sends are best-effort), so this is how an
+    operator confirms mail is actually configured and reaching people.
+    """
+    from app.config import DIGEST_ENABLED, DIGEST_TIMEZONE, EMAIL_FROM, operator_emails
+    from app.data import email as email_mod
+    from app.services import notifications
+    return {
+        "backend": email_mod.backend_name(),
+        "from": EMAIL_FROM,
+        "recipients": operator_emails(),
+        "configured": bool(operator_emails()),
+        "digestEnabled": DIGEST_ENABLED,
+        "digestTimezone": DIGEST_TIMEZONE,
+        "lastSentWeek": get_events().get_config(notifications.DIGEST_WATERMARK_KEY),
+        "recentSends": [
+            {"to": s["to"], "subject": s["subject"]}
+            for s in email_mod.last_sends(limit=10)
+        ],
+    }
 
 
 @router.get("/config")

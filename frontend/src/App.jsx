@@ -10,6 +10,7 @@ import Session from "./components/Session";
 import ResultsPanel from "./components/ResultsPanel";
 import Assessment from "./components/Assessment";
 import LoginModal from "./components/LoginModal";
+import FeedbackModal from "./components/FeedbackModal";
 import DemoCheckout from "./components/DemoCheckout";
 import Settings from "./components/Settings";
 import { getGlossary, startCheckout, devUpgrade, getToken } from "./api/client";
@@ -33,6 +34,8 @@ export default function App() {
   const [showLogin, setShowLogin] = useState(false);
   const [showCheckout, setShowCheckout] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  // null = closed; otherwise the kind the entry point preselected ("help" | "survey" | ...)
+  const [helpKind, setHelpKind] = useState(null);
   // When true, a successful login should immediately resume the upgrade flow
   // (user clicked Upgrade while logged out).
   const [pendingUpgrade, setPendingUpgrade] = useState(false);
@@ -161,6 +164,7 @@ export default function App() {
         onSignIn={() => setShowLogin(true)}
         onSignOut={auth.logout}
         onSettings={() => setShowSettings(true)}
+        onHelp={() => setHelpKind("help")}
       />
       <Disclaimer />
 
@@ -170,6 +174,7 @@ export default function App() {
           onSignIn={() => setShowLogin(true)}
           onUpgrade={handleUpgrade}
           isPaid={auth.isPaid}
+          onHelp={(kind) => setHelpKind(kind || "help")}
         />
       )}
 
@@ -241,6 +246,14 @@ export default function App() {
           auth={auth}
           onClose={() => { setShowLogin(false); setPendingUpgrade(false); setPendingStart(false); }}
           onLoggedIn={handleLoggedIn}
+        />
+      )}
+
+      {helpKind && (
+        <FeedbackModal
+          account={auth.account}
+          initialKind={helpKind}
+          onClose={() => setHelpKind(null)}
         />
       )}
 

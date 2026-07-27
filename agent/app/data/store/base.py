@@ -17,6 +17,7 @@ Sessions:           create_session, get_session_email, delete_session
 Usage metering:     get_usage, increment_usage
 Saved plan:         get_plan, save_plan
 Chat history:       get_chat_history, append_chat
+Member feedback:    save_feedback, list_feedback, count_feedback_since
 """
 import os
 import time

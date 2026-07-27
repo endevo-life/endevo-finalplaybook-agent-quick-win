@@ -27,6 +27,7 @@ These are the things I can't create for you — they need your identity/payment:
 | Anthropic API key | console.anthropic.com | Paid-tier LLM calls |
 | Cognito user pool + app client + custom-auth Lambda triggers | AWS Cognito console | Real auth (email login codes) |
 | SES sending identity, out of sandbox | AWS SES console | Cognito emailing login codes to any address |
+| SES **sender** identity for operator mail | AWS SES console | Signup alerts + weekly digest (step 3d) |
 | Stripe account + a $9/mo recurring Price | dashboard.stripe.com | Payments (optional at first) |
 | A domain name (optional) | any registrar | Branded URL |
 
@@ -100,18 +101,36 @@ FastAPI app. Once you have:
 `agent/app/services/auth_cognito.py`'s module docstring for the exact API
 calls the backend makes against the pool.
 
-### 3b. The 7 DynamoDB tables (created outside SAM)
+### 3b. The 8 DynamoDB tables (created outside SAM)
 
-The app uses **seven** prefixed DynamoDB tables
-(`{prefix}users/sessions/usage/plans/chat/events/config` — the last two back the
-analytics/admin-config store in `agent/app/data/events.py`). These are **not**
-created by `infra/template.yaml`: in the `mfp-dev-` environment they already
-exist (created by hand), and CloudFormation can only create tables it owns, so
-the template references them by name and only grants the Lambda CRUD access to
-`{prefix}*`. If you deploy into a **new** environment where the tables don't yet
-exist, create them first (matching the key schema in
+The app uses **eight** prefixed DynamoDB tables
+(`{prefix}users/sessions/usage/plans/chat/events/config/feedback` — `events` and
+`config` back the analytics/admin-config store in `agent/app/data/events.py`;
+`feedback` holds member help requests, complaints, and survey responses). These
+are **not** created by `infra/template.yaml`: in the `mfp-dev-` environment they
+already exist (created by hand), and CloudFormation can only create tables it
+owns, so the template references them by name and only grants the Lambda CRUD
+access to `{prefix}*`. If you deploy into a **new** environment where the tables
+don't yet exist, create them first (matching the key schema in
 `agent/app/data/store/dynamodb.py` + `events.py`) before deploying, or add
 `AWS::DynamoDB::Table` resources back to the template for that env.
+
+**The `feedback` table is new** — create it before deploying the notification
+feature into an existing environment:
+
+```bash
+aws dynamodb create-table \
+  --table-name mfp-dev-feedback \
+  --attribute-definitions AttributeName=scope,AttributeType=S \
+                          AttributeName=ts_id,AttributeType=S \
+  --key-schema AttributeName=scope,KeyType=HASH \
+                AttributeName=ts_id,KeyType=RANGE \
+  --billing-mode PAY_PER_REQUEST
+```
+
+(Fixed `scope` partition + sortable `ts_id` range key — feedback is read
+newest-first across all members, like an inbox, so one partition sorts instead
+of scanning. Same shape as the `events` table.)
 
 Validate before building:
 
@@ -155,6 +174,114 @@ On success SAM prints an **ApiUrl** output — copy it; the frontend needs it.
 > `AdminToken` gates `/api/admin/*` and the admin console
 > (`frontend/public/admin.html`) — leave it blank to disable the admin API
 > entirely, or set a strong secret to enable it.
+
+---
+
+## 3d. Turn on operator email (signup alerts + weekly digest)
+
+The app emails the operator list when someone new signs up, and sends a weekly
+summary every Monday. **Both ship switched off** — with `EmailBackend=console`
+(the default) nothing is ever sent, so this can be enabled after launch.
+
+### SES status (verified 2026-07-27)
+
+This account has SES **production access** (`ProductionAccessEnabled: true`,
+50,000/day quota, `EnforcementStatus: HEALTHY`). That means **recipients do not
+need verifying** — only the **sender** identity does.
+
+Verified sender identities today:
+
+| Identity | Type | Verified |
+|---|---|---|
+| `endevo.life` | domain | ✅ yes |
+| `hello@endevo.life` | address | ✅ yes |
+| `niki@finalplaybook.com` | address | ✅ yes |
+| `bluesproutagency@gmail.com` | address | ✅ yes |
+| `finalplaybook.com` | domain | ❌ **no** — DKIM `FAILED`, DNS never completed |
+
+`EmailFrom` therefore defaults to **`hello@endevo.life`**, which is verified and
+DKIM-signed. Do **not** set it to `noreply@finalplaybook.com` until the domain's
+DNS records are published — every send would fail.
+
+> ⚠️ Sends are best-effort by design: a rejected send is logged and swallowed so
+> it can never break a signup. A bad sender therefore looks like **silence**, not
+> an error. Confirm via `GET /api/admin/notifications`, which shows the live
+> backend, the recipient list, and the last ten sends.
+
+**Optional — finish verifying `finalplaybook.com`** so mail can come from the
+product's own domain (better for deliverability and brand):
+
+```bash
+aws sesv2 get-email-identity --email-identity finalplaybook.com --region us-east-1 \
+  --query 'DkimAttributes.Tokens'
+# publish the 3 returned values as CNAME records:
+#   <token>._domainkey.finalplaybook.com -> <token>.dkim.amazonses.com
+```
+
+Once `VerifiedForSendingStatus` flips to `true`, redeploy with
+`EmailFrom=noreply@finalplaybook.com`.
+
+**Check what's verified before flipping the switch:**
+
+```bash
+aws ses list-identities --region us-east-1
+aws ses get-identity-verification-attributes \
+  --identities niki@finalplaybook.com hello@endevo.life bluesproutagency@gmail.com \
+  --region us-east-1
+```
+
+**4. Deploy with email live:**
+
+```bash
+sam deploy --parameter-overrides \
+  EmailBackend=ses \
+  EmailFrom=hello@endevo.life \
+  OperatorEmails=niki@finalplaybook.com,hello@endevo.life,bluesproutagency@gmail.com \
+  DigestEnabled=true \
+  DigestTimezone=America/Los_Angeles
+```
+
+**5. Verify it works** — sign up with a throwaway address and confirm all three
+inboxes receive the alert, then trigger the digest by hand rather than waiting
+for Monday:
+
+```bash
+curl -X POST "https://<ApiUrl>/api/admin/digest/send?force=true" \
+  -H "Authorization: Bearer $ADMIN_TOKEN" \
+  -H "X-Admin-Email: hello@endevo.life"
+
+# See the numbers without sending anything:
+curl "https://<ApiUrl>/api/admin/digest/preview" \
+  -H "Authorization: Bearer $ADMIN_TOKEN" -H "X-Admin-Email: hello@endevo.life"
+```
+
+### The weekly schedule
+
+An EventBridge rule (`{prefix}weekly-digest`) invokes the **same Lambda** with
+`{"job": "weekly_digest"}` at `cron(0 15 ? * MON *)` — 15:00 UTC, i.e. 08:00 PDT
+/ 07:00 PST. The digest window is computed in `DigestTimezone`, so a DST shift
+moves the send time by an hour but never changes which week gets reported.
+
+Sending is **idempotent per week** (a watermark in the config store), so a retry
+or a double-click can't double-send. `force=true` overrides it.
+
+To stop the digest without redeploying code, set `DigestEnabled=false`.
+
+### Adding or changing recipients
+
+`OperatorEmails` is a plain comma-separated parameter — redeploy with a new
+value. With production access, recipients need no verification. Leaving it
+**blank** makes the whole feature inert.
+
+### Emailing members later
+
+Everything above is **operator-only** email. Because SES already has production
+access, sending to *members* (welcome emails, member-facing digests) is
+technically unblocked — but it is deliberately **out of scope** for this feature
+and needs its own spec: member email requires unsubscribe handling, CAN-SPAM
+compliance, bounce/complaint processing, and Niki's sign-off on the voice. Don't
+add it by widening `OperatorEmails`. See
+`specs/notifications-and-feedback.md` → Non-Goals.
 
 ---
 
@@ -229,6 +356,12 @@ CORS and the post-checkout redirect resolve correctly.
 - [ ] `AdminToken` set to a strong secret (not a placeholder) if the admin
       console (`frontend/public/admin.html`) will be used in prod
 - [ ] `ALLOW_DEV_UPGRADE=false` (the template default) — never true in prod
+- [ ] `{prefix}feedback` DynamoDB table created (step 3b) — the help/complaint
+      form 500s without it
+- [ ] Operator email: the 3 recipients + the `EmailFrom` sender SES-verified,
+      `EmailBackend=ses`, and a test signup actually landed in all 3 inboxes
+      (silence ≠ success — check `GET /api/admin/notifications`)
+- [ ] Weekly digest confirmed by a manual `POST /api/admin/digest/send?force=true`
 - [ ] Content library reviewed — `_meta.status` is still **DRAFT** and flags the
       content as pending expert sign-off. **Get sign-off before promoting the
       paid tier** (this is educational, sensitive content — see `docs/guardrails.md`).

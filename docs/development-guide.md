@@ -65,6 +65,55 @@ present. Copy `agent/.env.example` to `agent/.env` and fill in real values —
   Anthropic path for a cheaper open-weight model.
 - Restart `uvicorn` after changing `.env` — it's only read at process start.
 
+## Operator notifications & member feedback
+
+Two layers, deliberately split so a new channel and a new message are separate
+changes:
+
+- `app/data/email.py` — **transport only** (`console` | `ses`), selected by
+  `EMAIL_BACKEND` the same way the store is selected by `STORE_BACKEND`.
+- `app/services/notifications.py` — **content**: what a signup alert and the
+  weekly digest actually say, plus who receives them.
+
+**The contract that matters:** `send()` returns a bool and never raises, and
+every function in `notifications.py` swallows its own errors. A mail failure
+must never cost a signup or lose a complaint — identical to `analytics.emit()`.
+
+**Testing it locally.** The console backend records every send in-process, so
+you can assert on real payloads with no mocks and no AWS:
+
+```python
+from app.data import email
+email.last_sends()   # [{"to": [...], "subject": "...", "body": "..."}]
+```
+
+`tests/conftest.py` forces `EMAIL_BACKEND=console` and blanks `OPERATOR_EMAILS`,
+so a developer `.env` pointed at SES can't make the suite send real mail.
+
+To exercise it end to end in dev, set `OPERATOR_EMAILS` to any address and sign
+up with a new email — the alert body prints to the uvicorn log.
+
+**The weekly digest** reads the same plane-tagged event stream the admin
+dashboard reads, so the two can't disagree. It's idempotent per week via a
+watermark in the config store. Trigger it by hand instead of waiting for Monday:
+
+```bash
+curl -X POST "localhost:8001/api/admin/digest/send?force=true" \
+  -H "Authorization: Bearer $ADMIN_TOKEN"
+
+# Numbers only, sends nothing:
+curl "localhost:8001/api/admin/digest/preview" -H "Authorization: Bearer $ADMIN_TOKEN"
+```
+
+**Privacy rule (enforced by a test).** Operator email carries identity only —
+address, tier, timestamps, counts. A member's answers, plan, or narrative must
+never appear in an outbound email. `test_signup_email_carries_no_plan_content`
+fails if that changes.
+
+**Adding a notification:** add a function to `notifications.py` (best-effort,
+returns bool) and call it from the relevant route. Don't email from a route
+directly, and don't add a second mail provider — `EMAIL_BACKEND` is the seam.
+
 ## Local environment notes
 
 - On Windows, prefer running `npm`/`node` commands through PowerShell rather

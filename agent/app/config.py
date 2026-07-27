@@ -78,6 +78,44 @@ COGNITO_REGION = os.environ.get("COGNITO_REGION", os.environ.get("AWS_DEFAULT_RE
 # Let a logged-in user unlock paid without Stripe (demos). MUST be false in prod.
 ALLOW_DEV_UPGRADE = os.environ.get("ALLOW_DEV_UPGRADE", "false").lower() == "true"
 
+# ── Email / operator notifications ───────────────────────────────────────────
+# Transport for operator alerts (new signup) and the weekly digest.
+# "console" -- log only, sends NOTHING (default: a dev laptop or test run can
+#              never email a real person).
+# "ses"     -- AWS SES v2, the same mail path Cognito uses for login codes.
+# NOTE: SES has PRODUCTION access on this account, so recipients need no
+# verification -- only EMAIL_FROM (the sender) must be a verified identity.
+EMAIL_BACKEND = os.environ.get("EMAIL_BACKEND", "console").strip().lower()
+
+# Verified SES sender identity. Defaults to hello@endevo.life because that
+# address IS verified today; finalplaybook.com is registered as an SES domain
+# identity but its DNS/DKIM records were never completed (VerifiedForSendingStatus
+# = false), so noreply@finalplaybook.com would fail every send until that's fixed.
+EMAIL_FROM = os.environ.get("EMAIL_FROM", "hello@endevo.life").strip()
+SES_REGION = os.environ.get(
+    "SES_REGION", os.environ.get("AWS_DEFAULT_REGION", "us-east-1")
+)
+
+# Who gets signup alerts + the weekly digest. Empty = the whole notification
+# feature is inert (no sends, no errors) -- the safe default.
+OPERATOR_EMAILS = [
+    e.strip().lower() for e in os.environ.get("OPERATOR_EMAILS", "").split(",") if e.strip()
+]
+
+# Weekly digest: kill switch + the timezone its Mon-Sun window is measured in.
+DIGEST_ENABLED = os.environ.get("DIGEST_ENABLED", "true").lower() == "true"
+DIGEST_TIMEZONE = os.environ.get("DIGEST_TIMEZONE", "America/Los_Angeles")
+
+
+def operator_emails() -> list[str]:
+    """Recipients for operator notifications. Read through a function so tests
+    and a live config change see the current value, not an import-time snapshot."""
+    raw = os.environ.get("OPERATOR_EMAILS")
+    if raw is None:
+        return list(OPERATOR_EMAILS)
+    return [e.strip().lower() for e in raw.split(",") if e.strip()]
+
+
 # ── Operator / admin console ─────────────────────────────────────────────────
 # Shared secret that gates the admin API + dashboard. Set a strong value in prod.
 # (Future: swap for the shared B2B operator Cognito pool -- lro-{env}-operator-pool.)

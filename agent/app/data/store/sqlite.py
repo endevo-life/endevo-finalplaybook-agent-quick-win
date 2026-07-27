@@ -53,6 +53,17 @@ class SqliteStore:
                 content TEXT NOT NULL,
                 PRIMARY KEY (email, seq)
             );
+            CREATE TABLE IF NOT EXISTS feedback (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                email TEXT,
+                kind TEXT NOT NULL,
+                message TEXT NOT NULL,
+                rating INTEGER,
+                page TEXT,
+                signed_in INTEGER DEFAULT 0,
+                created_at INTEGER NOT NULL
+            );
+            CREATE INDEX IF NOT EXISTS idx_feedback_created ON feedback (created_at);
             """
         )
         # Migrations: add columns to tables created before they existed.
@@ -220,3 +231,42 @@ class SqliteStore:
             (email, row[0], role, content),
         )
         self._conn.commit()
+
+    # --- member feedback (help / complaint / survey) ---
+    def save_feedback(self, email, kind, message, rating=None, page=None,
+                      signed_in=False) -> dict:
+        ts = now()
+        cur = self._conn.execute(
+            "INSERT INTO feedback (email, kind, message, rating, page, signed_in, created_at) "
+            "VALUES (?,?,?,?,?,?,?)",
+            (email, kind, message, rating, page, 1 if signed_in else 0, ts),
+        )
+        self._conn.commit()
+        return {"id": f"fb_{cur.lastrowid}", "email": email, "kind": kind,
+                "message": message, "rating": rating, "page": page,
+                "signed_in": signed_in, "created_at": ts}
+
+    def list_feedback(self, limit: int = 100, since: int = None) -> list:
+        if since is not None:
+            rows = self._conn.execute(
+                "SELECT id, email, kind, message, rating, page, signed_in, created_at "
+                "FROM feedback WHERE created_at >= ? ORDER BY id DESC LIMIT ?",
+                (since, limit),
+            ).fetchall()
+        else:
+            rows = self._conn.execute(
+                "SELECT id, email, kind, message, rating, page, signed_in, created_at "
+                "FROM feedback ORDER BY id DESC LIMIT ?",
+                (limit,),
+            ).fetchall()
+        return [{"id": f"fb_{r[0]}", "email": r[1], "kind": r[2], "message": r[3],
+                 "rating": r[4], "page": r[5], "signed_in": bool(r[6]),
+                 "created_at": r[7]} for r in rows]
+
+    def count_feedback_since(self, email: str, since: int) -> int:
+        """Submissions from one email since a timestamp -- powers rate limiting."""
+        row = self._conn.execute(
+            "SELECT COUNT(*) FROM feedback WHERE email=? AND created_at >= ?",
+            (email, since),
+        ).fetchone()
+        return row[0] if row else 0
