@@ -193,15 +193,20 @@ Verified sender identities today:
 
 | Identity | Type | Verified |
 |---|---|---|
-| `endevo.life` | domain | ✅ yes |
+| `endevo.life` | domain | ✅ yes — DKIM `SUCCESS`, signing enabled |
 | `hello@endevo.life` | address | ✅ yes |
 | `niki@finalplaybook.com` | address | ✅ yes |
 | `bluesproutagency@gmail.com` | address | ✅ yes |
 | `finalplaybook.com` | domain | ❌ **no** — DKIM `FAILED`, DNS never completed |
 
-`EmailFrom` therefore defaults to **`hello@endevo.life`**, which is verified and
-DKIM-signed. Do **not** set it to `noreply@finalplaybook.com` until the domain's
-DNS records are published — every send would fail.
+`EmailFrom` defaults to **`no-reply@endevo.life`**. Because `endevo.life` is a
+verified *domain* with DKIM signing on, **any** address at it can send — a
+`no-reply@` mailbox doesn't need to exist or be verified separately. That's the
+right convention for automated mail: it signals "don't reply here" and keeps
+human replies flowing to a monitored inbox instead.
+
+Do **not** point `EmailFrom` at `@finalplaybook.com` until that domain's DKIM
+records are published — every send would fail.
 
 > ⚠️ Sends are best-effort by design: a rejected send is logged and swallowed so
 > it can never break a signup. A bad sender therefore looks like **silence**, not
@@ -219,7 +224,7 @@ aws sesv2 get-email-identity --email-identity finalplaybook.com --region us-east
 ```
 
 Once `VerifiedForSendingStatus` flips to `true`, redeploy with
-`EmailFrom=noreply@finalplaybook.com`.
+`EmailFrom=no-reply@finalplaybook.com`.
 
 **Check what's verified before flipping the switch:**
 
@@ -230,16 +235,40 @@ aws ses get-identity-verification-attributes \
   --region us-east-1
 ```
 
-**4. Deploy with email live:**
+**4. Deploy with email live.**
+
+⚠️ **Windows/PowerShell users:** PowerShell 5.1 has no `&&` operator and uses a
+backtick (`` ` ``), not `\`, for line continuation — the bash form below is a
+parse error there. Run each command on its own line:
+
+```powershell
+cd infra
+sam validate --lint
+sam build
+sam deploy --parameter-overrides EmailBackend=ses EmailFrom=no-reply@endevo.life OperatorEmails=niki@finalplaybook.com,hello@endevo.life,bluesproutagency@gmail.com DigestEnabled=true DigestTimezone=America/Los_Angeles
+```
+
+(Keep `--parameter-overrides` and everything after it on ONE line. The
+comma-separated `OperatorEmails` value must not be broken across lines — a bare
+comma at end-of-line is what produced "Missing argument in parameter list".)
+
+bash / macOS / Linux:
 
 ```bash
+cd infra
+sam validate --lint && sam build
 sam deploy --parameter-overrides \
   EmailBackend=ses \
-  EmailFrom=hello@endevo.life \
+  EmailFrom=no-reply@endevo.life \
   OperatorEmails=niki@finalplaybook.com,hello@endevo.life,bluesproutagency@gmail.com \
   DigestEnabled=true \
   DigestTimezone=America/Los_Angeles
 ```
+
+Because `sam deploy` reuses `samconfig.toml`, parameters you don't name keep
+their current stack values — so this doesn't clobber your Cognito/Stripe/admin
+settings. If SAM prompts for a stack name or region, this stack is `mfp-dev` in
+`us-east-1`.
 
 **5. Verify it works** — sign up with a throwaway address and confirm all three
 inboxes receive the alert, then trigger the digest by hand rather than waiting

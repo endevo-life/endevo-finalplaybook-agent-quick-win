@@ -145,13 +145,13 @@ Parameters:
       Blank means the notification feature is inert (no sends, no errors).
   EmailFrom:
     Type: String
-    Default: "hello@endevo.life"
+    Default: "no-reply@endevo.life"
     Description: >
-      Verified SES sender identity for operator notifications. The domain (or
-      the exact address) must be verified in SES or every send fails. Defaults
-      to hello@endevo.life -- verified today. finalplaybook.com exists as an SES
-      domain identity but its DKIM/DNS was never completed, so a
-      noreply@finalplaybook.com sender fails until that is finished.
+      SES sender identity for operator notifications. endevo.life is a verified
+      DOMAIN with DKIM signing enabled, so any address at it can send -- no
+      per-address verification needed. Do NOT point this at @finalplaybook.com:
+      that domain identity's DKIM was never completed (status FAILED) and every
+      send would fail.
   DigestEnabled:
     Type: String
     Default: "true"

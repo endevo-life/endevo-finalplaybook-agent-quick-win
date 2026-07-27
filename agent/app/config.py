@@ -87,11 +87,14 @@ ALLOW_DEV_UPGRADE = os.environ.get("ALLOW_DEV_UPGRADE", "false").lower() == "tru
 # verification -- only EMAIL_FROM (the sender) must be a verified identity.
 EMAIL_BACKEND = os.environ.get("EMAIL_BACKEND", "console").strip().lower()
 
-# Verified SES sender identity. Defaults to hello@endevo.life because that
-# address IS verified today; finalplaybook.com is registered as an SES domain
-# identity but its DNS/DKIM records were never completed (VerifiedForSendingStatus
-# = false), so noreply@finalplaybook.com would fail every send until that's fixed.
-EMAIL_FROM = os.environ.get("EMAIL_FROM", "hello@endevo.life").strip()
+# SES sender identity. endevo.life is a VERIFIED DOMAIN with DKIM signing on, so
+# any address at that domain can send -- no per-address identity needed. A
+# no-reply@ address is the right convention for automated mail: it signals
+# "don't reply here" and keeps operator replies going to a monitored inbox.
+# NOTE: do NOT switch to @finalplaybook.com -- that domain is registered as an
+# SES identity but its DKIM was never completed (DkimStatus FAILED), so it would
+# fail every send. See DEPLOY.md 3d.
+EMAIL_FROM = os.environ.get("EMAIL_FROM", "no-reply@endevo.life").strip()
 SES_REGION = os.environ.get(
     "SES_REGION", os.environ.get("AWS_DEFAULT_REGION", "us-east-1")
 )
