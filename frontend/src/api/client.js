@@ -116,3 +116,13 @@ export function devUpgrade() {
 export function cancelSubscription() {
   return request("/api/billing/downgrade", { method: "POST" });
 }
+
+// --- feedback (help / complaint / survey) ------------------------------------
+// Works signed in or anonymous. When signed in, the backend takes the email from
+// the session and ignores whatever we send, so a submission can't be spoofed.
+export function submitFeedback({ kind, message, email, rating, page }) {
+  return request("/api/feedback", {
+    method: "POST",
+    body: { kind, message, email, rating, page },
+  });
+}

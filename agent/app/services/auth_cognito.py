@@ -17,9 +17,10 @@ Flow:
 
 Infra this expects (created 2026-07-08, us-east-1, account 383423735462):
 pool mfp-dev-users + client mfp-dev-web + Lambda triggers mfp-dev-auth-*.
-NOTE: SES is in sandbox mode -- codes are only DELIVERED to verified email
-addresses; for other addresses the code is visible in the create-challenge
-Lambda's CloudWatch logs (dev convenience, remove before production).
+NOTE: SES has production access on this account (confirmed 2026-07-27), so login
+codes deliver to any address. The create-challenge Lambda also logs the code to
+CloudWatch as a dev convenience -- that IS a credential leak into logs and should
+be removed now that real delivery works.
 """
 import secrets
 

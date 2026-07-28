@@ -38,6 +38,14 @@ class SavePlanRequest(BaseModel):
     signals: Optional[list[str]] = None  # why-now flags, persisted with the plan
 
 
+class FeedbackRequest(BaseModel):
+    kind: str                        # "help" | "complaint" | "survey"
+    message: str
+    email: Optional[str] = None      # required when anonymous; ignored when signed in
+    rating: Optional[int] = None     # survey pulse, 1-5
+    page: Optional[str] = None       # where they were when they hit send
+
+
 class AuthStartRequest(BaseModel):
     email: str
 

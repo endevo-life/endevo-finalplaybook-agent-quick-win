@@ -37,8 +37,13 @@ def _from_ddb(obj):
     return obj
 
 
+# Fixed partition key for the feedback table -- it's an operator inbox read
+# newest-first across all members, so one partition sorts instead of scanning.
+FEEDBACK_SCOPE = "b2c"
+
+
 class DynamoStore:
-    """Production store backed by FIVE DynamoDB tables, one per concern, matching
+    """Production store backed by SIX DynamoDB tables, one per concern, matching
     the {prefix}{name} convention of the rest of the AWS account (e.g. lros-*).
     Prefix from DDB_TABLE_PREFIX (default "mfp-dev-"):
 
@@ -47,9 +52,11 @@ class DynamoStore:
         {prefix}usage     PK email, SK month       -> personalize_count, chat_count
         {prefix}plans     PK email                -> answers, plan, tracked (paid)
         {prefix}chat      PK email, SK ts          -> role, content  (paid history)
+        {prefix}feedback  PK scope, SK ts_id       -> kind, message, rating
 
     Free users ARE stored (users + usage) -- they're the funnel and we meter their
-    3 free AI questions. Anonymous (never-signed-in) visitors are never stored.
+    3 free AI questions. Anonymous (never-signed-in) visitors are never stored,
+    EXCEPT when they submit feedback (they asked to be contacted).
     """
 
     def __init__(self, prefix: str):
@@ -61,6 +68,7 @@ class DynamoStore:
         self.t_usage = ddb.Table(f"{prefix}usage")
         self.t_plans = ddb.Table(f"{prefix}plans")
         self.t_chat = ddb.Table(f"{prefix}chat")
+        self.t_feedback = ddb.Table(f"{prefix}feedback")
 
     # --- users / entitlements ---
     def get_user(self, email: str) -> Optional[dict]:
@@ -198,3 +206,60 @@ class DynamoStore:
         import time as _t
         ts = f"{now()}#{int(_t.perf_counter()*1e6) % 1_000_000:06d}"
         self.t_chat.put_item(Item={"email": email, "ts": ts, "role": role, "content": content})
+
+    # --- member feedback (help / complaint / survey) ---
+    # Fixed partition + sortable SK, same shape as the events table: feedback is
+    # always read newest-first across ALL members (an operator inbox, not a
+    # per-user history), so one partition queries in order instead of scanning.
+    def save_feedback(self, email, kind, message, rating=None, page=None,
+                      signed_in=False) -> dict:
+        import time as _t
+        ts = now()
+        sk = f"{ts}#{int(_t.perf_counter()*1e6) % 1_000_000:06d}"
+        item = {
+            "scope": FEEDBACK_SCOPE, "ts_id": sk, "ts": ts,
+            "email": email or "-", "kind": kind, "message": message,
+            "signed_in": bool(signed_in),
+        }
+        if rating is not None:
+            item["rating"] = int(rating)
+        if page:
+            item["page"] = page
+        self.t_feedback.put_item(Item=item)
+        return {"id": f"fb_{sk}", "email": email, "kind": kind, "message": message,
+                "rating": rating, "page": page, "signed_in": bool(signed_in),
+                "created_at": ts}
+
+    def list_feedback(self, limit: int = 100, since: int = None) -> list:
+        kwargs = {
+            "KeyConditionExpression": "#s = :s",
+            "ExpressionAttributeNames": {"#s": "scope"},
+            "ExpressionAttributeValues": {":s": FEEDBACK_SCOPE},
+            "ScanIndexForward": False,  # newest first
+            "Limit": limit,
+        }
+        if since is not None:
+            # ts_id is a STRING key ("{epoch}#{counter}"), so this is a
+            # lexicographic compare. That matches numeric order only because
+            # epoch seconds are a fixed 10 digits (true until 2286) -- don't
+            # switch to a shorter/variable timestamp without revisiting this.
+            kwargs["KeyConditionExpression"] = "#s = :s AND ts_id >= :since"
+            kwargs["ExpressionAttributeValues"][":since"] = str(since)
+        resp = self.t_feedback.query(**kwargs)
+        out = []
+        for i in resp.get("Items", []):
+            em = i.get("email")
+            out.append({
+                "id": f"fb_{i.get('ts_id')}",
+                "email": None if em == "-" else em,
+                "kind": i.get("kind"), "message": i.get("message"),
+                "rating": int(i["rating"]) if i.get("rating") is not None else None,
+                "page": i.get("page"), "signed_in": bool(i.get("signed_in")),
+                "created_at": int(i.get("ts", 0)),
+            })
+        return out
+
+    def count_feedback_since(self, email: str, since: int) -> int:
+        """Submissions from one email since a timestamp -- powers rate limiting."""
+        return sum(1 for f in self.list_feedback(limit=200, since=since)
+                   if f.get("email") == email)

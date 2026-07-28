@@ -14,3 +14,9 @@ os.environ["AUTH_BACKEND"] = "local"
 # Local auth must return the code in-band so tests can log in without an email
 # provider, regardless of the developer .env's AUTH_RETURN_CODE (prod-safe=false).
 os.environ["AUTH_RETURN_CODE"] = "true"
+# Never send real email from a test run, whatever the developer .env says. The
+# console backend records payloads in-process so tests assert on real content.
+os.environ["EMAIL_BACKEND"] = "console"
+# Default to NO operator recipients so notifications are inert unless a test
+# opts in by setting OPERATOR_EMAILS itself.
+os.environ["OPERATOR_EMAILS"] = ""

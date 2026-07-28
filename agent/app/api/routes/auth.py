@@ -6,10 +6,22 @@ from fastapi import APIRouter, Depends, Header, HTTPException
 from app.api.deps import require_email
 from app.config import AUTH_BACKEND, AUTH_RETURN_CODE
 from app.schemas.requests import AuthStartRequest, AuthVerifyRequest
-from app.services import analytics, auth as auth_service
+from app.services import analytics, auth as auth_service, notifications
 from app.services.entitlements import entitlement_for
 
 router = APIRouter(prefix="/api", tags=["auth"])
+
+
+def _alert_operators_on_signup(email: str) -> None:
+    """Email the operator list about a brand-new member. Best-effort: notify_signup
+    never raises, so a mail failure can't cost us the signup."""
+    from app.data.store import get_store
+    user = get_store().get_user(email) or {}
+    notifications.notify_signup(
+        email,
+        tier=user.get("tier", "free"),
+        total_signups=notifications.total_signups(),
+    )
 
 
 @router.post("/auth/start")
@@ -28,6 +40,8 @@ def auth_start(req: AuthStartRequest):
         except Exception as e:
             raise HTTPException(502, f"Auth service error: {e}")
         analytics.emit(analytics.SIGNUP if is_new else analytics.LOGIN, email=email_norm)
+        if is_new:
+            _alert_operators_on_signup(email_norm)
         # Cognito emails the code; the opaque challenge session must be echoed
         # back on /auth/verify.
         return {"sent": True, "session": session}
@@ -37,6 +51,8 @@ def auth_start(req: AuthStartRequest):
     except ValueError as e:
         raise HTTPException(400, str(e))
     analytics.emit(analytics.SIGNUP if is_new else analytics.LOGIN, email=email_norm)
+    if is_new:
+        _alert_operators_on_signup(email_norm)
     # In production the code is emailed as a magic link and NOT returned. In dev
     # (no email provider) we return it so you can log in. Controlled by config.
     if AUTH_RETURN_CODE:

@@ -2,7 +2,7 @@ import { COMPANY_NAME, PRODUCT_NAME } from "../config/branding";
 import Logo from "./Logo";
 import ThemeToggle from "./ThemeToggle";
 
-export default function TopNav({ route, user, account, onHome, onSignIn, onSignOut, onSettings }) {
+export default function TopNav({ route, user, account, onHome, onSignIn, onSignOut, onSettings, onHelp }) {
   return (
     <div className="fp-topnav">
       <div className="fp-topnav-brand" onClick={onHome}>
@@ -13,6 +13,13 @@ export default function TopNav({ route, user, account, onHome, onSignIn, onSignO
 
       <div className="fp-topnav-user">
         <ThemeToggle />
+        {/* Outside the signed-in branch on purpose: someone who CAN'T sign in is
+            exactly the person who most needs to reach us. */}
+        {onHelp && (
+          <button className="fp-btn-back" onClick={onHelp} title="Get help or send feedback">
+            help
+          </button>
+        )}
         {account ? (
           <>
             <span className={`fp-tier-pill ${account.tier === "paid" ? "paid" : ""}`}>

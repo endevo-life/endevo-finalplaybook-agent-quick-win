@@ -13,6 +13,7 @@ class MemoryStore:
         self.stripe_map = {} # stripe_customer_id -> email
         self.plans = {}      # email -> {answers, plan, tracked, narrative, updated_at}
         self.chat = {}       # email -> [{role, content}, ...]
+        self.feedback = []   # [{id, email, kind, message, rating, page, created_at}]
 
     # --- users / entitlements ---
     def get_user(self, email: str) -> Optional[dict]:
@@ -90,3 +91,26 @@ class MemoryStore:
 
     def append_chat(self, email: str, role: str, content: str) -> None:
         self.chat.setdefault(email, []).append({"role": role, "content": content})
+
+    # --- member feedback (help / complaint / survey) ---
+    def save_feedback(self, email, kind, message, rating=None, page=None,
+                      signed_in=False) -> dict:
+        entry = {
+            "id": f"fb_{len(self.feedback) + 1}_{now()}",
+            "email": email, "kind": kind, "message": message,
+            "rating": rating, "page": page, "signed_in": signed_in,
+            "created_at": now(),
+        }
+        self.feedback.append(entry)
+        return entry
+
+    def list_feedback(self, limit: int = 100, since: int = None) -> list:
+        rows = self.feedback
+        if since is not None:
+            rows = [f for f in rows if f["created_at"] >= since]
+        return list(reversed(rows[-limit:]))
+
+    def count_feedback_since(self, email: str, since: int) -> int:
+        """Submissions from one email since a timestamp -- powers rate limiting."""
+        return sum(1 for f in self.feedback
+                   if f.get("email") == email and f["created_at"] >= since)
