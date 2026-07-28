@@ -231,7 +231,7 @@ Once `VerifiedForSendingStatus` flips to `true`, redeploy with
 ```bash
 aws ses list-identities --region us-east-1
 aws ses get-identity-verification-attributes \
-  --identities niki@finalplaybook.com hello@endevo.life bluesproutagency@gmail.com \
+  --identities hello@endevo.life bluesproutagency@gmail.com \
   --region us-east-1
 ```
 
@@ -245,7 +245,7 @@ parse error there. Run each command on its own line:
 cd infra
 sam validate --lint
 sam build
-sam deploy --parameter-overrides EmailBackend=ses EmailFrom=no-reply@endevo.life OperatorEmails=niki@finalplaybook.com,hello@endevo.life,bluesproutagency@gmail.com DigestEnabled=true DigestTimezone=America/Los_Angeles
+sam deploy --parameter-overrides EmailBackend=ses EmailFrom=no-reply@endevo.life OperatorEmails=hello@endevo.life,bluesproutagency@gmail.com DigestEnabled=true DigestTimezone=America/Los_Angeles
 ```
 
 (Keep `--parameter-overrides` and everything after it on ONE line. The
@@ -260,7 +260,7 @@ sam validate --lint && sam build
 sam deploy --parameter-overrides \
   EmailBackend=ses \
   EmailFrom=no-reply@endevo.life \
-  OperatorEmails=niki@finalplaybook.com,hello@endevo.life,bluesproutagency@gmail.com \
+  OperatorEmails=hello@endevo.life,bluesproutagency@gmail.com \
   DigestEnabled=true \
   DigestTimezone=America/Los_Angeles
 ```

@@ -38,10 +38,13 @@ if the tone lands wrong for someone, we need to hear it directly and fast.
 | Blue Sprout (agency) | Same digest for the shared ops inbox |
 | Member | A way to ask for help or complain without leaving the app |
 
+Niki reads these via the shared `hello@endevo.life` inbox rather than a direct
+address (changed 2026-07-27) — one less place for an alert to be missed, and
+recipients change without a code change.
+
 ### Recipients (initial, config-driven)
 
 ```
-niki@finalplaybook.com
 hello@endevo.life
 bluesproutagency@gmail.com
 ```
