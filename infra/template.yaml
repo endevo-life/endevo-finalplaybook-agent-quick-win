@@ -197,7 +197,7 @@ Resources:
           ADMIN_TOKEN: !Ref AdminToken
           ADMIN_EMAILS: !Ref AdminEmails
           ALLOW_DEV_UPGRADE: !Ref AllowDevUpgrade
-          PRODUCT_NAME: "Final Playbook"
+          PRODUCT_NAME: "My Final Playbook"
           # Admin Cost tab: when "1", /api/admin/costs queries real billed $ from
           # Cost Explorer (needs the ce/cloudwatch policy below). Off -> estimate.
           AWS_COST_ENABLED: !Ref AwsCostEnabled

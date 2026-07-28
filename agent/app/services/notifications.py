@@ -19,6 +19,7 @@ import time
 
 from app.config import PRODUCT_NAME, operator_emails
 from app.data.email import send
+from app.services import email_template as T
 
 log = logging.getLogger(__name__)
 
@@ -44,10 +45,26 @@ def notify_signup(email: str, tier: str = "free", total_signups=None) -> bool:
         if total_signups is not None:
             lines.append(f"  Total signups to date: {total_signups}")
         lines += ["", _footer()]
+
+        rows = [("Email", email), ("Tier", tier), ("When", when)]
+        if total_signups is not None:
+            rows.append(("Member no.", f"#{total_signups}"))
+        html = T.shell(
+            PRODUCT_NAME,
+            T.heading("A new member just signed up.",
+                      "They have an account. Nothing is required from you.")
+            + T.detail_rows(rows)
+            + T.note("Signup alerts fire once per member. Returning logins are silent."),
+            preheader=f"New signup: {email}",
+            eyebrow="New signup",
+            footer_note="You are receiving this because your address is on the "
+                        "operator list for this app.",
+        )
         return send(
             recipients,
             f"[{PRODUCT_NAME}] New signup: {email}",
             "\n".join(lines),
+            html,
         )
     except Exception as exc:
         log.warning("signup notification failed for %s: %s", email, exc)
@@ -103,10 +120,48 @@ def notify_feedback(entry: dict) -> bool:
         lines += ["", "Message:", "-" * 40, entry.get("message", ""), "-" * 40,
                   "", f"Reply directly to {who}." if entry.get("email") else "",
                   _footer()]
+
+        is_complaint = kind == "complaint"
+        html = T.shell(
+            PRODUCT_NAME,
+            # Sentence case in the heading -- the eyebrow above already carries
+            # the COMPLAINT tag, and shouting it twice reads as panic.
+            T.heading(
+                {"complaint": "A member raised a complaint.",
+                 "help": "A member asked for help.",
+                 "survey": "A member sent survey feedback."}.get(
+                    kind, f"{tag} from a member."),
+                "Read this one first — a member telling us the tone landed "
+                "wrong is the most important mail we get."
+                if is_complaint else
+                "A member sent this through the in-app feedback form.",
+            )
+            + T.detail_rows([
+                ("From", who),
+                ("Kind", kind),
+                ("When", _local_stamp(entry.get("created_at"))),
+                ("Rating", f"{entry['rating']}/5" if entry.get("rating") else ""),
+                ("Page", entry.get("page") or ""),
+                ("Signed in", "" if entry.get("signed_in") is None
+                 else ("yes" if entry["signed_in"] else "no")),
+            ])
+            + T.section_title("Their message")
+            + T.quote_block(entry.get("message", ""),
+                            tone="alert" if is_complaint else "neutral")
+            + (T.note(f"Reply directly to {who} — this notification address is "
+                      "not monitored.") if entry.get("email")
+               else T.note("No address was given, so this one cannot be "
+                           "replied to.")),
+            preheader=_snippet(entry.get("message", ""), 90),
+            eyebrow=tag,
+            footer_note="You are receiving this because your address is on the "
+                        "operator list for this app.",
+        )
         return send(
             recipients,
             f"[{PRODUCT_NAME}] {tag}: {_snippet(entry.get('message', ''))}",
             "\n".join(l for l in lines if l is not None),
+            html,
         )
     except Exception as exc:
         log.warning("feedback notification failed: %s", exc)
@@ -142,7 +197,9 @@ def send_weekly_digest(force: bool = False) -> dict:
             return {"sent": False, "reason": "no_recipients", "week": week_key,
                     "summary": summary}
 
-        ok = send(recipients, _digest_subject(summary, window), _digest_body(summary, window))
+        ok = send(recipients, _digest_subject(summary, window),
+                  _digest_body(summary, window),
+                  _digest_html(summary, window))
         if ok:
             events_store.set_config(DIGEST_WATERMARK_KEY, week_key)
         return {"sent": ok, "week": week_key, "recipients": recipients,
@@ -307,6 +364,66 @@ def _digest_body(s: dict, window: dict) -> str:
 
     L += ["=" * 52, _footer()]
     return "\n".join(L)
+
+
+def _digest_html(s: dict, window: dict) -> str:
+    """The digest as the branded card. Same numbers as _digest_body, ordered so
+    the things needing a decision (complaints, upgrades) sit above the fold."""
+    fb = s["feedback"]
+
+    inner = T.heading(
+        f"Week of {window['label']}",
+        "Here is how the week went. Nothing here needs a reply."
+        if not fb.get("complaints") else
+        "One or more members raised a complaint this week — those are at the "
+        "bottom, and they are the part worth reading.",
+    )
+
+    inner += T.section_title("This week")
+    inner += T.stat_grid([
+        ("New signups", s["signupCount"]),
+        ("Completed the playbook", s["assessmentsCompleted"]),
+        ("Personalized plans", s["personalizations"]),
+        ("Chat messages", s["chatMessages"]),
+        ("Hit a paywall", s["upgradePrompts"]),
+        ("Upgraded to paid", s["upgradeCount"]),
+        ("Free to paid conversion", f"{s['conversionPct']}%"),
+        ("Total members to date", s["totalMembersToDate"]),
+    ])
+
+    inner += T.section_title("New members")
+    if s["signups"]:
+        inner += T.bullet_list(
+            [f"{m['email']} ({m['tier']})" for m in s["signups"]]
+        )
+    else:
+        inner += T.note("None this week.")
+
+    if s["upgrades"]:
+        inner += T.section_title("Upgraded to paid")
+        inner += T.bullet_list(s["upgrades"])
+
+    if fb.get("total"):
+        inner += T.section_title("Member feedback")
+        rows = [(kind.title(), n) for kind, n in sorted(fb["byKind"].items())]
+        if fb.get("avgRating"):
+            rows.append(("Average rating", f"{fb['avgRating']}/5"))
+        inner += T.stat_grid(rows)
+        if fb.get("complaints"):
+            inner += T.section_title("Complaints — read these first")
+            for c in fb["complaints"]:
+                inner += T.quote_block(
+                    f"{c['email'] or 'anonymous'}: {c['message']}", tone="alert"
+                )
+
+    return T.shell(
+        PRODUCT_NAME,
+        inner,
+        preheader=_digest_subject(s, window).split("] ", 1)[-1],
+        eyebrow=f"Weekly summary · {window['tz']}",
+        footer_note="Sent every Monday to the operator list. "
+                    "A quiet week still sends — silence would be ambiguous.",
+    )
 
 
 # ── Time helpers ─────────────────────────────────────────────────────────────

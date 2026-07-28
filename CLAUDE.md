@@ -56,6 +56,7 @@ Final-Playbook/
 │   │   ├── agent/              # the AI agent: rules_engine, orchestrator,
 │   │   │                       #   personalize, chat (rules = free, LLM = paid)
 │   │   ├── data/email.py       # email TRANSPORT (console | ses) — no content
+│   │   │                       #   services/email_template.py = brand chrome
 │   │   └── data/store/         # DATA layer: base(+factory), memory, sqlite, dynamodb
 │   ├── lambda_handler.py       # Mangum wrapper for AWS Lambda (imports app.main)
 │   ├── demo.py                 # manual smoke test
@@ -161,7 +162,18 @@ first and payments can be turned on later.
   `/api/pricing` — edit them there, not in the frontend.
 - To add a new store backend, implement the full method set in a new
   `app/data/store/<name>.py` and register it in `base.py`'s `get_store()`.
-- Notifications keep transport (`app/data/email.py`) separate from content
-  (`app/services/notifications.py`). Add a new channel by implementing a
-  backend in `email.py`; add a new message by adding a function in
-  `notifications.py`. Never let a send raise into a request path.
+- Notifications are three layers: transport (`app/data/email.py`), brand chrome
+  (`app/services/email_template.py`), content (`app/services/notifications.py`).
+  Add a new channel by implementing a backend in `email.py`; a new message by
+  adding a function in `notifications.py`; restyle every message at once by
+  editing `email_template.py`. Never let a send raise into a request path.
+- Every notification sends **both** a plain-text and an HTML part. Text is not
+  optional garnish — screen readers and spam scoring both read it, and a
+  message with no text part scores worse. Keep the same facts in both.
+- Email HTML has to survive Outlook (Word's engine) and Gmail: tables not
+  flexbox, styles inline not in a `<style>` block, no inline SVG, 600px max.
+  `tests/test_email_template.py` asserts each of these. The logo is drawn with
+  table cells rather than an `<img>` because remote images are blocked by
+  default in most clients and would show as an empty box on first open.
+- Anything interpolated into an email template must go through `_esc()` —
+  member-written feedback lands in operator mail.
