@@ -47,9 +47,15 @@ def test_shell_is_a_complete_document():
 
 
 def test_no_inline_svg_anywhere():
-    """Gmail, Outlook and Yahoo strip inline SVG -- the logo must not need it."""
+    """Gmail, Outlook and Yahoo strip inline SVG -- the logo must not use it."""
     html = T.shell("My Final Playbook", T.heading("Hi"))
     assert "<svg" not in html.lower()
+
+
+def test_logo_url_is_absolute():
+    """Mail clients fetch the logo long after the request that sent it, from a
+    different origin. A relative path resolves to nothing and shows as broken."""
+    assert T.LOGO_URL.startswith("https://")
 
 
 def test_layout_uses_tables_not_flexbox():
@@ -136,8 +142,28 @@ def test_html_carries_the_brand():
     """The logo, product name and footer are what make it look like ours."""
     html = T.shell("My Final Playbook", T.heading("Hi"))
     assert T.BRAND["brand"] in html        # navy header band
-    assert T.BRAND["book_teal"] in html    # the drawn book mark
+    assert T.LOGO_URL in html              # the app's own logo
     assert "Live Fully" in html            # footer tagline
+
+
+def test_logo_is_the_apps_logo_not_the_favicon():
+    """Mail and app must read as one product. The app's top nav shows the
+    mascot (frontend Logo.jsx), not favicon.svg's book mark."""
+    html = T.shell("My Final Playbook", T.heading("Hi"))
+    assert "email-logo.png" in html
+
+
+def test_logo_has_html_dimension_attributes():
+    """Outlook ignores CSS width/height on <img> and would render the image at
+    its full natural size without these."""
+    html = T.shell("My Final Playbook", T.heading("Hi"))
+    assert 'width="44"' in html and 'height="44"' in html
+
+
+def test_headings_use_the_apps_serif():
+    """The app sets headlines in Georgia (.fp-plan7-headline)."""
+    html = T.shell("My Final Playbook", T.heading("Hi"))
+    assert "Georgia" in html
 
 
 def test_privacy_line_holds_in_the_html_part(client):

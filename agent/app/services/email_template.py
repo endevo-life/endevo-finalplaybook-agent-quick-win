@@ -54,60 +54,45 @@ BRAND = {
 FONT = ("-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, "
         "Helvetica, Arial, sans-serif")
 
+# The app sets headings in Georgia (see .fp-plan7-headline in global.css). Both
+# families are preinstalled on Windows and macOS, so no webfont is needed --
+# which matters because Outlook ignores @font-face entirely.
+SERIF = 'Georgia, "Iowan Old Style", "Times New Roman", serif'
 
-def _logo_mark(size: int = 40) -> str:
-    """The open-book brandmark, drawn with table cells so no client strips it.
+# Where the logo is served from. It must be a PUBLIC, stable URL: mail clients
+# fetch it at open time, long after the request that sent it. Overridable via
+# EMAIL_LOGO_URL so a white-label deploy points at its own asset.
+import os as _os
 
-    Mirrors favicon.svg: a teal left page, a sand right page, a dark spine, and
-    the orange setting-sun ribbon over the right page. The ribbon is the piece
-    that makes the mark recognizable as ours rather than a generic book, so it
-    is drawn as a real overlapping band rather than dropped for simplicity --
-    it sits in its own row above the pages, indented to the right page.
+LOGO_URL = _os.environ.get(
+    "EMAIL_LOGO_URL", "https://app.finalplaybook.com/email-logo.png"
+)
+
+
+def _logo_mark(size: int = 44) -> str:
+    """The app's logo, as a hosted image.
+
+    This is the SAME mascot the app shows in its top nav (frontend Logo.jsx ->
+    assets/jesse_final.png), not the favicon's book mark -- the point is that
+    mail and app read as one product, so the email has to use what members
+    actually see on screen.
+
+    It is a photographic image, so it cannot be drawn with table cells the way
+    a geometric mark could; it has to be fetched from a public URL. Gmail and
+    Outlook block remote images until the recipient allows them, so on a first
+    open the header may show a gap where this sits. That is a deliberate,
+    accepted trade (operators click "display images" once and it sticks for the
+    sender). The `alt` text keeps the header meaningful in the meantime.
+
+    Served at 2x (96px) and displayed at `size` so it stays sharp on retina.
+    Width/height are set as HTML ATTRIBUTES as well as CSS: Outlook ignores CSS
+    dimensions on images and would otherwise render it at full natural size.
     """
-    pad = max(2, size // 10)
-    inner_w = size - (pad * 2)
-    page_w = inner_w // 2 - 1
-    ribbon_w = max(4, page_w // 2)
-    ribbon_h = max(4, size // 4)
-    page_h = size - (pad * 2) - ribbon_h - 1
-
-    def _page(color, radius, extra=""):
-        return (f'<td style="width:{page_w}px;height:{page_h}px;'
-                f'background-color:{color};border:1px solid {BRAND["ink"]};'
-                f'{extra}border-radius:{radius};font-size:0;line-height:0;'
-                f'mso-line-height-rule:exactly;">&nbsp;</td>')
-
     return (
-        f'<table role="presentation" cellpadding="0" cellspacing="0" border="0"'
-        f' style="border-collapse:collapse;">'
-        f'<tr><td width="{size}" height="{size}" align="center" valign="middle"'
-        f' style="width:{size}px;height:{size}px;background-color:{BRAND["surf"]};'
-        f'border:1px solid {BRAND["line"]};border-radius:{max(6, size // 5)}px;'
-        f'padding:0;text-align:center;">'
-        f'<table role="presentation" cellpadding="0" cellspacing="0" border="0"'
-        f' style="border-collapse:collapse;margin:0 auto;">'
-        # ribbon row -- sits above the right-hand page, like the favicon
-        f'<tr>'
-        f'<td style="width:{page_w}px;font-size:0;line-height:0;">&nbsp;</td>'
-        f'<td style="width:2px;font-size:0;line-height:0;">&nbsp;</td>'
-        f'<td align="left" style="width:{page_w}px;font-size:0;line-height:0;">'
-        f'<table role="presentation" cellpadding="0" cellspacing="0" border="0"'
-        f' style="border-collapse:collapse;"><tr>'
-        f'<td style="width:{ribbon_w}px;height:{ribbon_h}px;'
-        f'background-color:{BRAND["book_ribbon"]};'
-        f'border:1px solid {BRAND["ink"]};border-bottom:0;'
-        f'border-radius:2px 2px 0 0;font-size:0;line-height:0;'
-        f'mso-line-height-rule:exactly;">&nbsp;</td>'
-        f'</tr></table></td>'
-        f'</tr>'
-        # the two pages, side by side, spine between them
-        f'<tr>'
-        f'{_page(BRAND["book_teal"], "2px 0 0 2px", "border-right:0;")}'
-        f'<td style="width:2px;background-color:{BRAND["ink"]};'
-        f'font-size:0;line-height:0;">&nbsp;</td>'
-        f'{_page(BRAND["book_sand"], "0 2px 2px 0", "border-left:0;")}'
-        f'</tr></table>'
-        f'</td></tr></table>'
+        f'<img src="{_esc(LOGO_URL)}" width="{size}" height="{size}"'
+        f' alt="" role="presentation"'
+        f' style="width:{size}px;height:{size}px;display:block;border:0;'
+        f'outline:none;text-decoration:none;-ms-interpolation-mode:bicubic;">'
     )
 
 
@@ -121,14 +106,17 @@ def _header(product_name: str, eyebrow: str = "") -> str:
             f'font-family:{FONT};">{_esc(eyebrow)}</div>'
         )
     return (
-        f'<tr><td style="background-color:{BRAND["brand"]};padding:26px 32px;'
-        f'border-radius:12px 12px 0 0;">'
+        f'<tr><td style="background-color:{BRAND["brand"]};padding:24px 32px;'
+        f'border-radius:16px 16px 0 0;">'
         f'<table role="presentation" cellpadding="0" cellspacing="0" border="0"'
         f' style="border-collapse:collapse;"><tr>'
-        f'<td valign="middle" style="padding-right:14px;">{_logo_mark(40)}</td>'
+        f'<td valign="middle" style="padding-right:14px;font-size:0;'
+        f'line-height:0;">{_logo_mark(44)}</td>'
         f'<td valign="middle">'
-        f'<div style="font-size:19px;font-weight:600;color:#FFFFFF;'
-        f'font-family:{FONT};line-height:1.25;">{_esc(product_name)}</div>'
+        # Georgia here to match the app's headline treatment (.fp-plan7-headline)
+        f'<div style="font-size:20px;font-weight:700;color:#FFFFFF;'
+        f'font-family:{SERIF};line-height:1.25;letter-spacing:-0.01em;">'
+        f'{_esc(product_name)}</div>'
         f'{eyebrow_html}'
         f'</td></tr></table>'
         f'</td></tr>'
@@ -145,7 +133,7 @@ def _footer(product_name: str, note: str = "") -> str:
         )
     return (
         f'<tr><td style="padding:22px 32px 26px;border-top:1px solid {BRAND["line"]};'
-        f'background-color:{BRAND["surf2"]};border-radius:0 0 12px 12px;">'
+        f'background-color:{BRAND["surf2"]};border-radius:0 0 16px 16px;">'
         f'{note_html}'
         f'<div style="color:{BRAND["dim"]};font-size:12px;line-height:1.6;'
         f'font-family:{FONT};">'
@@ -193,10 +181,13 @@ def shell(product_name: str, inner: str, preheader: str = "",
         f'<tr><td align="center" style="padding:28px 12px;">'
         # 600px is the widest that survives Outlook's reading pane without
         # horizontal scroll.
+        # 16px radius + the app's soft shadow, from .fp-plan7. Outlook ignores
+        # both and renders a plain square card, which is fine -- they are polish.
         f'<table role="presentation" width="600" cellpadding="0" cellspacing="0"'
         f' border="0" style="border-collapse:collapse;width:600px;max-width:100%;'
         f'background-color:{BRAND["surf"]};border:1px solid {BRAND["line"]};'
-        f'border-radius:12px;">'
+        f'border-radius:16px;'
+        f'box-shadow:0 1px 2px rgba(22,31,51,.03),0 12px 30px -22px rgba(22,31,51,.28);">'
         f'{_header(product_name, eyebrow)}'
         f'<tr><td style="padding:30px 32px 26px;">{inner}</td></tr>'
         f'{_footer(product_name, footer_note)}'
@@ -214,9 +205,11 @@ def heading(text: str, sub: str = "") -> str:
             f'<p style="margin:0 0 22px;color:{BRAND["body"]};font-size:15px;'
             f'line-height:1.6;font-family:{FONT};">{_esc(sub)}</p>'
         )
+    # Serif headline, matching .fp-plan7-headline in the app.
     return (
-        f'<h1 style="margin:0 0 10px;color:{BRAND["ink"]};font-size:21px;'
-        f'font-weight:600;line-height:1.3;font-family:{FONT};">{_esc(text)}</h1>'
+        f'<h1 style="margin:0 0 10px;color:{BRAND["ink"]};font-size:23px;'
+        f'font-weight:700;line-height:1.25;letter-spacing:-0.01em;'
+        f'font-family:{SERIF};">{_esc(text)}</h1>'
         f'{sub_html}'
     )
 
@@ -278,10 +271,11 @@ def stat_grid(stats) -> str:
 
 
 def section_title(text: str) -> str:
+    """Gold uppercase eyebrow, matching .fp-plan7-eyebrow in the app."""
     return (
         f'<div style="margin:26px 0 12px;padding-bottom:8px;'
-        f'border-bottom:2px solid {BRAND["accent"]};color:{BRAND["ink"]};'
-        f'font-size:12px;font-weight:700;letter-spacing:.08em;'
+        f'border-bottom:1px solid {BRAND["line"]};color:{BRAND["accent"]};'
+        f'font-size:12.5px;font-weight:700;letter-spacing:.09em;'
         f'text-transform:uppercase;font-family:{FONT};">{_esc(text)}</div>'
     )
 
