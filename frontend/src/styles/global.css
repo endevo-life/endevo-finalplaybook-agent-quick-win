@@ -492,6 +492,24 @@ button, input, textarea {
 .fp-price-feats li::before { content: "✓"; color: var(--accent); font-weight: 700; flex-shrink: 0; }
 .fp-price-feats li.muted { color: var(--dim); }
 .fp-price-feats li.muted::before { content: "—"; color: var(--line); }
+.fp-price-sub { font-size: 13px; color: var(--dim); margin: 6px 0 0; }
+
+/* Monthly / annual switch above the pricing grid. */
+.fp-interval-toggle {
+  display: flex; width: fit-content; gap: 4px; margin: 0 auto 26px; padding: 4px;
+  background: var(--line); border-radius: 10px;
+}
+.fp-interval-opt {
+  display: flex; align-items: center; gap: 8px; border: 0; cursor: pointer;
+  background: transparent; color: var(--body); font-size: 14px; font-weight: 600;
+  font-family: inherit; padding: 8px 18px; border-radius: 7px; transition: background 0.15s, color 0.15s;
+}
+.fp-interval-opt:hover { color: var(--ink); }
+.fp-interval-opt.active { background: var(--bg); color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+.fp-interval-save {
+  background: var(--accent); color: var(--ink); font-size: 10.5px; font-weight: 700;
+  letter-spacing: 0.04em; text-transform: uppercase; border-radius: 5px; padding: 2px 6px;
+}
 
 /* ── modal ─────────────────────────────────────────────────────── */
 

@@ -46,6 +46,12 @@ class FeedbackRequest(BaseModel):
     page: Optional[str] = None       # where they were when they hit send
 
 
+class CheckoutRequest(BaseModel):
+    # "monthly" | "annual". Which Stripe Price to charge -- validated server-side
+    # against plans.BILLING_INTERVALS, never trusted as a raw price ID.
+    interval: str = "monthly"
+
+
 class AuthStartRequest(BaseModel):
     email: str
 

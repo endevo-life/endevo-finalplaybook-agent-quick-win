@@ -2,7 +2,8 @@
 from fastapi import APIRouter
 
 from app.agent.rules_engine import CONTENT_LIBRARY
-from app.services.plans import PLANS
+from app.services import billing as billing_service
+from app.services.plans import BILLING_INTERVALS, PLANS
 
 router = APIRouter(prefix="/api", tags=["meta"])
 
@@ -27,7 +28,25 @@ def pricing():
                 "monthlyChatQuota": p.monthly_chat_quota,
             }
             for p in PLANS.values()
-        ]
+        ],
+        # How the paid tier can be bought. `available` lists the intervals with a
+        # Stripe Price actually configured on this deploy -- the UI hides a toggle
+        # it can't honor, rather than offering annual and 502-ing on click.
+        "billingIntervals": [
+            {
+                "key": i.key,
+                "label": i.label,
+                "priceUsd": i.price_usd,
+                "period": i.period,
+                # What the annual plan works out to per month, for the UI's
+                # "$16.58/mo billed annually" line. None for monthly itself.
+                "effectiveMonthlyUsd": (
+                    round(i.price_usd / 12, 2) if i.period == "year" else None
+                ),
+            }
+            for i in BILLING_INTERVALS.values()
+        ],
+        "availableIntervals": billing_service.available_intervals(),
     }
 
 

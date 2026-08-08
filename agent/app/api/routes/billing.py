@@ -7,18 +7,30 @@ from fastapi import APIRouter, Depends, Header, HTTPException, Request
 from app.api.deps import require_email
 from app.config import ALLOW_DEV_UPGRADE
 from app.data.store import get_store
+from app.schemas.requests import CheckoutRequest
 from app.services import analytics, billing as billing_service
 from app.services.entitlements import entitlement_for
+from app.services.plans import normalize_interval
 
 router = APIRouter(prefix="/api/billing", tags=["billing"])
 
 
 @router.post("/checkout")
-def billing_checkout(email: str = Depends(require_email)):
+def billing_checkout(
+    body: Optional[CheckoutRequest] = None,
+    email: str = Depends(require_email),
+):
+    """Start Stripe Checkout on the requested billing interval. Body is optional
+    so older clients that POST nothing still get the monthly plan."""
     if not billing_service.is_configured():
         raise HTTPException(503, "Billing is not configured on this server yet.")
+    interval = (body.interval if body else None) or "monthly"
     try:
-        url = billing_service.create_checkout_session(email)
+        interval = normalize_interval(interval)
+    except ValueError as e:
+        raise HTTPException(400, str(e))   # a bad interval is the caller's bug, not a 502
+    try:
+        url = billing_service.create_checkout_session(email, interval)
     except Exception as e:
         raise HTTPException(502, f"Checkout error: {e}")
     return {"url": url}

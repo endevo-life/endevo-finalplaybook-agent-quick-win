@@ -7,7 +7,7 @@ import { PLAYBOOK_NAME } from "../config/branding";
 //
 // This is clearly a demo: the card is prefilled with the Stripe test number and
 // nothing is charged. Swap this for real Stripe Checkout before launch.
-export default function DemoCheckout({ price = 25, onConfirm, onClose }) {
+export default function DemoCheckout({ price = 25, period = "month", onConfirm, onClose }) {
   const [phase, setPhase] = useState("form"); // form | processing | success | error
   const [err, setErr] = useState("");
 
@@ -42,7 +42,9 @@ export default function DemoCheckout({ price = 25, onConfirm, onClose }) {
           <>
             <p className="fp-checkout-demo-tag">Demo checkout · no card is charged</p>
             <h3 className="fp-h2" style={{ marginTop: 6 }}>Unlock {PLAYBOOK_NAME} Premium</h3>
-            <p className="fp-body">${price}/month · cancel anytime</p>
+            <p className="fp-body">
+              ${price}/{period} · {period === "year" ? "billed once a year" : "cancel anytime"}
+            </p>
 
             <label className="fp-label" htmlFor="cc">Card number</label>
             <input id="cc" className="fp-input" defaultValue="4242 4242 4242 4242" inputMode="numeric" />

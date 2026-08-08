@@ -105,8 +105,10 @@ export function authLogout() {
 }
 
 // --- billing -----------------------------------------------------------------
-export function startCheckout() {
-  return request("/api/billing/checkout", { method: "POST" });
+// interval: "monthly" | "annual" -- the backend validates it against its own
+// plan table and picks the matching Stripe Price. We never send a price ID.
+export function startCheckout(interval = "monthly") {
+  return request("/api/billing/checkout", { method: "POST", body: { interval } });
 }
 // Dev-only unlock (no Stripe). Backend gates this behind ALLOW_DEV_UPGRADE.
 export function devUpgrade() {
