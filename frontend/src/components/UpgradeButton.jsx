@@ -10,6 +10,7 @@ export default function UpgradeButton({
   className = "fp-btn-upgrade",
   style,
   onNeedLogin,
+  interval = "monthly",   // "monthly" | "annual" -- which Stripe Price to charge
 }) {
   const [busy, setBusy] = useState(false);
 
@@ -22,7 +23,7 @@ export default function UpgradeButton({
     }
     setBusy(true);
     try {
-      const { url } = await startCheckout();
+      const { url } = await startCheckout(interval);
       window.location.href = url; // Stripe-hosted checkout
     } catch (e) {
       // Billing not configured / error -> static fallback so the button never dead-ends.

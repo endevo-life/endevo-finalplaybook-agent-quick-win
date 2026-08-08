@@ -9,7 +9,7 @@ stay in sync.
 
 | | **Free** | **Personalized** |
 |---|---|---|
-| **Price** | $0, forever | $25 / month |
+| **Price** | $0, forever | **$25 / month** or **$199 / year** |
 | Situation assessment | ✅ | ✅ |
 | Prioritized action plan (rules engine) | ✅ | ✅ |
 | Word-for-word conversation scripts | ✅ | ✅ |
@@ -24,6 +24,30 @@ stay in sync.
 | Account required | No (anonymous) | Yes |
 | Monthly plan regenerations | n/a | 30 |
 | Monthly chat replies | n/a | 200 |
+
+### Billing intervals
+
+Premium is one product sold two ways. Both unlock exactly the same features and
+quotas — the only difference is how it's charged:
+
+| Interval | Price | Works out to | Why it exists |
+|---|---|---|---|
+| Monthly | $25 / month | $25 / month | Low-commitment on-ramp; cancel anytime |
+| Annual | $199 / year | ~$16.58 / month (**save 34%**) | Captures the whole episode up front |
+
+The need this app serves is **episodic** — someone arrives in a crisis, works the
+plan hard for six to eight weeks, finishes, and has no reason to keep paying. On
+monthly-only pricing that's ~$50–75 of lifetime revenue per member. The annual
+plan exists to price the episode rather than the month. $199 is also the number
+Trust & Will has already trained this market to associate with serious
+end-of-life work.
+
+Each interval maps to its own Stripe Price, named by the env var in
+`plans.BILLING_INTERVALS` (`STRIPE_PRICE_ID` / `STRIPE_PRICE_ID_ANNUAL`). Annual
+is **optional**: a deploy that only sets `STRIPE_PRICE_ID` offers monthly alone
+and the UI hides the toggle rather than showing an option that would fail on
+click. Entitlements never look at the interval — `tier == "paid"` is the only
+gate, so nothing downstream has to know how someone paid.
 
 ### Free vs Premium — the split in the product
 
@@ -70,7 +94,14 @@ Tier is **enforced server-side**, not trusted from the client:
 
 ## Changing prices or limits
 
-1. Edit the numbers in [`agent/plans.py`](../agent/plans.py) (`PLANS`).
-2. Update the Stripe **Price** object to match the new dollar amount, and set
-   `STRIPE_PRICE_ID` to the new price if you created a new one.
-3. This doc and the landing page update automatically from `/api/pricing`.
+1. Edit the numbers in [`agent/plans.py`](../agent/plans.py) — `PLANS` for
+   features/quotas, `BILLING_INTERVALS` for the dollar amounts.
+2. Update the Stripe **Price** object to match the new dollar amount, and point
+   the matching env var at it if you created a new one:
+   `STRIPE_PRICE_ID` (monthly), `STRIPE_PRICE_ID_ANNUAL` (annual).
+3. The landing page updates automatically from `/api/pricing` — including the
+   "save N%" badge, which is computed from the two prices rather than hard-coded.
+
+Stripe prices are **immutable**: to change an amount you create a new Price and
+repoint the env var. Existing subscribers stay on the old Price until they're
+migrated, so a change here affects new checkouts only.

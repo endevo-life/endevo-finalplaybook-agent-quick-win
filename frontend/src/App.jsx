@@ -13,7 +13,7 @@ import LoginModal from "./components/LoginModal";
 import FeedbackModal from "./components/FeedbackModal";
 import DemoCheckout from "./components/DemoCheckout";
 import Settings from "./components/Settings";
-import { getGlossary, startCheckout, devUpgrade, getToken } from "./api/client";
+import { getGlossary, getMyPlan, startCheckout, devUpgrade, getToken } from "./api/client";
 import { useAuth } from "./auth/useAuth";
 import { firstName } from "./config/branding";
 
@@ -39,6 +39,11 @@ export default function App() {
   // When true, a successful login should immediately resume the upgrade flow
   // (user clicked Upgrade while logged out).
   const [pendingUpgrade, setPendingUpgrade] = useState(false);
+  // Which billing interval the member picked ("monthly" | "annual"). Held here
+  // rather than in Pricing so it survives the sign-in detour: someone who clicks
+  // Annual while logged out must still land on the annual price after login.
+  // Named billingInterval, not `interval`, so it doesn't shadow window.setInterval.
+  const [billingInterval, setBillingInterval] = useState("monthly");
   // When true, a successful login should start the assessment flow (user clicked
   // "Get My Final Playbook" while logged out). Even the FREE experience requires
   // an account so the AI-guide taste works and progress persists per user.
@@ -56,15 +61,46 @@ export default function App() {
     setUser((u) => ({ ...u, tier: auth.isPaid ? "paid" : "free" }));
   }, [auth.isPaid]);
 
-  // Return from Stripe Checkout: refresh entitlement so the UI reflects the
-  // (webhook-driven) upgrade, and clean the URL.
+  // Return from Stripe Checkout. Stripe sends the member back to the site root,
+  // so this is a FULL page load -- React state is gone and `route` is back at
+  // "landing". Dropping a paying member on the marketing page reads as "did my
+  // payment work?", so on success we refresh the entitlement and take them
+  // straight into their playbook.
+  //
+  // The tier flip is done by the WEBHOOK, which races this redirect: Stripe can
+  // bounce the browser back before the webhook has landed, and a single /api/me
+  // would then still say "free". So poll briefly until paid shows up, and route
+  // in either case -- a slow webhook must not strand them on the landing page.
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    if (params.get("checkout")) {
-      auth.refresh();
-      window.history.replaceState({}, "", window.location.pathname);
-    }
-  }, [auth]);
+    const checkout = params.get("checkout");
+    if (!checkout) return;
+    // Clean the URL first so a refresh doesn't re-run this.
+    window.history.replaceState({}, "", window.location.pathname);
+    if (checkout !== "success") return;  // "cancel" -> leave them on the landing page
+
+    let cancelled = false;
+    (async () => {
+      for (let attempt = 0; attempt < 5; attempt++) {
+        const account = await auth.refresh();
+        if (cancelled) return;
+        if (account?.tier === "paid") break;
+        await new Promise((r) => setTimeout(r, 1000)); // webhook still in flight
+      }
+      if (cancelled) return;
+      // Same branch as sign-in: someone who paid BEFORE building a plan still
+      // needs onboarding, not a bare question list.
+      const saved = await getMyPlan().catch(() => null);
+      if (cancelled) return;
+      const hasPlan = Boolean(saved?.plan) && Object.keys(saved?.answers || {}).length > 0;
+      setResumeSaved(hasPlan);
+      setRoute(hasPlan ? "assessment" : "identify");
+    })();
+    return () => { cancelled = true; };
+    // Run once on mount: `auth` is recreated each render, and re-running this
+    // would restart the poll and fight the member's own navigation.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   function restart() {
     setUser({ name: "", tier: auth.isPaid ? "paid" : "free" });
@@ -90,7 +126,7 @@ export default function App() {
     } catch (e) {
       if (e.status === 403) {
         // Dev upgrade disabled on this backend — try real Stripe checkout.
-        const { url } = await startCheckout();
+        const { url } = await startCheckout(billingInterval);
         window.location.href = url;
         return;
       }
@@ -110,7 +146,10 @@ export default function App() {
     setRoute("identify");
   }
 
-  function handleUpgrade() {
+  // `chosenInterval` comes from the pricing toggle. Callers that don't care
+  // (in-flow upgrade nudges) omit it and keep whatever is currently selected.
+  function handleUpgrade(chosenInterval) {
+    if (chosenInterval) setBillingInterval(chosenInterval);
     // Must be logged in to attach the upgrade to an account. If not, open the
     // login modal and remember to resume the upgrade once they're in.
     if (!getToken()) {
@@ -148,10 +187,26 @@ export default function App() {
       setRoute("identify");
       return;
     }
-    // Plain "Sign in" — a returning member. Skip the intro; go straight to their
-    // playbook. Restore their saved plan on mount (or show questions if none).
-    setResumeSaved(true);
-    setRoute("assessment");
+    // Plain "Sign in". Whether this is a RETURNING member or someone who just
+    // created an account decides where they belong, and the only way to know is
+    // to ask the server whether they actually have a saved plan:
+    //   - has a plan  -> straight to it, skip the intro they've already done
+    //   - no plan yet -> they're new, so run the real onboarding
+    //     (name -> why now -> questions). Dropping a brand-new member onto raw
+    //     questions with no name and no "why now?" context skips the part that
+    //     makes the plan personal.
+    // Default to onboarding if the check fails: showing the intro twice is a
+    // far smaller harm than skipping it for someone who never had it.
+    getMyPlan()
+      .then((saved) => {
+        const hasPlan = Boolean(saved?.plan) && Object.keys(saved?.answers || {}).length > 0;
+        setResumeSaved(hasPlan);
+        setRoute(hasPlan ? "assessment" : "identify");
+      })
+      .catch(() => {
+        setResumeSaved(false);
+        setRoute("identify");
+      });
   }
 
   return (
@@ -259,7 +314,8 @@ export default function App() {
 
       {showCheckout && (
         <DemoCheckout
-          price={25}
+          price={billingInterval === "annual" ? 199 : 25}
+          period={billingInterval === "annual" ? "year" : "month"}
           onConfirm={confirmUpgrade}
           onClose={() => setShowCheckout(false)}
         />
