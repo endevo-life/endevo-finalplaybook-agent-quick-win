@@ -40,12 +40,17 @@ class _ConsoleEmail:
     backend = "console"
 
     def __init__(self):
-        self.sent = []  # [{to, subject, body}]
+        self.sent = []  # [{to, subject, body, html}]
 
-    def send(self, to: list, subject: str, body: str) -> bool:
-        self.sent.append({"to": list(to), "subject": subject, "body": body})
+    def send(self, to: list, subject: str, body: str, html: str = "") -> bool:
+        self.sent.append({"to": list(to), "subject": subject, "body": body,
+                          "html": html})
         del self.sent[:-_MAX_RECORDED]
-        log.info("[email:console] to=%s subject=%s\n%s", ", ".join(to), subject, body)
+        # Log the text part only -- the HTML is ~10KB of table markup and would
+        # bury the message in CloudWatch. The admin console reads `html` from
+        # last_sends() when someone actually wants to see the rendered version.
+        log.info("[email:console] to=%s subject=%s%s\n%s", ", ".join(to), subject,
+                 " (+html)" if html else "", body)
         return True
 
 
@@ -66,18 +71,22 @@ class _SesEmail:
             self._c = boto3.client("sesv2", region_name=self.region)
         return self._c
 
-    def send(self, to: list, subject: str, body: str) -> bool:
+    def send(self, to: list, subject: str, body: str, html: str = "") -> bool:
+        # multipart/alternative when there's an HTML part: the text version is
+        # NOT a fallback nicety. Plain-text-only clients, screen readers, and
+        # spam scoring all read it, and a message with no text part scores
+        # worse. Both parts always carry the same facts.
+        content = {"Subject": {"Data": subject, "Charset": "UTF-8"},
+                   "Body": {"Text": {"Data": body, "Charset": "UTF-8"}}}
+        if html:
+            content["Body"]["Html"] = {"Data": html, "Charset": "UTF-8"}
         self._client().send_email(
             FromEmailAddress=self.sender,
             Destination={"ToAddresses": list(to)},
-            Content={
-                "Simple": {
-                    "Subject": {"Data": subject, "Charset": "UTF-8"},
-                    "Body": {"Text": {"Data": body, "Charset": "UTF-8"}},
-                }
-            },
+            Content={"Simple": content},
         )
-        self.sent.append({"to": list(to), "subject": subject, "body": body})
+        self.sent.append({"to": list(to), "subject": subject, "body": body,
+                          "html": html})
         del self.sent[:-_MAX_RECORDED]
         return True
 
@@ -115,8 +124,12 @@ def reset_email():
     _email = None
 
 
-def send(to, subject: str, body: str) -> bool:
+def send(to, subject: str, body: str, html: str = "") -> bool:
     """Send to one or more addresses. Returns True if the transport accepted it.
+
+    `body` is the plain-text part and is REQUIRED; `html` is an optional
+    branded alternative (see services/email_template.py). Callers always pass
+    text -- see the multipart note in _SesEmail.send.
 
     Never raises -- see the best-effort contract in the module docstring. An
     empty recipient list is a no-op returning False (the feature is inert until
@@ -126,7 +139,7 @@ def send(to, subject: str, body: str) -> bool:
     if not recipients:
         return False
     try:
-        return get_email().send(recipients, subject, body)
+        return get_email().send(recipients, subject, body, html)
     except Exception as exc:
         log.warning("email send failed (to=%s subject=%s): %s",
                     ", ".join(recipients), subject, exc)

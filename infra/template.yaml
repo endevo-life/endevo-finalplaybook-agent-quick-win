@@ -53,7 +53,13 @@ Parameters:
   StripePriceId:
     Type: String
     Default: ""
-    Description: Stripe recurring Price ID for the paid tier (price_...).
+    Description: Stripe recurring Price ID for the paid tier, monthly (price_...).
+  StripePriceIdAnnual:
+    Type: String
+    Default: ""
+    Description: >
+      Stripe recurring Price ID for the ANNUAL paid tier (price_...). Optional --
+      leave blank to sell monthly only; the pricing UI hides the annual toggle.
   StripeWebhookSecret:
     Type: String
     NoEcho: true
@@ -186,6 +192,7 @@ Resources:
           ANTHROPIC_API_KEY: !Ref AnthropicApiKey
           STRIPE_SECRET_KEY: !Ref StripeSecretKey
           STRIPE_PRICE_ID: !Ref StripePriceId
+          STRIPE_PRICE_ID_ANNUAL: !Ref StripePriceIdAnnual
           STRIPE_WEBHOOK_SECRET: !Ref StripeWebhookSecret
           ALLOWED_ORIGINS: !Ref AllowedOrigins
           APP_BASE_URL: !Ref AppBaseUrl
@@ -197,7 +204,7 @@ Resources:
           ADMIN_TOKEN: !Ref AdminToken
           ADMIN_EMAILS: !Ref AdminEmails
           ALLOW_DEV_UPGRADE: !Ref AllowDevUpgrade
-          PRODUCT_NAME: "Final Playbook"
+          PRODUCT_NAME: "My Final Playbook"
           # Admin Cost tab: when "1", /api/admin/costs queries real billed $ from
           # Cost Explorer (needs the ce/cloudwatch policy below). Off -> estimate.
           AWS_COST_ENABLED: !Ref AwsCostEnabled

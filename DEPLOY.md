@@ -316,24 +316,42 @@ add it by widening `OperatorEmails`. See
 
 ## 4. Set up Stripe billing
 
-1. In the Stripe Dashboard, create a **Product** → recurring **Price** of $9/mo.
-   Copy the `price_...` ID.
+1. In the Stripe Dashboard, create one **Product** ("Personalized") with **two
+   recurring Prices** — the same product sold two ways:
+   - **$25 USD / month** → this is `StripePriceId`
+   - **$199 USD / year** → this is `StripePriceIdAnnual`
+
+   Copy both `price_...` IDs. The amounts must match `BILLING_INTERVALS` in
+   `agent/app/services/plans.py`, which is what the pricing page displays —
+   Stripe is what actually charges, so a mismatch means showing one price and
+   billing another. Annual is optional: omit it to launch monthly-only and the
+   UI hides the toggle automatically.
 2. Add a **webhook endpoint** pointing at `https://<ApiUrl>/api/billing/webhook`,
-   subscribed to `checkout.session.completed` and
-   `customer.subscription.deleted`. Copy the signing secret (`whsec_...`).
+   subscribed to `checkout.session.completed`,
+   `customer.subscription.deleted`, and `customer.subscription.paused` — those
+   are the three events `billing.handle_webhook` acts on. Copy the signing
+   secret (`whsec_...`).
 3. Redeploy with the Stripe params filled in:
    ```bash
    sam deploy --parameter-overrides \
      AnthropicApiKey=sk-ant-... \
      StripeSecretKey=sk_live_... \
-     StripePriceId=price_... \
+     StripePriceId=price_...monthly \
+     StripePriceIdAnnual=price_...annual \
      StripeWebhookSecret=whsec_... \
+     AllowDevUpgrade=false \
      AllowedOrigins=https://your-frontend-domain.com \
      AppBaseUrl=https://your-frontend-domain.com
    ```
 4. Test with a [Stripe test card](https://stripe.com/docs/testing) (`4242...`).
-   After checkout the webhook flips the user to `paid`; the UI reflects it on the
-   next `/api/me` refresh (the app does this automatically on redirect back).
+   Run checkout **once per interval** — a wrong Price ID in the annual slot only
+   shows up as the wrong amount at checkout. After checkout the webhook flips
+   the user to `paid`; the UI reflects it on the next `/api/me` refresh (the app
+   does this automatically on redirect back).
+5. Turn on the **Customer Portal** (Stripe → Settings → Billing → Customer
+   portal) with cancellation enabled, or every cancellation becomes a manual
+   support request. Prod cancellation flows through the portal + webhook, not
+   the dev `/downgrade` route.
 
 **Why the webhook, not the redirect?** The redirect can be skipped or forged, so
 the webhook is the source of truth for granting/revoking paid access. See
@@ -396,5 +414,10 @@ CORS and the post-checkout redirect resolve correctly.
       paid tier** (this is educational, sensitive content — see `docs/guardrails.md`).
 - [ ] Stripe in **live** mode (not test) with the live `price_`/`whsec_`, and
       `StripeWebhookSecret` set (webhook signature verification is skipped if blank)
+- [ ] **Both** live Prices set and each one checked out once — $25/mo in
+      `StripePriceId`, $199/yr in `StripePriceIdAnnual`. Swapping the two bills
+      annual subscribers $25 a year; nothing in the app can detect that for you.
+- [ ] Stripe **Customer Portal** enabled with cancellation, and a public refund
+      policy + terms linked at checkout (Stripe can hold payouts without them)
 - [ ] Disclaimer visible ("not legal, financial, or medical advice")
 - [ ] A privacy policy + terms page linked (you store emails + usage)

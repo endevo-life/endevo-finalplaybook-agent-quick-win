@@ -8,17 +8,24 @@ export function useAuth() {
   const [account, setAccount] = useState(null); // server entitlement snapshot
   const [loading, setLoading] = useState(true);
 
+  // Returns the fresh entitlement snapshot (or null) as well as storing it, so
+  // callers can act on the result immediately instead of waiting a render for
+  // `account` to settle -- the post-Stripe poll needs to read the tier it just
+  // fetched.
   const refresh = useCallback(async () => {
     if (!getToken()) {
       setAccount(null);
       setLoading(false);
-      return;
+      return null;
     }
     try {
-      setAccount(await getMe());
+      const me = await getMe();
+      setAccount(me);
+      return me;
     } catch {
       setToken(null); // token expired/invalid -> drop it
       setAccount(null);
+      return null;
     } finally {
       setLoading(false);
     }

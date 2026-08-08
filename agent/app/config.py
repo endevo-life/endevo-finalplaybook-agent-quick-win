@@ -18,7 +18,11 @@ except ImportError:
 
 
 # ── Brand / voice ────────────────────────────────────────────────────────────
-PRODUCT_NAME = os.environ.get("PRODUCT_NAME", "Final Playbook")
+# Matches frontend/src/config/branding.js PRODUCT_NAME. Kept identical because
+# outbound mail is the same brand surface as the app -- a member or an operator
+# seeing "Final Playbook" in mail and "My Final Playbook" in the UI reads as two
+# different products.
+PRODUCT_NAME = os.environ.get("PRODUCT_NAME", "My Final Playbook")
 
 # Leave EXPERT_NAME empty for a neutral, unnamed guide (expert-agnostic default).
 # Set it only if a specific expert is surfaced with permission.

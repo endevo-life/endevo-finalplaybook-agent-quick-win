@@ -57,6 +57,22 @@ def test_pricing_endpoint_lists_both_plans():
     assert tiers == {"free", "paid"}
 
 
+def test_pricing_endpoint_exposes_both_billing_intervals():
+    """The UI renders its monthly/annual toggle from this, so both intervals and
+    the annual per-month equivalent have to come from the server."""
+    body = client.get("/api/pricing").json()
+    intervals = {i["key"]: i for i in body["billingIntervals"]}
+    assert set(intervals) == {"monthly", "annual"}
+    assert intervals["monthly"]["priceUsd"] == 25.0
+    assert intervals["monthly"]["period"] == "month"
+    assert intervals["annual"]["priceUsd"] == 199.0
+    assert intervals["annual"]["period"] == "year"
+    # $199/yr shown as "$16.58/month" -- computed server-side, not in the UI.
+    assert intervals["annual"]["effectiveMonthlyUsd"] == 16.58
+    # No Stripe configured in tests -> nothing is actually purchasable.
+    assert body["availableIntervals"] == []
+
+
 # --- domain assessment (condensed tiered model, free/anonymous) --------------
 def test_assessment_questions_available():
     resp = client.get("/api/assessment")

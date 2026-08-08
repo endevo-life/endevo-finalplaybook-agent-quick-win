@@ -151,13 +151,17 @@ EventBridge (weekly) ──┘         (what to say)            (how to send)
                                        └──→ services/analytics.py (existing event stream)
 ```
 
-Two layers, deliberately split:
+Three layers, deliberately split:
 
 - **`app/data/email.py`** — *transport only*. Backend-selected exactly like
   `data/store/base.py` and `data/events.py`: `console` (dev/test, records to a
-  list), `ses` (production). Knows nothing about signups or digests.
-- **`app/services/notifications.py`** — *content*. Builds subject + body for
-  each notification type, resolves the recipient list, calls the transport.
+  list), `ses` (production). Knows nothing about signups or digests. Sends
+  `multipart/alternative` when an HTML part is supplied.
+- **`app/services/email_template.py`** — *brand chrome only*. The card, logo,
+  header band, footer, and colors every message sits in. Owns no copy, so a
+  restyle touches one file and a new message gets the brand for free.
+- **`app/services/notifications.py`** — *content*. Builds subject + text + HTML
+  for each notification type, resolves the recipient list, calls the transport.
   Every public function is best-effort and never raises into a request path.
 
 This mirrors the existing `analytics.emit()` contract, which already swallows
@@ -342,7 +346,10 @@ system in an email. This is a hard line, not a preference.
 
 - Member-facing welcome email (blocked on SES production access; separate spec)
 - Unsubscribe / preference management (internal recipients only)
-- HTML email templates — plain text first; it's an ops alert, not a campaign
+- ~~HTML email templates — plain text first; it's an ops alert, not a campaign~~
+  **Done 2026-07-27** (`services/email_template.py`). Reversed: operator mail is
+  a brand surface too, and a wall of monospace next to a designed app reads as
+  broken. Text part retained and still authoritative — every message ships both.
 - Slack/SMS notification channels
 - Per-recipient digest customization
 - Replying to feedback in-app (operators reply from their inbox for now)

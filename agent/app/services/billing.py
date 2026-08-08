@@ -16,19 +16,48 @@ All of this no-ops cleanly if STRIPE_SECRET_KEY isn't set, so the app still runs
 end-to-end in dev without a Stripe account (you can grant paid tier manually via
 the store for testing).
 
+The paid tier is sold monthly or annually. Each interval maps to its own Stripe
+Price via the env var named in `plans.BILLING_INTERVALS` -- annual is optional, so
+a deploy that only sets STRIPE_PRICE_ID still works and simply offers monthly.
+
 Env:
     STRIPE_SECRET_KEY        sk_live_... / sk_test_...
-    STRIPE_PRICE_ID          price_...  (the recurring paid-tier price)
+    STRIPE_PRICE_ID          price_...  (monthly paid-tier price)
+    STRIPE_PRICE_ID_ANNUAL   price_...  (annual paid-tier price; optional)
     STRIPE_WEBHOOK_SECRET    whsec_...  (verifies webhook authenticity)
     APP_BASE_URL             where to send users back after checkout
 """
 import os
 
 from app.data.store import get_store
+from app.services.plans import BILLING_INTERVALS, get_interval
 
 
 def is_configured() -> bool:
     return bool(os.environ.get("STRIPE_SECRET_KEY") and os.environ.get("STRIPE_PRICE_ID"))
+
+
+def price_id_for(interval: str) -> str:
+    """Resolve a billing interval to its configured Stripe Price ID. Raises if
+    that interval has no price set -- better a clear 502 than silently charging
+    someone the monthly rate when they clicked annual."""
+    spec = get_interval(interval)
+    price_id = os.environ.get(spec.stripe_price_env)
+    if not price_id:
+        raise RuntimeError(
+            f"No Stripe price configured for {spec.key} billing "
+            f"(set {spec.stripe_price_env})."
+        )
+    return price_id
+
+
+def available_intervals() -> list:
+    """Interval keys that actually have a Stripe Price configured. The pricing
+    UI uses this so we never show an annual toggle that would 502 on click."""
+    if not is_configured():
+        return []
+    return [k for k, spec in BILLING_INTERVALS.items()
+            if os.environ.get(spec.stripe_price_env)]
 
 
 def _client():
@@ -37,12 +66,14 @@ def _client():
     return stripe
 
 
-def create_checkout_session(email: str) -> str:
-    """Create a Stripe Checkout Session for `email` and return its URL.
-    Reuses/creates a Stripe customer keyed to the email so the webhook can map
-    the payment back to our user."""
+def create_checkout_session(email: str, interval: str = "monthly") -> str:
+    """Create a Stripe Checkout Session for `email` on the given billing
+    interval ("monthly" | "annual") and return its URL. Reuses/creates a Stripe
+    customer keyed to the email so the webhook can map the payment back to our
+    user."""
     if not is_configured():
         raise RuntimeError("Billing is not configured (set STRIPE_SECRET_KEY and STRIPE_PRICE_ID).")
+    price_id = price_id_for(interval)  # validates the interval before any API call
     stripe = _client()
     base = os.environ.get("APP_BASE_URL", "http://localhost:3200")
 
@@ -57,7 +88,7 @@ def create_checkout_session(email: str) -> str:
     session = stripe.checkout.Session.create(
         mode="subscription",
         customer=customer_id,
-        line_items=[{"price": os.environ["STRIPE_PRICE_ID"], "quantity": 1}],
+        line_items=[{"price": price_id, "quantity": 1}],
         success_url=f"{base}/?checkout=success",
         cancel_url=f"{base}/?checkout=cancel",
         client_reference_id=email,
