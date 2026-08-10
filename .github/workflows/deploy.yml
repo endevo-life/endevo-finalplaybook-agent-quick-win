@@ -9,6 +9,10 @@ name: Deploy
 #   AWS_SECRET_ACCESS_KEY  — deploy IAM user
 #   ADMIN_TOKEN            — admin console secret
 #   ANTHROPIC_API_KEY      — (optional; only if LlmBackend=anthropic. Bedrock needs none)
+#   STRIPE_SECRET_KEY      — sk_test_/sk_live_ (blank = billing off, app still runs)
+#   STRIPE_PRICE_ID        — price_... monthly paid tier
+#   STRIPE_PRICE_ID_ANNUAL — price_... annual paid tier (optional; blank hides annual)
+#   STRIPE_WEBHOOK_SECRET  — whsec_... webhook signature verification
 #
 # Can also be run manually from the Actions tab (workflow_dispatch).
 on:
@@ -72,7 +76,11 @@ jobs:
               "CognitoRegion=us-east-1" \
               "AdminToken=${{ secrets.ADMIN_TOKEN }}" \
               "AdminEmails=hello@endevo.life,bluesproutagency@gmail.com" \
-              "AllowDevUpgrade=true" \
+              "AllowDevUpgrade=false" \
+              "StripeSecretKey=${{ secrets.STRIPE_SECRET_KEY }}" \
+              "StripePriceId=${{ secrets.STRIPE_PRICE_ID }}" \
+              "StripePriceIdAnnual=${{ secrets.STRIPE_PRICE_ID_ANNUAL }}" \
+              "StripeWebhookSecret=${{ secrets.STRIPE_WEBHOOK_SECRET }}" \
               "AllowedOrigins=http://localhost:3200,${CLOUDFRONT_URL},${APP_URL}" \
               "AppBaseUrl=${APP_URL}"
       - name: Smoke test the live API

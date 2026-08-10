@@ -296,6 +296,14 @@ export default function App() {
         />
       )}
 
+      {/* Legal links on every in-app screen; Landing renders its own fuller footer. */}
+      {route !== "landing" && (
+        <div className="fp-footer-links">
+          <a className="fp-footer-link" href="/privacy.html">Privacy</a>
+          <a className="fp-footer-link" href="/terms.html">Terms</a>
+        </div>
+      )}
+
       {showLogin && (
         <LoginModal
           auth={auth}

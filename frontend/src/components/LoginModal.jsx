@@ -70,6 +70,11 @@ export default function LoginModal({ auth, onClose, onLoggedIn }) {
                     disabled={busy || !email.includes("@")} onClick={sendCode}>
               {busy ? "Sending…" : "Send code →"}
             </button>
+            <p className="fp-dim" style={{ fontSize: 12.5, marginTop: 12, textAlign: "center" }}>
+              By continuing you agree to our{" "}
+              <a href="/terms.html" target="_blank" rel="noopener noreferrer">Terms</a> and{" "}
+              <a href="/privacy.html" target="_blank" rel="noopener noreferrer">Privacy Policy</a>.
+            </p>
           </>
         )}
 

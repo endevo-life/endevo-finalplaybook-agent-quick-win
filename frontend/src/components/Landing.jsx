@@ -190,6 +190,8 @@ export default function Landing({ onStart, onSignIn, onUpgrade, isPaid, onHelp }
           <button className="fp-footer-link" onClick={() => onHelp("survey")}>
             Send feedback
           </button>
+          <a className="fp-footer-link" href="/privacy.html">Privacy</a>
+          <a className="fp-footer-link" href="/terms.html">Terms</a>
         </div>
       )}
     </div>

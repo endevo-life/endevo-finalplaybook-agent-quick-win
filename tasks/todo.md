@@ -5,7 +5,8 @@ Order: A1 → B1 → B2 → B3 → C1 → C2 → D1 → D2 (A1 can run any time;
 
 ## A. Legal pages
 
-- [ ] A1: Draft + ship `privacy.html` and `terms.html`
+- [x] A1: Draft + ship `privacy.html` and `terms.html` (shipped 2026-08-09 with the
+  "Draft — pending review" banner; Niki's review + banner removal still open)
   - Acceptance: both pages exist in `frontend/public/`, styled to brand, accurate to actual app behavior (localStorage-only, no cookies/analytics, Stripe, Anthropic, self-serve deletion), entity ENDevo Inc., link to endevo.life master policy, "Draft — pending review" banner present; footer links added in the app (Landing + main app) and in LoginModal.
   - Verify: `npm run build` succeeds; open `http://localhost:3200/privacy.html` and `/terms.html`; links reachable from footer. Niki review before deploy (banner removal is a separate sign-off).
   - Files: `frontend/public/privacy.html`, `frontend/public/terms.html`, `frontend/src/components/Landing.jsx`, `frontend/src/App.jsx`, `frontend/src/components/LoginModal.jsx`
