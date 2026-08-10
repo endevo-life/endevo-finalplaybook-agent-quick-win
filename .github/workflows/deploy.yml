@@ -58,7 +58,37 @@ jobs:
         run: sam build
       - name: SAM deploy
         working-directory: infra
+        # Secrets come in via env (not inline interpolation) so unset ones are
+        # plain empty strings we can test for.
+        env:
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+          STRIPE_PRICE_ID: ${{ secrets.STRIPE_PRICE_ID }}
+          STRIPE_PRICE_ID_ANNUAL: ${{ secrets.STRIPE_PRICE_ID_ANNUAL }}
+          STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
         run: |
+          PARAMS=(
+            "LlmBackend=bedrock"
+            "BedrockRegion=us-east-1"
+            "BedrockModelId=us.meta.llama3-1-8b-instruct-v1:0"
+            "AuthBackend=cognito"
+            "CognitoUserPoolId=us-east-1_ikCfp5RAL"
+            "CognitoClientId=2hsqh99bm3l6hqj9uskbtbgdgd"
+            "CognitoRegion=us-east-1"
+            "AdminToken=${{ secrets.ADMIN_TOKEN }}"
+            "AdminEmails=hello@endevo.life,bluesproutagency@gmail.com"
+            "AllowDevUpgrade=false"
+            "AllowedOrigins=http://localhost:3200,${CLOUDFRONT_URL},${APP_URL}"
+            "AppBaseUrl=${APP_URL}"
+          )
+          # SAM rejects a bare "Key=" override, so include Stripe params only
+          # when the secret is actually set. Unset = billing stays off (the
+          # template defaults are empty), which is the intended pre-Stripe
+          # state -- and lets STRIPE_PRICE_ID_ANNUAL lag until annual pricing
+          # is settled without breaking the deploy.
+          [ -n "$STRIPE_SECRET_KEY" ]      && PARAMS+=("StripeSecretKey=$STRIPE_SECRET_KEY")
+          [ -n "$STRIPE_PRICE_ID" ]        && PARAMS+=("StripePriceId=$STRIPE_PRICE_ID")
+          [ -n "$STRIPE_PRICE_ID_ANNUAL" ] && PARAMS+=("StripePriceIdAnnual=$STRIPE_PRICE_ID_ANNUAL")
+          [ -n "$STRIPE_WEBHOOK_SECRET" ]  && PARAMS+=("StripeWebhookSecret=$STRIPE_WEBHOOK_SECRET")
           sam deploy \
             --stack-name "$STACK_NAME" \
             --region "$AWS_REGION" \
@@ -66,23 +96,7 @@ jobs:
             --resolve-s3 \
             --no-confirm-changeset \
             --no-fail-on-empty-changeset \
-            --parameter-overrides \
-              "LlmBackend=bedrock" \
-              "BedrockRegion=us-east-1" \
-              "BedrockModelId=us.meta.llama3-1-8b-instruct-v1:0" \
-              "AuthBackend=cognito" \
-              "CognitoUserPoolId=us-east-1_ikCfp5RAL" \
-              "CognitoClientId=2hsqh99bm3l6hqj9uskbtbgdgd" \
-              "CognitoRegion=us-east-1" \
-              "AdminToken=${{ secrets.ADMIN_TOKEN }}" \
-              "AdminEmails=hello@endevo.life,bluesproutagency@gmail.com" \
-              "AllowDevUpgrade=false" \
-              "StripeSecretKey=${{ secrets.STRIPE_SECRET_KEY }}" \
-              "StripePriceId=${{ secrets.STRIPE_PRICE_ID }}" \
-              "StripePriceIdAnnual=${{ secrets.STRIPE_PRICE_ID_ANNUAL }}" \
-              "StripeWebhookSecret=${{ secrets.STRIPE_WEBHOOK_SECRET }}" \
-              "AllowedOrigins=http://localhost:3200,${CLOUDFRONT_URL},${APP_URL}" \
-              "AppBaseUrl=${APP_URL}"
+            --parameter-overrides "${PARAMS[@]}"
       - name: Smoke test the live API
         run: |
           code=$(curl -s -o /dev/null -w "%{http_code}" "$API_URL/api/health")
